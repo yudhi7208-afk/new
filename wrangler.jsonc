@@ -4,5 +4,13 @@
   "compatibility_date": "2026-10-30",
   "assets": {
     "directory": "./public"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "CUSTOMER_DB",
+      "database_name": "new-posloker-customers",
+      "database_id": "1cae88ec-6851-4468-9a01-a547f5352bca",
+      "migrations_dir": "migrations"
+    }
+  ]
 }

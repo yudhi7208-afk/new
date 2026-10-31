@@ -5,3 +5,14 @@ node_modules/
 .env
 .env.*
 .cache/
+
+# Customer exports, imports, backups and local databases must stay private.
+private/
+backups/
+*.sql
+!migrations/*.sql
+*.sql.gz
+*.dump
+*.sqlite
+*.sqlite3
+*.db

@@ -21,9 +21,19 @@ tetap diarahkan ke `https://posloker.my.id`. Halaman transaksi tidak diekspor:
 kode unik, nonce WordPress, dan handler PHP harus dibuat oleh server asal.
 Tracker statistik WordPress tidak dijalankan dari pratinjau.
 
-Ini merupakan pemindahan tampilan publik, belum migrasi seluruh aplikasi.
-Tidak ada database, autentikasi aplikasi, data pelanggan, token pembayaran,
-atau domain khusus ditambahkan ke Worker.
+Salinan pelanggan, pesanan, dan seluruh metadata terkait sudah dipindahkan ke
+D1 privat `new-posloker-customers` melalui binding `CUSTOMER_DB`. Hasil impor
+dicocokkan seluruh kolomnya dengan snapshot sumber. Data ini tidak berada di
+repository maupun direktori aset publik.
+
+Ini masih pratinjau aplikasi: handler PHP, akses staf, dan proses unggahan
+perlu diadaptasi sebelum transaksi dilayani dari Worker. Situs WordPress
+masih menjadi sumber pesanan baru; lakukan rekonsiliasi delta menjelang
+cutover. Domain dan DNS belum diubah.
+
+Lihat [panduan data pelanggan](customer-data-migration.md) untuk persiapan
+privat, pemeriksaan, dan batas snapshot. Pemindahan berkas privat ke R2
+memerlukan aktivasi penyimpanan yang terpisah dari database.
 
 ## Ekspor ulang dan deploy
 
@@ -40,8 +50,8 @@ environment variable `POSLOKER_EXPORT_CACHE`.
 
 ## Tahap backend berikutnya
 
-Ambil backup tema `posloker-premium`, plugin `posloker-payment`, konfigurasi
-terkait, serta struktur data dari hosting milik pengguna. Pisahkan rahasia dan
-data pelanggan dari Git. Petakan handler pemesanan, kode unik, unggahan, dan
-notifikasi sebelum menentukan kebutuhan penyimpanan/layanan backend.
+Backup tema `posloker-premium`, plugin `posloker-payment`, database sumber,
+dan berkas terkait sudah disiapkan di folder kerja privat. Pisahkan rahasia
+dan data pelanggan dari Git. Adaptasikan handler pemesanan, kode unik,
+akses staf, unggahan, dan notifikasi pada backend baru.
 Domain baru dialihkan setelah fungsi tersebut diuji dan disetujui.

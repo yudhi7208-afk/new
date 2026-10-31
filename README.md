@@ -8,9 +8,12 @@ Beranda, direktori area, 49 halaman kota, gambar, CSS, JavaScript, dan font
 berjalan dari `public/`. Pencarian kota, filter wilayah, dan pilihan paket
 mempertahankan perilaku serta data harga situs asal saat ekspor.
 
-**Pesanan dan pembayaran masih dilanjutkan di situs asal.** Handler PHP,
-data pelanggan, upload bukti, dan dashboard WordPress belum dipindahkan.
+**Pesanan dan pembayaran masih dilanjutkan di situs asal.** Salinan data
+pelanggan dan riwayat pesanan disimpan privat di D1 `new-posloker-customers`
+melalui binding `CUSTOMER_DB`. Handler PHP, alur unggahan, dan dashboard
+WordPress masih perlu diadaptasi sebelum pengalihan trafik.
 Lihat [catatan migrasi](docs/migration.md) dan [manifest ekspor](docs/migration-manifest.json).
+Alur persiapan dan validasi data ada di [panduan data pelanggan](docs/customer-data-migration.md).
 
 ## Persiapan
 
@@ -46,8 +49,8 @@ Untuk CI, gunakan `CLOUDFLARE_API_TOKEN` dan `CLOUDFLARE_ACCOUNT_ID` sebagai
 environment variable. Jangan simpan kredensial di repository.
 
 Nama Worker adalah `new`, tanggal kompatibilitas `2026-10-30`, dan direktori
-aset `./public`. Tidak ada database, autentikasi aplikasi, atau domain khusus
-ditambahkan.
+aset `./public`. Database D1 memakai akses akun/binding Cloudflare; data
+pelanggan tidak disajikan oleh halaman statis. Domain khusus belum diubah.
 
 ## Memperbarui salinan publik
 
@@ -58,3 +61,15 @@ npm run export:posloker
 Ekspor hanya membaca halaman publik dan menyimpan cache di `.cache/`.
 Gunakan direktori cache baru melalui `POSLOKER_EXPORT_CACHE` untuk mengambil
 snapshot yang lebih baru. Periksa perubahan harga dan halaman sebelum deploy.
+
+## Alat migrasi data privat
+
+Gunakan Node.js 24 untuk menjalankan alat persiapan dan pemeriksaan berbasis
+SQLite. Pengujian memakai data sintetis:
+
+```sh
+npm run test:migration
+```
+
+Dump database, SQL berisi pelanggan, SQLite lokal, bukti transfer, dan hasil
+verifikasi disimpan di folder kerja privat di luar repository dan `public/`.
