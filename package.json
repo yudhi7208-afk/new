@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test:migration": "node scripts/test-customer-migration.mjs && node scripts/customer-console-tools.mjs self-test && node scripts/test-order-files.mjs",
+    "test:migration": "node scripts/test-customer-migration.mjs && node scripts/customer-console-tools.mjs self-test && node scripts/test-order-files.mjs && node scripts/test-order-files-console.mjs",
     "export:posloker": "node scripts/export-posloker.mjs",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"

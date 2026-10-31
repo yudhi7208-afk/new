@@ -77,3 +77,16 @@ Staging R2 dan manifest berkas tetap privat. Aktivasi R2 dan persetujuan
 ketentuan langganannya diperlukan sebelum transfer berkas; bucket harus
 tetap private, tanpa domain publik atau `r2.dev`. Skema `0002_order_files.sql`
 disiapkan untuk katalog berkas setelah penyimpanan tersebut siap.
+
+Setelah katalog diimpor, baca kembali seluruh kolom `order_files` dan periksa
+hubungannya dengan pesanan dan snapshot. Siapkan kueri Console satu baris,
+simpan sel JSON `order_files_snapshot` secara privat, lalu bandingkan:
+
+```sh
+node scripts/order-files-console-tools.mjs build --manifest ../private-posloker/prepared/order-files-manifest.private.json --out-dir ../private-posloker/prepared
+node scripts/order-files-console-tools.mjs verify --manifest ../private-posloker/prepared/order-files-manifest.private.json --remote ../private-posloker/prepared/order-files-remote.json
+```
+
+Pemeriksaan katalog membandingkan semua nilai dan checksum baris. Isi objek
+R2 perlu diverifikasi terpisah terhadap SHA-256 berkas staging sebelum
+pemindahan berkas dinyatakan selesai.
