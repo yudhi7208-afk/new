@@ -12,5 +12,11 @@
       "database_id": "1cae88ec-6851-4468-9a01-a547f5352bca",
       "migrations_dir": "migrations"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "CUSTOMER_FILES",
+      "bucket_name": "new-posloker-customer-files"
+    }
   ]
 }

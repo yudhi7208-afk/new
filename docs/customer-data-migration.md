@@ -5,6 +5,14 @@ Database tujuan proyek ini adalah D1 `new-posloker-customers`, binding
 publik yang membaca tabel pelanggan. Akses administrasi database mengikuti
 akun Cloudflare dan izin binding Worker.
 
+Berkas pesanan berada di bucket R2 privat `new-posloker-customer-files`,
+binding `CUSTOMER_FILES`. Akses publik bucket dinonaktifkan; tidak ada
+domain publik, akses `r2.dev`, atau endpoint website yang menyajikan isinya.
+Snapshot berkas sudah diunduh kembali melalui akses terautentikasi dan
+dibandingkan ukuran byte serta SHA-256-nya dengan manifest sumber.
+Katalog D1 sudah dicocokkan seluruh kolom, checksum baris, dan relasinya
+dengan pesanan serta snapshot.
+
 ## Cakupan snapshot
 
 Sumber WordPress menyimpan pesanan sebagai post type `posloker_order` dan
@@ -73,10 +81,10 @@ dipertahankan pada backup dan tidak otomatis diunggah atau dihapus.
 node scripts/prepare-order-files.mjs --database ../private-posloker/prepared/customer-data.sqlite --source-root ../private-posloker/source/order-files --out-dir ../private-posloker/prepared
 ```
 
-Staging R2 dan manifest berkas tetap privat. Aktivasi R2 dan persetujuan
-ketentuan langganannya diperlukan sebelum transfer berkas; bucket harus
-tetap private, tanpa domain publik atau `r2.dev`. Skema `0002_order_files.sql`
-disiapkan untuk katalog berkas setelah penyimpanan tersebut siap.
+Staging R2 dan manifest berkas tetap privat. R2 sudah aktif untuk proyek
+ini, dan bucket harus tetap privat, tanpa domain publik atau `r2.dev`.
+Skema `0002_order_files.sql` menyimpan katalog berkas yang sudah diimpor
+serta diperiksa pada database tujuan.
 
 Setelah katalog diimpor, baca kembali seluruh kolom `order_files` dan periksa
 hubungannya dengan pesanan dan snapshot. Siapkan kueri Console satu baris,
@@ -88,5 +96,12 @@ node scripts/order-files-console-tools.mjs verify --manifest ../private-posloker
 ```
 
 Pemeriksaan katalog membandingkan semua nilai dan checksum baris. Isi objek
-R2 perlu diverifikasi terpisah terhadap SHA-256 berkas staging sebelum
-pemindahan berkas dinyatakan selesai.
+R2 diverifikasi terpisah dengan mengunduh ulang melalui akses privat lalu
+mencocokkan setiap kunci objek, ukuran byte, dan SHA-256 dengan staging.
+Pemeriksaan snapshot saat ini sudah lulus untuk katalog dan isi objek.
+
+Untuk sinkronisasi berikutnya, ambil snapshot/delta sumber yang baru dan
+ulang kedua pemeriksaan tersebut. Jangan menganggap penambahan binding
+sebagai pemindahan handler PHP atau replikasi pesanan baru: checkout,
+unggahan baru, dan dashboard WordPress tetap menggunakan hosting asal
+sampai adaptasi backend dan cutover terpisah selesai.

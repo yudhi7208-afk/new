@@ -26,14 +26,21 @@ D1 privat `new-posloker-customers` melalui binding `CUSTOMER_DB`. Hasil impor
 dicocokkan seluruh kolomnya dengan snapshot sumber. Data ini tidak berada di
 repository maupun direktori aset publik.
 
+Berkas bukti dan materi yang dirujuk pesanan sudah disalin ke bucket R2
+privat `new-posloker-customer-files`, binding `CUSTOMER_FILES`. Semua objek
+dibaca kembali melalui akses akun Cloudflare; ukuran byte dan SHA-256-nya
+cocok dengan staging sumber. Katalog `order_files` di D1 juga dicocokkan
+seluruh kolom, checksum baris, dan hubungan pesanan/snapshot-nya.
+Bucket tidak memiliki domain publik atau akses `r2.dev`, dan belum ada
+endpoint aplikasi yang menyajikan berkas privat tersebut.
+
 Ini masih pratinjau aplikasi: handler PHP, akses staf, dan proses unggahan
 perlu diadaptasi sebelum transaksi dilayani dari Worker. Situs WordPress
 masih menjadi sumber pesanan baru; lakukan rekonsiliasi delta menjelang
 cutover. Domain dan DNS belum diubah.
 
 Lihat [panduan data pelanggan](customer-data-migration.md) untuk persiapan
-privat, pemeriksaan, dan batas snapshot. Pemindahan berkas privat ke R2
-memerlukan aktivasi penyimpanan yang terpisah dari database.
+privat, pemeriksaan database/objek, dan batas snapshot.
 
 ## Ekspor ulang dan deploy
 

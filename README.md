@@ -10,8 +10,13 @@ mempertahankan perilaku serta data harga situs asal saat ekspor.
 
 **Pesanan dan pembayaran masih dilanjutkan di situs asal.** Salinan data
 pelanggan dan riwayat pesanan disimpan privat di D1 `new-posloker-customers`
-melalui binding `CUSTOMER_DB`. Handler PHP, alur unggahan, dan dashboard
-WordPress masih perlu diadaptasi sebelum pengalihan trafik.
+melalui binding `CUSTOMER_DB`. Bukti dan materi yang dirujuk pesanan sudah
+disalin ke R2 privat `new-posloker-customer-files`, binding `CUSTOMER_FILES`.
+Isi objek sudah diunduh kembali melalui akses privat dan dicocokkan ukuran
+serta SHA-256-nya; katalog D1 juga sudah diperiksa seluruh kolom dan relasinya.
+Tidak ada endpoint publik yang menyajikan data atau berkas pelanggan.
+Handler PHP, alur unggahan baru, dan dashboard WordPress masih perlu
+diadaptasi sebelum pengalihan trafik.
 Lihat [catatan migrasi](docs/migration.md) dan [manifest ekspor](docs/migration-manifest.json).
 Alur persiapan dan validasi data ada di [panduan data pelanggan](docs/customer-data-migration.md).
 
@@ -50,7 +55,8 @@ environment variable. Jangan simpan kredensial di repository.
 
 Nama Worker adalah `new`, tanggal kompatibilitas `2026-10-30`, dan direktori
 aset `./public`. Database D1 memakai akses akun/binding Cloudflare; data
-pelanggan tidak disajikan oleh halaman statis. Domain khusus belum diubah.
+pelanggan tidak disajikan oleh halaman statis. Bucket R2 tetap privat tanpa
+domain publik atau akses `r2.dev`. Domain khusus belum diubah.
 
 ## Memperbarui salinan publik
 
