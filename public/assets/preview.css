@@ -1,0 +1,15 @@
+.migration-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 9px 20px;
+  background: #eaf3fc;
+  border-bottom: 1px solid #d2e3f5;
+  color: #10213d;
+  font: 500 12px/1.6 Manrope, system-ui, sans-serif;
+  text-align: center;
+}
+.migration-preview strong { font-weight: 800; }
+.migration-preview a { color: #0756ad; text-decoration: underline; }

@@ -1,9 +1,16 @@
-# Website Project
+# Pratinjau PosLoker di Cloudflare Workers
 
-Repository untuk pengembangan website menggunakan OpenAI Codex, GitHub, dan Cloudflare Workers.
+Salinan halaman publik `https://posloker.my.id` untuk meninjau perpindahan ke
+Cloudflare Workers Static Assets. Target pratinjau adalah
+`https://new.yudhi7208.workers.dev`; domain dan hosting asal tidak diubah.
 
-Website percobaan responsif menggunakan Cloudflare Workers Static Assets. File
-`public/index.html` disajikan langsung tanpa build atau skrip Worker tambahan.
+Beranda, direktori area, 49 halaman kota, gambar, CSS, JavaScript, dan font
+berjalan dari `public/`. Pencarian kota, filter wilayah, dan pilihan paket
+mempertahankan perilaku serta data harga situs asal saat ekspor.
+
+**Pesanan dan pembayaran masih dilanjutkan di situs asal.** Handler PHP,
+data pelanggan, upload bukti, dan dashboard WordPress belum dipindahkan.
+Lihat [catatan migrasi](docs/migration.md) dan [manifest ekspor](docs/migration-manifest.json).
 
 ## Persiapan
 
@@ -39,5 +46,15 @@ Untuk CI, gunakan `CLOUDFLARE_API_TOKEN` dan `CLOUDFLARE_ACCOUNT_ID` sebagai
 environment variable. Jangan simpan kredensial di repository.
 
 Nama Worker adalah `new`, tanggal kompatibilitas `2026-10-30`, dan direktori
-aset `./public`. Proyek ini tidak menggunakan database, autentikasi pengguna,
-atau domain khusus.
+aset `./public`. Tidak ada database, autentikasi aplikasi, atau domain khusus
+ditambahkan.
+
+## Memperbarui salinan publik
+
+```sh
+npm run export:posloker
+```
+
+Ekspor hanya membaca halaman publik dan menyimpan cache di `.cache/`.
+Gunakan direktori cache baru melalui `POSLOKER_EXPORT_CACHE` untuk mengambil
+snapshot yang lebih baru. Periksa perubahan harga dan halaman sebelum deploy.

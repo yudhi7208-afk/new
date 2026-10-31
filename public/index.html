@@ -1,62 +1,555 @@
 <!doctype html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Website percobaan menggunakan Cloudflare Workers Static Assets." />
-    <title>Website Berhasil Terhubung</title>
-    <style>
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        min-height: 100svh;
-        display: grid;
-        place-items: center;
-        padding: 24px;
-        background: #f0fdf4;
-        color: #14532d;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-      main {
-        width: min(100%, 640px);
-        padding: clamp(24px, 6vw, 56px);
-        border: 1px solid #bbf7d0;
-        border-radius: 24px;
-        background: #ffffff;
-        text-align: center;
-        box-shadow: 0 16px 48px #14532d0d;
-      }
-      .icon {
-        display: grid;
-        place-items: center;
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 24px;
-        border-radius: 50%;
-        background: #dcfce7;
-        color: #15803d;
-        font-size: 36px;
-      }
-      h1 {
-        margin: 0;
-        font-size: clamp(1.75rem, 5vw, 2.75rem);
-        line-height: 1.2;
-        overflow-wrap: break-word;
-      }
-      p {
-        margin: 20px 0 0;
-        color: #475569;
-        font-size: 1rem;
-        line-height: 1.6;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <div class="icon" aria-hidden="true">&#10003;</div>
-      <h1>Website Berhasil Terhubung</h1>
-      <p>Website percobaan dengan Cloudflare Workers Static Assets.</p>
-    </main>
-  </body>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Jasa Posting Lowongan Kerja Instagram & Facebook | PosLoker</title>
+<meta name="robots" content="noindex, nofollow">
+
+
+
+<!-- PosLoker SEO 1.0.0 -->
+<meta name="description" content="Jasa posting lowongan kerja melalui Instagram, Facebook Page, dan Facebook Group lokal di berbagai kota Indonesia.">
+<meta name="keywords" content="jasa posting lowongan kerja, pasang lowongan kerja, Instagram loker, Facebook loker">
+<link rel="canonical" href="https://posloker.my.id/">
+<meta property="og:locale" content="id_ID">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jasa Posting Lowongan Kerja Instagram &amp; Facebook | PosLoker">
+<meta property="og:description" content="Jasa posting lowongan kerja melalui Instagram, Facebook Page, dan Facebook Group lokal di berbagai kota Indonesia.">
+<meta property="og:url" content="https://posloker.my.id/">
+<meta property="og:site_name" content="Pos Loker Kamu di Sosial Media">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Jasa Posting Lowongan Kerja Instagram &amp; Facebook | PosLoker">
+<meta name="twitter:description" content="Jasa posting lowongan kerja melalui Instagram, Facebook Page, dan Facebook Group lokal di berbagai kota Indonesia.">
+<!-- /PosLoker SEO -->
+<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-emoji-styles-inline-css">
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+/*# sourceURL=wp-emoji-styles-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-break:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style^=border-color],[style*=";border-color"],[style*="; border-color"]){border-style:solid}html :where([style^=border-top-color],[style*=";border-top-color"],[style*="; border-top-color"]){border-top-style:solid}html :where([style^=border-right-color],[style*=";border-right-color"],[style*="; border-right-color"]){border-right-style:solid}html :where([style^=border-bottom-color],[style*=";border-bottom-color"],[style*="; border-bottom-color"]){border-bottom-style:solid}html :where([style^=border-left-color],[style*=";border-left-color"],[style*="; border-left-color"]){border-left-style:solid}html :where([style^=border-width],[style*=";border-width"],[style*="; border-width"]){border-style:solid}html :where([style^=border-top-width],[style*=";border-top-width"],[style*="; border-top-width"]){border-top-style:solid}html :where([style^=border-right-width],[style*=";border-right-width"],[style*="; border-right-width"]){border-right-style:solid}html :where([style^=border-bottom-width],[style*=";border-bottom-width"],[style*="; border-bottom-width"]){border-bottom-style:solid}html :where([style^=border-left-width],[style*=";border-left-width"],[style*="; border-left-width"]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--color--navy: #071a3a;--wp--preset--color--blue: #0866c6;--wp--preset--color--red: #ed2b24;--wp--preset--color--cloud: #f4f8fc;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: clamp(14px, 0.875rem + ((1vw - 3.2px) * 0.698), 20px);--wp--preset--font-size--large: clamp(22.041px, 1.378rem + ((1vw - 3.2px) * 1.623), 36px);--wp--preset--font-size--x-large: clamp(25.014px, 1.563rem + ((1vw - 3.2px) * 1.975), 42px);--wp--preset--font-family--manrope: "Manrope", system-ui, sans-serif;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}.wp-block-button{--wp--preset--dimension--25: 25%;--wp--preset--dimension--50: 50%;--wp--preset--dimension--75: 75%;--wp--preset--dimension--100: 100%;}:root { --wp--style--global--content-size: 820px;--wp--style--global--wide-size: 1180px; }:where(body) { margin: 0; }.wp-site-blocks > .alignleft { float: left; margin-right: 2em; }.wp-site-blocks > .alignright { float: right; margin-left: 2em; }.wp-site-blocks > .aligncenter { justify-content: center; margin-left: auto; margin-right: auto; }:where(.wp-site-blocks) > * { margin-block-start: 24px; margin-block-end: 0; }:where(.wp-site-blocks) > :first-child { margin-block-start: 0; }:where(.wp-site-blocks) > :last-child { margin-block-end: 0; }:root { --wp--style--block-gap: 24px; }:root :where(.is-layout-flow) > :first-child{margin-block-start: 0;}:root :where(.is-layout-flow) > :last-child{margin-block-end: 0;}:root :where(.is-layout-flow) > *{margin-block-start: 24px;margin-block-end: 0;}:root :where(.is-layout-constrained) > :first-child{margin-block-start: 0;}:root :where(.is-layout-constrained) > :last-child{margin-block-end: 0;}:root :where(.is-layout-constrained) > *{margin-block-start: 24px;margin-block-end: 0;}:root :where(.is-layout-flex){gap: 24px;}:root :where(.is-layout-grid){gap: 24px;}.is-layout-flow > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-flow > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-flow > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-constrained > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-constrained > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)){max-width: var(--wp--style--global--content-size);margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > .alignwide{max-width: var(--wp--style--global--wide-size);}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{background-color: #ffffff;color: #10213d;font-family: var(--wp--preset--font-family--manrope);line-height: 1.65;padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-navy-color{color: var(--wp--preset--color--navy) !important;}.has-blue-color{color: var(--wp--preset--color--blue) !important;}.has-red-color{color: var(--wp--preset--color--red) !important;}.has-cloud-color{color: var(--wp--preset--color--cloud) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-navy-background-color{background-color: var(--wp--preset--color--navy) !important;}.has-blue-background-color{background-color: var(--wp--preset--color--blue) !important;}.has-red-background-color{background-color: var(--wp--preset--color--red) !important;}.has-cloud-background-color{background-color: var(--wp--preset--color--cloud) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-navy-border-color{border-color: var(--wp--preset--color--navy) !important;}.has-blue-border-color{border-color: var(--wp--preset--color--blue) !important;}.has-red-border-color{border-color: var(--wp--preset--color--red) !important;}.has-cloud-border-color{border-color: var(--wp--preset--color--cloud) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}.has-manrope-font-family{font-family: var(--wp--preset--font-family--manrope) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='posloker-payment-css' href='/wp-content/plugins/posloker-payment/assets/frontend.css' media='all' />
+<link rel='stylesheet' id='posloker-style-css' href='/wp-content/themes/posloker-premium/assets/css/main.css' media='all' />
+
+<meta name="generator" content="WordPress 7.1.4" />
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://posloker.my.id/#organization","name":"PosLoker","url":"https://posloker.my.id/","description":"Jasa posting lowongan kerja melalui Instagram, Facebook Page, dan Facebook Group lokal di berbagai kota Indonesia.","telephone":"+6285785600586"},{"@type":"WebSite","@id":"https://posloker.my.id/#website","url":"https://posloker.my.id/","name":"Pos Loker Kamu di Sosial Media","description":"Jasa posting lowongan kerja melalui Instagram, Facebook Page, dan Facebook Group lokal di berbagai kota Indonesia.","inLanguage":"id-ID","publisher":{"@id":"https://posloker.my.id/#organization"}},{"@type":"FAQPage","@id":"https://posloker.my.id/#faq-schema","mainEntity":[{"@type":"Question","name":"Apa saja yang perlu saya siapkan?","acceptedAnswer":{"@type":"Answer","text":"Siapkan nama perusahaan, posisi, lokasi kerja, persyaratan, cara melamar, batas lamaran, dan poster jika sudah tersedia."}},{"@type":"Question","name":"Apakah PosLoker menyediakan desain poster?","acceptedAnswer":{"@type":"Answer","text":"Ya. Anda dapat menambahkan layanan desain poster saat membuat pesanan."}},{"@type":"Question","name":"Berapa lama lowongan akan dipublikasikan?","acceptedAnswer":{"@type":"Answer","text":"Jadwal dan durasi mengikuti kanal serta paket yang dipilih. Tim akan mengonfirmasi sebelum publikasi."}},{"@type":"Question","name":"Apakah posting pasti langsung diterima grup?","acceptedAnswer":{"@type":"Answer","text":"Publikasi grup mengikuti aturan dan persetujuan admin masing-masing grup. Jika ada kendala, tim akan menawarkan pengganti yang sesuai."}}]}]}</script>
+<link rel="icon" href="/wp-content/uploads/2026/07/cropped-favicon-32x32.png" sizes="32x32" />
+<link rel="icon" href="/wp-content/uploads/2026/07/cropped-favicon-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="/wp-content/uploads/2026/07/cropped-favicon-180x180.png" />
+<meta name="msapplication-TileImage" content="https://posloker.my.id/wp-content/uploads/2026/07/cropped-favicon-270x270.png" />
+<link rel="stylesheet" href="/assets/preview.css">
+</head>
+<body class="home blog wp-embed-responsive wp-theme-posloker-premium posloker-home">
+<aside class="migration-preview" aria-label="Informasi pratinjau"><strong>Pratinjau PosLoker</strong><span>Pesanan dan pembayaran dilanjutkan di <a href="https://posloker.my.id/">situs utama</a>.</span></aside>
+<a class="skip-link screen-reader-text" href="/#main">Langsung ke konten</a>
+<header class="site-header" data-header>
+	<div class="container header-inner">
+		<div class="brand"><a class="brand__fallback" href="/" rel="home"><img src="/wp-content/themes/posloker-premium/assets/images/logo-posloker.png" alt="Pos Loker Kamu di Sosial Media"></a></div>
+		<button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-menu">
+			<span></span><span></span><span></span>
+			<span class="screen-reader-text">Buka menu</span>
+		</button>
+		<nav class="main-nav" id="primary-menu" aria-label="Menu utama">
+			<ul class="menu"><li><a href="/#layanan">Layanan</a></li><li><a href="/#cara-kerja">Cara Kerja</a></li><li><a href="/#area">Area Jangkauan</a></li><li><a href="/#pilih-paket">Harga</a></li><li><a href="/#faq">FAQ</a></li></ul>		</nav>
+		<a class="button button--small header-cta" href="/#pilih-paket">Pasang Lowongan</a>
+	</div>
+</header>
+<main id="main">
+	<section class="hero">
+		<div class="hero-orb hero-orb--one"></div>
+		<div class="hero-orb hero-orb--two"></div>
+		<div class="container hero-grid">
+			<div class="hero-copy">
+				<div class="eyebrow"><span></span>Jangkauan lokal, proses lebih praktis</div>
+				<h1>Lowongan Anda dilihat kandidat di <span>kota yang tepat.</span></h1>
+				<p class="hero-lead">Sebarkan informasi lowongan melalui Instagram, Facebook Page, dan grup Facebook lokal—cukup dalam satu pemesanan.</p>
+				<div class="hero-actions">
+					<a class="button" href="/#pilih-paket">Lihat Paket Kota<span aria-hidden="true">→</span></a>
+					<a class="text-link" href="/#cara-kerja"><span class="play">▶</span>Lihat cara kerjanya</a>
+				</div>
+				<div class="hero-trust">
+					<div class="avatar-stack"><span>HR</span><span>UM</span><span>+</span></div>
+					<p><strong>Mudah untuk HR &amp; pemilik usaha</strong><br>Tanpa repot mencari grup satu per satu</p>
+				</div>
+			</div>
+            <style>.hero .hero-photo{position:relative;align-self:center;width:100%;margin:0;overflow:hidden;border-radius:28px;border:6px solid #fff;box-shadow:0 24px 60px #0b3c7226;aspect-ratio:6/5;background:#eaf3ff}.hero-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 45%}.hero-photo figcaption{position:absolute;bottom:14px;left:14px;padding:5px 9px;border-radius:6px;background:#ffffffde;color:#17365b;font-size:11px}@media(max-width:767px){.hero .hero-photo{aspect-ratio:16/10;border-width:4px;border-radius:20px;max-width:580px;margin:8px auto 0}}</style>
+            <figure class="hero-photo">
+                <img src="/wp-content/uploads/2026/10/posloker-hero-rekrutmen-web.webp" alt="Ilustrasi profesional rekrutmen Indonesia menyiapkan publikasi lowongan melalui laptop" width="1600" height="900" loading="eager" fetchpriority="high" decoding="async">
+
+            </figure>
+		</div>
+	</section>
+
+	<section class="trust-strip">
+		<div class="container trust-grid">
+			<div><span>✓</span><p><strong>Area Terpilih</strong>Target kota lebih relevan</p></div>
+			<div><span>⌁</span><p><strong>Multi-Platform</strong>Instagram &amp; Facebook</p></div>
+			<div><span>⏱</span><p><strong>Proses Praktis</strong>Pesan dalam beberapa menit</p></div>
+			<div><span>↗</span><p><strong>Bukti Tayang</strong>Laporan setelah publikasi</p></div>
+		</div>
+	</section>
+
+	<section class="section" id="layanan">
+		<div class="container">
+			<div class="section-heading section-heading--center">
+				<div class="eyebrow">Satu pesanan, banyak kanal</div>
+				<h2>Sebarkan lowongan lebih luas, <span>tanpa tambah ribet.</span></h2>
+				<p>Pilih kanal yang sesuai dengan target kandidat dan anggaran Anda.</p>
+			</div>
+			<div class="service-grid">
+				<article class="service-card service-card--featured is-selected" data-service-card tabindex="0" role="button" aria-pressed="true">
+					<div class="popular">PALING POPULER</div>
+					<div class="service-icon service-icon--ig">◎</div>
+					<h3>Instagram</h3>
+					<p>Tampilkan lowongan dalam format visual yang menarik melalui Feed dan Story.</p>
+					<ul><li>Feed post</li><li>Instagram Story</li><li>Caption & tag lokasi</li></ul>
+					<a href="/#pilih-paket">Lihat paket kota →</a>
+				</article>
+				<article class="service-card" data-service-card tabindex="0" role="button" aria-pressed="false">
+					<div class="service-icon service-icon--fb">f</div>
+					<h3>Facebook Group</h3>
+					<p>Jangkau komunitas pencari kerja lokal melalui grup Facebook pilihan.</p>
+					<ul><li>Grup berdasarkan kota</li><li>Pilihan jumlah grup</li><li>Bukti tautan tayang</li></ul>
+					<a href="/#pilih-paket">Lihat paket kota →</a>
+				</article>
+				<article class="service-card" data-service-card tabindex="0" role="button" aria-pressed="false">
+					<div class="service-icon service-icon--page">f</div>
+					<h3>Facebook Page</h3>
+					<p>Bangun kepercayaan dengan publikasi melalui halaman informasi lowongan.</p>
+					<ul><li>Post halaman</li><li>Tampilan rapi</li><li>Tautan pendaftaran</li></ul>
+					<a href="/#pilih-paket">Lihat paket kota →</a>
+				</article>
+			</div>
+		</div>
+	</section>
+
+	<section class="section section--tint" id="cara-kerja">
+		<div class="container">
+			<div class="section-heading">
+				<div class="eyebrow">Ringkas dari awal sampai tayang</div>
+				<h2>Empat langkah untuk <span>menjangkau kandidat.</span></h2>
+			</div>
+			<div class="steps">
+				<article><b>01</b><div class="step-icon">⌖</div><h3>Pilih Kota</h3><p>Tentukan lokasi kandidat yang ingin Anda jangkau.</p></article>
+				<article><b>02</b><div class="step-icon">＋</div><h3>Pilih Kanal</h3><p>Gabungkan Instagram, Page, atau grup Facebook.</p></article>
+				<article><b>03</b><div class="step-icon">▤</div><h3>Kirim Materi</h3><p>Isi detail lowongan dan unggah poster perusahaan.</p></article>
+				<article><b>04</b><div class="step-icon">✓</div><h3>Terima Bukti</h3><p>Kami publikasikan dan kirimkan bukti tayang.</p></article>
+			</div>
+		</div>
+	</section>
+
+	<section class="section" id="area">
+		<div class="container">
+			<div class="section-heading section-heading--split">
+				<div><div class="eyebrow">Jangkauan seluruh Indonesia</div><h2>Pilih kota target <span>kandidat Anda.</span></h2></div>
+				<a class="outline-link" href="/area/">Lihat semua kota →</a>
+			</div>
+			<div class="location-grid">
+									<a class="location-card" href="/area/banda-aceh/">
+						<img src="/wp-content/themes/posloker-premium/assets/images/cities/banda-aceh.jpg" alt="Jasa posting lowongan Banda Aceh" loading="lazy">
+						<span class="location-shade"></span>
+						<span class="location-copy"><small>Aceh</small><strong>Banda Aceh</strong><em>Lihat layanan →</em></span>
+					</a>
+									<a class="location-card" href="/area/medan/">
+						<img src="/wp-content/themes/posloker-premium/assets/images/cities/medan.jpg" alt="Jasa posting lowongan Medan" loading="lazy">
+						<span class="location-shade"></span>
+						<span class="location-copy"><small>Sumatera Utara</small><strong>Medan</strong><em>Lihat layanan →</em></span>
+					</a>
+									<a class="location-card" href="/area/binjai/">
+						<img src="/wp-content/themes/posloker-premium/assets/images/city-placeholder.svg" alt="Jasa posting lowongan Binjai" loading="lazy">
+						<span class="location-shade"></span>
+						<span class="location-copy"><small>Sumatera Utara</small><strong>Binjai</strong><em>Lihat layanan →</em></span>
+					</a>
+									<a class="location-card" href="/area/deli-serdang/">
+						<img src="/wp-content/themes/posloker-premium/assets/images/city-placeholder.svg" alt="Jasa posting lowongan Deli Serdang" loading="lazy">
+						<span class="location-shade"></span>
+						<span class="location-copy"><small>Sumatera Utara</small><strong>Deli Serdang</strong><em>Lihat layanan →</em></span>
+					</a>
+									<a class="location-card" href="/area/lubuk-pakam/">
+						<img src="/wp-content/themes/posloker-premium/assets/images/city-placeholder.svg" alt="Jasa posting lowongan Lubuk Pakam" loading="lazy">
+						<span class="location-shade"></span>
+						<span class="location-copy"><small>Sumatera Utara</small><strong>Lubuk Pakam</strong><em>Lihat layanan →</em></span>
+					</a>
+									<a class="location-card" href="/area/tanjung-morawa/">
+						<img src="/wp-content/themes/posloker-premium/assets/images/city-placeholder.svg" alt="Jasa posting lowongan Tanjung Morawa" loading="lazy">
+						<span class="location-shade"></span>
+						<span class="location-copy"><small>Sumatera Utara</small><strong>Tanjung Morawa</strong><em>Lihat layanan →</em></span>
+					</a>
+									<a class="location-card" href="/area/padang/">
+						<img src="/wp-content/themes/posloker-premium/assets/images/cities/padang.jpg" alt="Jasa posting lowongan Padang" loading="lazy">
+						<span class="location-shade"></span>
+						<span class="location-copy"><small>Sumatera Barat</small><strong>Padang</strong><em>Lihat layanan →</em></span>
+					</a>
+									<a class="location-card" href="/area/pekanbaru/">
+						<img src="/wp-content/themes/posloker-premium/assets/images/cities/pekanbaru.jpg" alt="Jasa posting lowongan Pekanbaru" loading="lazy">
+						<span class="location-shade"></span>
+						<span class="location-copy"><small>Riau</small><strong>Pekanbaru</strong><em>Lihat layanan →</em></span>
+					</a>
+							</div>
+		</div>
+	</section>
+
+	<section class="section section--dark" id="pilih-paket">
+		<div class="container calculator-wrap">
+			<div class="calculator-copy">
+				<div class="eyebrow eyebrow--light">Rencanakan publikasi Anda</div>
+				<h2>Pilih kota, lihat <span>paket resminya.</span></h2>
+				<p>Setiap kota dapat memiliki paket dan harga berbeda. Pilih kota tujuan untuk melihat penawaran yang tersedia.</p>
+				<ul class="check-list"><li>Tidak ada biaya tersembunyi</li><li>Bebas memilih kombinasi kanal</li><li>Order langsung secara online</li></ul>
+			</div>
+			<form class="price-calculator" data-calculator>
+				<div class="calculator-top"><div><small>PAKET BERDASARKAN KOTA</small><strong>Pilih layanan Anda</strong></div><span>Harga pasti</span></div>
+				<div class="city-search-label" data-city-coach-wrap>
+					<div class="city-search-label-row">
+						<label for="posloker-city-search">Cari kota tujuan</label>
+						<button class="coachmark-info" type="button" data-city-coach-open aria-label="Informasi cara cek harga posting" aria-expanded="false" aria-controls="posloker-city-coach">ⓘ</button>
+					</div>
+					<div class="coachmark coachmark--city" id="posloker-city-coach" data-city-coach role="status" hidden>
+						<span aria-hidden="true">💡</span>
+						<p>Masukkan nama kota untuk mengetahui harga/pricelist.</p>
+						<button type="button" data-city-coach-close aria-label="Tutup petunjuk pencarian kota">×</button>
+					</div>
+					<span class="city-search-control">
+						<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 20.3-5.2-5.2a7.5 7.5 0 1 0-.7.7l5.2 5.2.7-.7ZM4.5 10.2a5.7 5.7 0 1 1 11.4 0 5.7 5.7 0 0 1-11.4 0Z"/></svg>
+						<input id="posloker-city-search" type="search" data-city-search placeholder="Ketik kota lokasi" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="posloker-city-results">
+					</span>
+					<span class="city-search-results" id="posloker-city-results" data-city-results role="listbox" hidden></span>
+					<select name="city" data-city hidden aria-hidden="true" tabindex="-1">
+						<option value="" data-rule="">Pilih kota lokasi</option>
+													<option value="Banda Aceh" data-rule="banda-aceh">Banda Aceh — Aceh</option>
+													<option value="Medan" data-rule="medan">Medan — Sumatera Utara</option>
+													<option value="Binjai" data-rule="binjai">Binjai — Sumatera Utara</option>
+													<option value="Deli Serdang" data-rule="deli-serdang">Deli Serdang — Sumatera Utara</option>
+													<option value="Lubuk Pakam" data-rule="lubuk-pakam">Lubuk Pakam — Sumatera Utara</option>
+													<option value="Tanjung Morawa" data-rule="tanjung-morawa">Tanjung Morawa — Sumatera Utara</option>
+													<option value="Padang" data-rule="padang">Padang — Sumatera Barat</option>
+													<option value="Pekanbaru" data-rule="pekanbaru">Pekanbaru — Riau</option>
+													<option value="Tanjungpinang" data-rule="tanjungpinang">Tanjungpinang — Kepulauan Riau</option>
+													<option value="Batam" data-rule="batam">Batam — Kepulauan Riau</option>
+													<option value="Jambi" data-rule="jambi">Jambi — Jambi</option>
+													<option value="Palembang" data-rule="palembang">Palembang — Sumatera Selatan</option>
+													<option value="Pangkalpinang" data-rule="pangkalpinang">Pangkalpinang — Kepulauan Bangka Belitung</option>
+													<option value="Bengkulu" data-rule="bengkulu">Bengkulu — Bengkulu</option>
+													<option value="Bandar Lampung" data-rule="bandar-lampung">Bandar Lampung — Lampung</option>
+													<option value="Serang" data-rule="serang">Serang — Banten</option>
+													<option value="Tangerang" data-rule="tangerang">Tangerang — Banten</option>
+													<option value="Tangerang Selatan" data-rule="tangerang-selatan">Tangerang Selatan — Banten</option>
+													<option value="Jakarta" data-rule="jakarta">Jakarta — DKI Jakarta</option>
+													<option value="Bandung" data-rule="bandung">Bandung — Jawa Barat</option>
+													<option value="Semarang" data-rule="semarang">Semarang — Jawa Tengah</option>
+													<option value="Yogyakarta" data-rule="yogyakarta">Yogyakarta — DI Yogyakarta</option>
+													<option value="Surabaya" data-rule="surabaya">Surabaya — Jawa Timur</option>
+													<option value="Gresik" data-rule="gresik">Gresik — Jawa Timur</option>
+													<option value="Sidoarjo" data-rule="sidoarjo">Sidoarjo — Jawa Timur</option>
+													<option value="Malang" data-rule="malang">Malang — Jawa Timur</option>
+													<option value="Denpasar" data-rule="denpasar">Denpasar — Bali</option>
+													<option value="Mataram" data-rule="mataram">Mataram — Nusa Tenggara Barat</option>
+													<option value="Kupang" data-rule="kupang">Kupang — Nusa Tenggara Timur</option>
+													<option value="Pontianak" data-rule="pontianak">Pontianak — Kalimantan Barat</option>
+													<option value="Palangka Raya" data-rule="palangka-raya">Palangka Raya — Kalimantan Tengah</option>
+													<option value="Banjarbaru" data-rule="banjarbaru">Banjarbaru — Kalimantan Selatan</option>
+													<option value="Samarinda" data-rule="samarinda">Samarinda — Kalimantan Timur</option>
+													<option value="Balikpapan" data-rule="balikpapan">Balikpapan — Kalimantan Timur</option>
+													<option value="Tanjung Selor" data-rule="tanjung-selor">Tanjung Selor — Kalimantan Utara</option>
+													<option value="Manado" data-rule="manado">Manado — Sulawesi Utara</option>
+													<option value="Gorontalo" data-rule="gorontalo">Gorontalo — Gorontalo</option>
+													<option value="Palu" data-rule="palu">Palu — Sulawesi Tengah</option>
+													<option value="Mamuju" data-rule="mamuju">Mamuju — Sulawesi Barat</option>
+													<option value="Makassar" data-rule="makassar">Makassar — Sulawesi Selatan</option>
+													<option value="Kendari" data-rule="kendari">Kendari — Sulawesi Tenggara</option>
+													<option value="Ambon" data-rule="ambon">Ambon — Maluku</option>
+													<option value="Sofifi" data-rule="sofifi">Sofifi — Maluku Utara</option>
+													<option value="Manokwari" data-rule="manokwari">Manokwari — Papua Barat</option>
+													<option value="Sorong" data-rule="sorong">Sorong — Papua Barat Daya</option>
+													<option value="Jayapura" data-rule="jayapura">Jayapura — Papua</option>
+													<option value="Nabire" data-rule="nabire">Nabire — Papua Tengah</option>
+													<option value="Wamena" data-rule="wamena">Wamena — Papua Pegunungan</option>
+													<option value="Merauke" data-rule="merauke">Merauke — Papua Selatan</option>
+											</select>
+					<small class="city-search-help" data-city-search-help>Ketik nama kota lokasi, lalu pilih dari hasil pencarian.</small>
+				</div>
+				<fieldset class="package-fieldset">
+					<legend>Paket yang tersedia</legend>
+					<div class="package-list" data-package-list><div class="package-empty">Ketik dan pilih kota lokasi untuk melihat paket.</div></div>
+				</fieldset>
+				<div class="price-total"><span>Harga paket<small data-price-note>Pilih kota terlebih dahulu</small></span><strong data-total>—</strong></div>
+				<a class="button button--full is-disabled" data-order-button href="/" aria-disabled="true">Pilih Kota Terlebih Dahulu →</a>
+			</form>
+		</div>
+	</section>
+
+	<section class="section" id="faq">
+		<div class="container faq-layout">
+			<div class="section-heading">
+				<div class="eyebrow">Pertanyaan yang sering diajukan</div>
+				<h2>Sebelum Anda <span>mulai memesan.</span></h2>
+			</div>
+			<div class="accordion" data-accordion>
+				<details open><summary>Apa saja yang perlu saya siapkan?<span>+</span></summary><p>Siapkan nama perusahaan, posisi, lokasi kerja, persyaratan, cara melamar, batas lamaran, dan poster jika sudah tersedia.</p></details>
+				<details><summary>Apakah PosLoker menyediakan desain poster?<span>+</span></summary><p>Ya. Anda dapat menambahkan layanan desain poster saat membuat pesanan.</p></details>
+				<details><summary>Berapa lama lowongan akan dipublikasikan?<span>+</span></summary><p>Jadwal dan durasi mengikuti kanal serta paket yang dipilih. Tim akan mengonfirmasi sebelum publikasi.</p></details>
+				<details><summary>Apakah posting pasti langsung diterima grup?<span>+</span></summary><p>Publikasi grup mengikuti aturan dan persetujuan admin masing-masing grup. Jika ada kendala, tim akan menawarkan pengganti yang sesuai.</p></details>
+			</div>
+		</div>
+	</section>
+
+	<section class="final-cta">
+		<div class="container final-cta__inner">
+			<div><span>Siap menemukan kandidat berikutnya?</span><h2>Sebarkan lowongan Anda hari ini.</h2><p>Pilih kota, tentukan kanal, lalu biarkan tim PosLoker membantu publikasinya.</p></div>
+			<a class="button button--light" href="/#pilih-paket">Pilih Kota &amp; Paket →</a>
+		</div>
+	</section>
+</main>
+<footer class="site-footer">
+	<div class="container footer-grid">
+		<div class="footer-brand">
+			<a class="brand__fallback" href="/" rel="home"><img src="/wp-content/themes/posloker-premium/assets/images/logo-posloker.png" alt="Pos Loker Kamu di Sosial Media"></a>			<p>Bantu perusahaan menjangkau kandidat lokal melalui kanal sosial yang tepat.</p>
+		</div>
+		<div>
+			<h2>Layanan</h2>
+			<ul>
+				<li><a href="/#layanan">Instagram</a></li>
+				<li><a href="/#layanan">Facebook Page</a></li>
+				<li><a href="/#layanan">Facebook Group</a></li>
+			</ul>
+		</div>
+		<div>
+			<h2>Jelajahi</h2>
+			<ul>
+				<li><a href="/area/">Area Jangkauan</a></li>
+				<li><a href="/#cara-kerja">Cara Kerja</a></li>
+				<li><a href="/#faq">Pertanyaan Umum</a></li>
+			</ul>
+		</div>
+		<div>
+			<h2>Hubungi</h2>
+			<ul>
+				<li><a href="mailto:admin@posloker.my.id">admin@posloker.my.id</a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="container footer-bottom">
+		<p>&copy; 2026 Pos Loker Kamu di Sosial Media. Hak cipta dilindungi.</p>
+		<p>PosLoker tidak berafiliasi dengan Meta Platforms, Inc.</p>
+		<a class="footer-help-link" href="https://wa.me/6285785600586?text=Halo%20PosLoker%2C%20saya%20membutuhkan%20bantuan." target="_blank" rel="noopener">Bantuan via WhatsApp</a>
+	</div>
+</footer>
+<!-- posloker-posting-hours-v1 -->
+<style>
+#pl-posting-hours{box-sizing:border-box;width:min(480px,calc(100% - 32px));max-height:85dvh;overflow:auto;margin:auto;padding:28px;border:1px solid #f6c15c;border-radius:22px;background:#fff;color:#092044;box-shadow:0 24px 80px #071b3b40;font-family:inherit}
+#pl-posting-hours::backdrop{background:rgba(5,20,45,.65)}
+#pl-posting-hours h2{font-size:25px;line-height:1.3;margin:12px 0 16px;color:#092044}
+#pl-posting-hours p{font-size:16px;line-height:1.7;margin:12px 0;color:#435370}
+#pl-posting-hours .pl-hours-label{display:inline-block;background:#fff0ca;color:#814900;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700}
+#pl-posting-hours button{width:100%;margin-top:12px;padding:15px;border:0;border-radius:12px;background:#075ebd;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+#pl-posting-hours button:focus-visible{outline:3px solid #f5a623;outline-offset:3px}
+</style>
+<dialog id="pl-posting-hours" aria-labelledby="pl-hours-title" aria-describedby="pl-hours-description">
+ <span class="pl-hours-label">Order online tetap buka 24 jam</span>
+ <h2 id="pl-hours-title">🌙 Informasi Jam Posting</h2>
+ <p id="pl-hours-description">Jam aktif posting kami pukul <strong data-pl-hours>07.00–21.00 WIB</strong>. Anda tetap bisa memesan, membayar, dan mengirim materi lowongan kapan saja.</p>
+ <p>Pesanan yang belum diproses hingga jam tutup akan dilanjutkan pada jam operasional berikutnya, sesuai antrean.</p>
+ <form method="dialog"><button type="submit" autofocus>Mengerti, Lanjut Order</button></form>
+</dialog>
+<script>
+(function () {
+ 'use strict';
+ var popup = document.getElementById('pl-posting-hours');
+ if (!popup || typeof popup.showModal !== 'function') return;
+ var now = new Date();
+ var wib = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+ var minutes = wib.getUTCHours() * 60 + wib.getUTCMinutes();
+ if (minutes >= 420 && minutes < 1258) return;
+ var key = 'posloker-posting-hours-seen-v1';
+ try { if (sessionStorage.getItem(key)) return; } catch (error) {}
+ var zone = '';
+ try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (error) {}
+ var labels = {'Asia/Jakarta':'07.00–21.00 WIB','Asia/Pontianak':'07.00–21.00 WIB','Asia/Makassar':'08.00–22.00 WITA','Asia/Ujung_Pandang':'08.00–22.00 WITA','Asia/Jayapura':'09.00–23.00 WIT'};
+ popup.querySelector('[data-pl-hours]').textContent = labels[zone] || '07.00–21.00 WIB';
+ popup.showModal();
+ try { sessionStorage.setItem(key, '1'); } catch (error) {}
+}());
+</script>
+<!-- /posloker-posting-hours-v1 -->
+
+<!-- posloker-order-popup-v1 -->
+<style>
+.plpay-modal-dialog .plpay-modal-note{font-weight:800;text-transform:uppercase}
+.plpay-modal-dialog [data-payment-coach]{background:#b91c1c!important;color:#fff!important;border-color:#b91c1c!important}
+.plpay-modal-dialog [data-payment-coach] p,.plpay-modal-dialog [data-payment-coach] button{color:#fff!important;font-weight:800!important}
+.plpay-modal-dialog [data-payment-coach]::after,.plpay-modal-dialog [data-payment-coach]::before{border-top-color:#b91c1c!important}
+.pl-transfer-required{padding:14px;background:#fff3cd;color:#713f12;border-radius:10px;font-weight:800}
+.plpay-modal-dialog p.pl-transfer-required,.plpay-modal-dialog p.pl-transfer-required strong,.plpay-modal-dialog p.pl-transfer-required b{font-size:10px;line-height:1.5}
+@media(max-width:600px){.plpay-modal-dialog .plpay-account{padding:12px;column-gap:8px;grid-template-columns:minmax(0,max-content) 44px}.plpay-modal-dialog .plpay-account strong[data-copy-value]{font-size:clamp(18px,5.5vw,26px);line-height:1.3;letter-spacing:0;white-space:nowrap;font-variant-numeric:tabular-nums}.plpay-modal-dialog .plpay-account .plpay-bank-copy{width:44px;height:44px;box-sizing:border-box;margin:0}}
+#pl-order-wizard{box-sizing:border-box;width:min(580px,calc(100% - 24px));max-height:88dvh;overflow:auto;margin:auto;padding:24px;border:0;border-radius:20px;color:#092044;background:#fff;box-shadow:0 20px 80px #0004;font-family:inherit}
+#pl-order-wizard::backdrop{background:#071a36b3}
+#pl-order-wizard h2{font-size:25px;margin:12px 0;line-height:1.3}
+#pl-order-wizard p{font-size:15px;line-height:1.6}
+#pl-order-wizard button,#pl-order-wizard input{font:inherit}
+#pl-order-wizard input[type=search]{width:100%;padding:14px;border:1px solid #99b8df;border-radius:10px;box-sizing:border-box}
+#pl-order-wizard button{cursor:pointer}
+#pl-order-wizard .pl-w-close{float:right;background:none;border:0;font-size:24px;padding:4px 10px}
+#pl-order-wizard .pl-w-results{max-height:260px;overflow:auto;margin-top:12px}
+#pl-order-wizard .pl-w-results button{display:block;width:100%;text-align:left;padding:14px;background:#f4f8ff;border:1px solid #d5e2f5;border-radius:8px;margin:6px 0;color:#092044}
+#pl-order-wizard .pl-w-package{display:block;padding:16px;border:1px solid #c7d8ed;border-radius:12px;margin:12px 0;cursor:pointer}
+#pl-order-wizard .pl-w-package:has(input:checked){background:#edf5ff;border:2px solid #0866cb}
+#pl-order-wizard ul{font-size:14px;padding-left:22px;margin:10px 0 0}
+#pl-order-wizard .pl-w-price{display:block;margin-top:8px;color:#0866cb;font-weight:800}
+#pl-order-wizard .pl-w-checkout{display:block;text-align:center;padding:16px;background:#0866cb;color:#fff;border-radius:10px;text-decoration:none;font-weight:800;margin-top:16px}
+#pl-order-wizard .pl-w-back{background:none;border:0;color:#0866cb;padding:8px 0}
+#pl-order-wizard :focus-visible{outline:3px solid #f5a623;outline-offset:3px}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+ 'use strict';
+ var payment = document.querySelector('.plpay-modal-dialog');
+ if (payment) {
+  var intro = Array.from(payment.querySelectorAll('p')).find(function(p){return p.textContent.trim() === 'Silakan transfer tepat sesuai nominal berikut.';});
+  if (intro && !payment.querySelector('.pl-transfer-required')) {
+   var warning = document.createElement('p'); warning.className = 'pl-transfer-required';
+   var bold = document.createElement('strong'); bold.innerHTML = 'WAJIB TRANSFER SESUAI TOTAL PEMBAYARAN, TERMASUK KODE UNIK, AGAR PESANAN TIDAK TERLAMBAT ATAU GAGAL DIPROSES, <span style="text-decoration:underline;text-underline-offset:2px"><b style="font-weight:900">KARENA</b> KAMI MELAYANI <b style="font-weight:900">POSTINGAN</b> SELURUH KOTA DI INDONESIA.</span>';
+   warning.appendChild(bold); intro.after(warning);
+   // posloker-transfer-alert-start
+   var paymentShell = payment.closest('[data-payment-modal]');
+   var alertBox = document.createElement('dialog'); alertBox.id = 'pl-transfer-alert';
+   if (paymentShell && typeof alertBox.showModal === 'function') {
+    var alertStyle = document.createElement('style');
+    alertStyle.textContent = '#pl-transfer-alert{box-sizing:border-box;width:calc(100% - 32px);max-width:420px;max-height:85dvh;overflow:auto;margin:auto;padding:46px 22px 24px;border:0;border-radius:16px;background:#b91c1c;color:#fff;box-shadow:0 20px 70px #0006;text-align:center}#pl-transfer-alert::backdrop{background:rgba(5,20,40,.65)}#pl-transfer-alert .pl-alert-copy,#pl-transfer-alert .pl-alert-copy *{font-size:10px;line-height:1.6;color:#fff}#pl-transfer-alert button{position:absolute;right:6px;top:4px;width:40px;height:40px;border:0;background:transparent;color:#fff;font-size:28px;cursor:pointer}#pl-transfer-alert button:focus-visible{outline:2px solid #fff;outline-offset:-4px}';
+    document.head.appendChild(alertStyle);
+    var alertClose = document.createElement('button'); alertClose.type = 'button'; alertClose.textContent = '×'; alertClose.setAttribute('aria-label','Tutup peringatan transfer');
+    var alertCopy = document.createElement('div'); alertCopy.className = 'pl-alert-copy'; alertCopy.id = 'pl-transfer-alert-copy'; alertCopy.appendChild(bold.cloneNode(true));
+    alertBox.setAttribute('aria-label','Peringatan pembayaran'); alertBox.setAttribute('aria-describedby',alertCopy.id);
+    alertBox.append(alertClose,alertCopy); document.body.appendChild(alertBox);
+    alertClose.addEventListener('click',function(){alertBox.close();});
+    alertBox.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();alertBox.close();}});
+    alertBox.addEventListener('close',function(){if(paymentShell.classList.contains('is-open')){warning.setAttribute('tabindex','-1');warning.focus({preventScroll:true});warning.scrollIntoView({block:'center',behavior:'smooth'});}});
+    var wasPaymentOpen = false;
+    function syncTransferAlert(){var isOpen=paymentShell.classList.contains('is-open');if(isOpen && !wasPaymentOpen && !alertBox.open){alertBox.showModal();alertClose.focus();}else if(!isOpen && alertBox.open){alertBox.close();}wasPaymentOpen=isOpen;}
+    new MutationObserver(syncTransferAlert).observe(paymentShell,{attributes:true,attributeFilter:['class']}); syncTransferAlert();
+   }
+   // posloker-transfer-alert-end
+  }
+ }
+ var city = document.querySelector('[data-calculator] [data-city]');
+ if (!city || typeof poslokerData === 'undefined') return;
+ var wizard = document.createElement('dialog'); wizard.id = 'pl-order-wizard'; wizard.setAttribute('aria-labelledby','pl-w-title');
+ if (typeof wizard.showModal !== 'function') return;
+ document.body.appendChild(wizard);
+ var money = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0});
+ var escape = function(v){return String(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+ function shell(title) {
+  wizard.innerHTML = '<button type="button" class="pl-w-close" aria-label="Tutup pilihan paket">×</button><h2 id="pl-w-title">'+escape(title)+'</h2>';
+  wizard.querySelector('.pl-w-close').onclick = function(){wizard.close();};
+ }
+ function packages(option) {
+  var items = (poslokerData.pricing[option.dataset.rule] || poslokerData.pricing.default || []).filter(function(item){return item.id !== 'komplit-plus';});
+  shell('Pilih paket untuk '+option.value);
+  var back = document.createElement('button'); back.type='button'; back.className='pl-w-back'; back.textContent='← Ganti kota'; back.onclick=search; wizard.appendChild(back);
+  if (!items.length) { var empty=document.createElement('p');empty.textContent='Paket belum tersedia. Silakan pilih kota lain.';wizard.appendChild(empty);return; }
+  items.forEach(function(item,index){
+   var label=document.createElement('label');label.className='pl-w-package';
+   label.innerHTML='<input type="radio" name="pl-w-package" value="'+escape(item.id)+'" '+(index===0?'checked':'')+'> <strong>'+escape(item.name)+'</strong><span class="pl-w-price">'+escape(money.format(Number(item.price)))+'</span><ul>'+(item.features || []).map(function(f){return '<li>'+escape(f)+'</li>';}).join('')+'</ul>';
+   wizard.appendChild(label);
+  });
+  var checkout=document.createElement('a');checkout.className='pl-w-checkout';checkout.textContent='Checkout →';wizard.appendChild(checkout);
+  function update(){var url=new URL(poslokerData.paymentUrl || '/pembayaran/',location.origin);url.searchParams.set('city',option.value);url.searchParams.set('package',wizard.querySelector('input:checked').value);checkout.href=url.toString();}
+  wizard.querySelectorAll('input').forEach(function(input){input.addEventListener('change',update);});update();
+  wizard.scrollTop=0;back.focus({preventScroll:true});
+ }
+ function search() {
+  shell('Pilih kota lokasi lowongan');
+  var hint=document.createElement('p');hint.textContent='Ketik nama kota, lalu pilih hasil pencarian untuk melihat paket dan checkout.';wizard.appendChild(hint);
+  var input=document.createElement('input');input.type='search';input.placeholder='Ketik nama kota lokasi';input.setAttribute('aria-label','Cari kota tujuan');input.autocomplete='off';wizard.appendChild(input);
+  var results=document.createElement('div');results.className='pl-w-results';wizard.appendChild(results);
+  input.addEventListener('input',function(){
+   results.replaceChildren();var term=input.value.trim().toLowerCase();if(!term)return;
+   var matches=Array.from(city.options).filter(function(o){return o.value && o.textContent.toLowerCase().includes(term);});
+   if(!matches.length){results.textContent='Kota tidak ditemukan. Coba nama kota lain.';return;}
+   matches.forEach(function(option){var button=document.createElement('button');button.type='button';button.textContent=option.textContent;button.onclick=function(){packages(option);};results.appendChild(button);});
+  });
+  wizard.scrollTop=0;input.focus({preventScroll:true});
+ }
+ function open(){if(wizard.open)return;search();wizard.showModal();wizard.querySelector('input').focus({preventScroll:true});try{sessionStorage.setItem('pl-order-wizard-seen-v1','1');}catch(e){}}
+ document.addEventListener('click',function(event){var link=event.target.closest('a');if(!link)return;var url=new URL(link.href,location.href);if(url.origin===location.origin && url.hash==='#pilih-paket'){event.preventDefault();open();}});
+ var seen=false;try{seen=sessionStorage.getItem('pl-order-wizard-seen-v1')==='1';}catch(e){}
+ if(!seen){var hours=document.getElementById('pl-posting-hours');if(hours && hours.open){hours.addEventListener('close',open,{once:true});}else{open();}}
+});
+</script>
+<!-- /posloker-order-popup-v1 -->
+
+<!-- posloker-medan-bestseller-v1 -->
+<style>
+.pl-medan-bestseller{display:inline-block!important;background:#d71920!important;color:#fff!important;border:2px solid #ffcf40!important;border-radius:999px!important;padding:6px 12px!important;margin:8px 0 4px 8px!important;font-size:13px!important;line-height:1.3!important;font-weight:900!important;letter-spacing:.3px;box-shadow:0 3px 10px #d7192033;vertical-align:middle}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+ 'use strict';
+ function mark(root,selector,medan){
+  root.querySelectorAll(selector).forEach(function(card){
+   var input=card.querySelector('input');
+   var badge=card.querySelector('.pl-medan-bestseller');
+   var wanted=medan && input && input.value==='komplit';
+   if(!wanted){if(badge)badge.remove();return;}
+   if(badge)return;
+   var title=card.querySelector('b,strong');if(!title)return;
+   badge=document.createElement('span');badge.className='pl-medan-bestseller';badge.textContent='★ BestSeller';title.after(badge);
+  });
+ }
+ var calculator=document.querySelector('[data-calculator]');
+ if(calculator){
+  var city=calculator.querySelector('[data-city]');
+  var list=calculator.querySelector('[data-package-list]');
+  var update=function(){mark(calculator,'.package-option',city && city.value==='Medan');};
+  if(list)new MutationObserver(update).observe(list,{childList:true,subtree:true});
+  calculator.addEventListener('posloker:package-selected',update);update();
+ }
+ var wizard=document.getElementById('pl-order-wizard');
+ if(wizard){
+  var updateWizard=function(){var title=wizard.querySelector('#pl-w-title');mark(wizard,'.pl-w-package',title && title.textContent==='Pilih paket untuk Medan');};
+  new MutationObserver(updateWizard).observe(wizard,{childList:true,subtree:true});updateWizard();
+ }
+});
+</script>
+<!-- /posloker-medan-bestseller-v1 -->
+
+
+
+
+<script id="posloker-payment-js-extra">
+var poslokerPayment = {"checkoutUrl":"https://posloker.my.id/pembayaran/","confirmationUrl":"https://posloker.my.id/konfirmasi-pembayaran/","pricing":{"default":[{"id":"promo-komplit","name":"Paket Komplit","price":10000,"badge":"Promo Perkenalan","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"medan":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-story","name":"Paket IG + Story","price":17500,"features":["Instagram Feed","Instagram Story 1x","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb-story","name":"Paket IG + FB + Story","price":25000,"features":["Instagram Feed","Facebook Page","Instagram Story 1x","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"batam":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":15000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":20000,"badge":"Paling Lengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 3x \u2014 1x sehari selama 3 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 3x \u2014 1x sehari selama 3 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"palembang":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":15000,"badge":"Paling Hemat","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story 1x","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story 1x","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"balikpapan":[{"id":"ig","name":"Paket IG","price":12500,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":15000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":20000,"badge":"Paling Lengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story 1x","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story 1x","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"surabaya":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":12500,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"promo-komplit","name":"Paket Komplit","price":17500,"features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"gresik":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":12500,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"promo-komplit","name":"Paket Komplit","price":17500,"features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"sidoarjo":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":12500,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"promo-komplit","name":"Paket Komplit","price":17500,"features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"binjai":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"deli-serdang":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"lubuk-pakam":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"tanjung-morawa":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"samarinda":[{"id":"promo-komplit","name":"Paket Komplit","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"jakarta":[{"id":"promo-komplit","name":"Paket Komplit","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"tangerang":[{"id":"promo-komplit","name":"Paket Komplit","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"tangerang-selatan":[{"id":"promo-komplit","name":"Paket Komplit","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}]},"currentCity":"","currency":"IDR","autoWhatsapp":"1"};
+//# sourceURL=posloker-payment-js-extra
+</script>
+<script id="posloker-payment-js" src="/wp-content/plugins/posloker-payment/assets/frontend.js"></script>
+<script id="posloker-main-js-extra">
+var poslokerData = {"whatsapp":"6285785600586","paymentUrl":"https://posloker.my.id/pembayaran/","siteName":"Pos Loker Kamu di Sosial Media","pricing":{"default":[{"id":"promo-komplit","name":"Paket Komplit","price":10000,"badge":"Promo Perkenalan","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"medan":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-story","name":"Paket IG + Story","price":17500,"features":["Instagram Feed","Instagram Story 1x","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb-story","name":"Paket IG + FB + Story","price":25000,"features":["Instagram Feed","Facebook Page","Instagram Story 1x","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"batam":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":15000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":20000,"badge":"Paling Lengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 3x \u2014 1x sehari selama 3 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 3x \u2014 1x sehari selama 3 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"palembang":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":15000,"badge":"Paling Hemat","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story 1x","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story 1x","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"balikpapan":[{"id":"ig","name":"Paket IG","price":12500,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":15000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":20000,"badge":"Paling Lengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story 1x","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story 1x","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"surabaya":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":12500,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"promo-komplit","name":"Paket Komplit","price":17500,"features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"gresik":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":12500,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"promo-komplit","name":"Paket Komplit","price":17500,"features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"sidoarjo":[{"id":"ig","name":"Paket IG","price":10000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":12500,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"promo-komplit","name":"Paket Komplit","price":17500,"features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":35000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"binjai":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"deli-serdang":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"lubuk-pakam":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"tanjung-morawa":[{"id":"ig","name":"Paket IG","price":15000,"features":["Instagram Feed","Instagram Carousel hingga 10 slide"]},{"id":"ig-fb","name":"Paket IG + FB","price":20000,"features":["Instagram Feed","Facebook Page","Instagram Carousel hingga 10 slide"]},{"id":"komplit","name":"Paket Komplit","price":35000,"badge":"Jangkauan Terlengkap","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":50000,"badge":"Komplit + Reel","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Story 5x \u2014 1x sehari selama 5 hari","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"samarinda":[{"id":"promo-komplit","name":"Paket Komplit","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"jakarta":[{"id":"promo-komplit","name":"Paket Komplit","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"tangerang":[{"id":"promo-komplit","name":"Paket Komplit","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}],"tangerang-selatan":[{"id":"promo-komplit","name":"Paket Komplit","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Carousel hingga 10 slide"]},{"id":"komplit-plus","name":"Komplit PLUS","price":0,"badge":"Gratis Sementara","features":["Instagram Feed","Facebook Page","Facebook Group lokal","Instagram Story","Instagram Reel","Instagram Carousel hingga 10 slide"]}]}};
+//# sourceURL=posloker-main-js-extra
+</script>
+<script id="posloker-main-js" src="/wp-content/themes/posloker-premium/assets/js/main.js"></script>
+
+
+</body>
 </html>
