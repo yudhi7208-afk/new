@@ -31,16 +31,29 @@ privat `new-posloker-customer-files`, binding `CUSTOMER_FILES`. Semua objek
 dibaca kembali melalui akses akun Cloudflare; ukuran byte dan SHA-256-nya
 cocok dengan staging sumber. Katalog `order_files` di D1 juga dicocokkan
 seluruh kolom, checksum baris, dan hubungan pesanan/snapshot-nya.
-Bucket tidak memiliki domain publik atau akses `r2.dev`, dan belum ada
-endpoint aplikasi yang menyajikan berkas privat tersebut.
+Bucket tidak memiliki domain publik atau akses `r2.dev`. Berkas hanya dapat
+diunduh melalui API admin yang memeriksa sesi sebelum membaca D1 dan R2.
 
-Ini masih pratinjau aplikasi: handler PHP, akses staf, dan proses unggahan
-perlu diadaptasi sebelum transaksi dilayani dari Worker. Situs WordPress
-masih menjadi sumber pesanan baru; lakukan rekonsiliasi delta menjelang
-cutover. Domain dan DNS belum diubah.
+## Panel admin Cloudflare
+
+Implementasi panel `/admin/` menyediakan masuk pemilik, daftar dan pencarian
+pesanan, filter status/arsip, detail, unduhan bukti/materi, serta perubahan
+status dan catatan dengan riwayat audit. Aktivasi awal menggunakan tautan
+sekali pakai yang kedaluwarsa; pemilik mengisi kata sandinya sendiri.
+
+Perubahan admin disimpan pada tabel kerja terpisah dari snapshot impor.
+Pemeriksaan revisi menolak penimpaan perubahan yang lebih baru. Snapshot
+WordPress, metadata mentah, dan checksum asal tetap dipertahankan.
+
+Panel ini mengelola salinan Cloudflare. Perubahannya tidak ditulis kembali
+ke WordPress dan pesanan baru WordPress belum otomatis tersinkronisasi.
+Handler pemesanan, pembayaran, kode unik, unggahan baru, dan notifikasi
+masih perlu diadaptasi sebelum transaksi dilayani dari Worker. Lakukan
+rekonsiliasi delta menjelang cutover. Domain dan DNS belum diubah.
 
 Lihat [panduan data pelanggan](customer-data-migration.md) untuk persiapan
-privat, pemeriksaan database/objek, dan batas snapshot.
+privat, pemeriksaan database/objek, dan batas snapshot; lihat
+[panduan admin](admin.md) untuk aktivasi dan penggunaan panel.
 
 ## Ekspor ulang dan deploy
 
@@ -60,5 +73,6 @@ environment variable `POSLOKER_EXPORT_CACHE`.
 Backup tema `posloker-premium`, plugin `posloker-payment`, database sumber,
 dan berkas terkait sudah disiapkan di folder kerja privat. Pisahkan rahasia
 dan data pelanggan dari Git. Adaptasikan handler pemesanan, kode unik,
-akses staf, unggahan, dan notifikasi pada backend baru.
+unggahan baru, dan notifikasi pada backend baru. Panel pemilik Cloudflare
+tidak menggantikan seluruh fungsi administrasi WordPress.
 Domain baru dialihkan setelah fungsi tersebut diuji dan disetujui.

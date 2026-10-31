@@ -14,11 +14,13 @@ melalui binding `CUSTOMER_DB`. Bukti dan materi yang dirujuk pesanan sudah
 disalin ke R2 privat `new-posloker-customer-files`, binding `CUSTOMER_FILES`.
 Isi objek sudah diunduh kembali melalui akses privat dan dicocokkan ukuran
 serta SHA-256-nya; katalog D1 juga sudah diperiksa seluruh kolom dan relasinya.
-Tidak ada endpoint publik yang menyajikan data atau berkas pelanggan.
-Handler PHP, alur unggahan baru, dan dashboard WordPress masih perlu
-diadaptasi sebelum pengalihan trafik.
+Panel `/admin/` menggunakan API terautentikasi untuk mengelola salinan
+pesanan dan mengunduh berkas privat. Data pelanggan tidak tersedia melalui
+API tanpa sesi admin. Handler pemesanan, pembayaran, dan unggahan baru
+masih perlu diadaptasi sebelum pengalihan trafik.
 Lihat [catatan migrasi](docs/migration.md) dan [manifest ekspor](docs/migration-manifest.json).
 Alur persiapan dan validasi data ada di [panduan data pelanggan](docs/customer-data-migration.md).
+Aktivasi pemilik dan pengoperasian panel ada di [panduan admin](docs/admin.md).
 
 ## Pedoman pengelolaan proyek
 
@@ -41,6 +43,10 @@ npm ci
 ```sh
 npx wrangler dev
 ```
+
+Panel admin berada di `/admin/`. Sebelum digunakan, terapkan migrasi skema
+admin dan siapkan aktivasi pemilik sekali pakai sesuai panduan admin.
+Jangan memakai data pelanggan produksi untuk pengujian lokal.
 
 ## Validasi konfigurasi
 

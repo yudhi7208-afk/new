@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light">
+  <title>Admin Pesanan — PosLoker</title>
+  <link rel="stylesheet" href="/assets/fonts/manrope.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <script src="/admin/admin.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke isi</a>
+  <header class="site-header">
+    <a class="brand" href="/admin/" aria-label="PosLoker, halaman admin"><span class="brand-icon" aria-hidden="true">P<span>•</span></span><span>PosLoker<span class="brand-caption">RUANG ADMIN</span></span></a>
+    <div class="header-actions"><a href="/" class="quiet-link">Lihat website <span aria-hidden="true">↗</span></a><button id="logoutButton" class="button button-light" type="button" hidden>Keluar</button></div>
+  </header>
+
+  <main id="main">
+    <div id="globalStatus" class="global-status" role="status" aria-live="polite">Memeriksa sesi…</div>
+
+    <section id="authView" class="auth-view" hidden aria-labelledby="authTitle">
+      <div class="auth-intro">
+        <span class="eyebrow">PENGELOLAAN PESANAN</span>
+        <h1>Satu tempat untuk<br>setiap pesanan.</h1>
+        <p>Periksa rincian pelanggan, unduh materi, dan kelola status pembayaran dengan rapi.</p>
+        <div class="intro-feature"><span class="feature-icon" aria-hidden="true">✓</span><div><strong>Akses khusus pengelola</strong><span>Data pelanggan dan berkas pesanan terlindungi di balik halaman masuk.</span></div></div>
+        <div class="intro-feature"><span class="feature-icon" aria-hidden="true">↗</span><div><strong>Persiapan migrasi PosLoker</strong><span>Panel Cloudflare menggunakan salinan data yang sudah dipindahkan.</span></div></div>
+        <a class="quiet-link" href="https://posloker.my.id/?posloker_manage=1" rel="noreferrer noopener" target="_blank">Buka panel WordPress asal <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="auth-card">
+        <span class="card-mark" aria-hidden="true">↗</span>
+        <h2 id="authTitle">Masuk ke ruang admin</h2>
+        <p id="authDescription" class="muted">Gunakan akun pengelola PosLoker untuk panel ini.</p>
+        <p id="authNotice" class="notice notice-info" hidden></p>
+        <p id="authError" class="form-error" role="alert" hidden></p>
+
+        <form id="loginForm" autocomplete="on">
+          <div class="field"><label for="loginEmail">Email admin</label><input id="loginEmail" name="email" type="email" autocomplete="username" maxlength="254" required placeholder="nama@email.com"></div>
+          <div class="field"><label for="loginPassword">Kata sandi</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" maxlength="128" required></div>
+          <button class="button button-primary button-block" id="loginButton" type="submit">Masuk ke admin <span aria-hidden="true">→</span></button>
+        </form>
+
+        <form id="setupForm" autocomplete="on" hidden>
+          <div class="field"><label for="setupEmail">Email pemilik</label><input id="setupEmail" name="email" type="email" autocomplete="username" maxlength="254" required placeholder="nama@email.com"></div>
+          <div class="field"><label for="setupPassword">Buat kata sandi</label><input id="setupPassword" name="password" type="password" autocomplete="new-password" minlength="15" maxlength="128" required aria-describedby="passwordHint"><small id="passwordHint">Minimal 15 karakter. Anda dapat memakai beberapa kata yang mudah diingat.</small></div>
+          <div class="field"><label for="setupPasswordConfirm">Ulangi kata sandi</label><input id="setupPasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="15" maxlength="128" required></div>
+          <button class="button button-primary button-block" id="setupButton" type="submit">Aktifkan akun admin <span aria-hidden="true">→</span></button>
+        </form>
+        <div class="auth-footnote"><span aria-hidden="true">◈</span> Akses privat · Khusus pengelola PosLoker</div>
+      </div>
+    </section>
+
+    <section id="dashboardView" class="dashboard" hidden aria-labelledby="dashboardTitle">
+      <div class="migration-banner"><span class="banner-icon" aria-hidden="true">i</span><div><strong>Salinan migrasi</strong><p>Pesanan baru masih masuk melalui WordPress. Perubahan di panel ini hanya berlaku di Cloudflare.</p><span id="snapshotDate" class="snapshot-date"></span></div><a href="https://posloker.my.id/?posloker_manage=1" target="_blank" rel="noreferrer noopener">Panel asal <span aria-hidden="true">↗</span></a></div>
+      <div class="page-title-row"><div><span class="eyebrow">RUANG ADMIN</span><h1 id="dashboardTitle">Pesanan</h1><p class="muted">Periksa pembayaran dan siapkan materi publikasi.</p></div><div class="account-chip"><span class="account-dot" aria-hidden="true"></span><span id="accountEmail"></span></div></div>
+
+      <div class="stats-grid" id="statsGrid" aria-label="Ringkasan pesanan aktif">
+        <div class="stat-card"><span class="stat-label">Total pesanan</span><strong id="statTotal">—</strong><span class="stat-caption" id="statScope">Pesanan aktif</span></div>
+        <div class="stat-card"><span class="stat-label"><span class="status-dot dot-pending" aria-hidden="true"></span>Menunggu verifikasi</span><strong id="statPending">—</strong><span class="stat-caption">Perlu diperiksa</span></div>
+        <div class="stat-card"><span class="stat-label"><span class="status-dot dot-approved" aria-hidden="true"></span>Lunas</span><strong id="statApproved">—</strong><span class="stat-caption">Pembayaran disetujui</span></div>
+        <div class="stat-card"><span class="stat-label"><span class="status-dot dot-rejected" aria-hidden="true"></span>Ditolak</span><strong id="statRejected">—</strong><span class="stat-caption">Pembayaran ditolak</span></div>
+      </div>
+
+      <div class="workspace" id="workspace">
+        <section class="orders-panel panel" aria-labelledby="orderListTitle">
+          <div class="panel-heading"><div><h2 id="orderListTitle">Daftar pesanan</h2><p id="listCount" class="muted small">Memuat pesanan…</p></div><button type="button" id="refreshButton" class="button button-icon" aria-label="Muat ulang daftar pesanan" title="Muat ulang">↻</button></div>
+          <form id="filterForm" class="filters" role="search">
+            <div class="search-field"><label class="sr-only" for="searchInput">Cari nomor pesanan atau nama</label><span aria-hidden="true">⌕</span><input id="searchInput" name="q" maxlength="100" type="search" placeholder="Cari nomor pesanan atau nama…"><button class="button search-button" type="submit">Cari</button></div>
+            <div class="filter-row"><div class="filter-control"><label for="statusFilter">Status</label><select id="statusFilter" name="status"><option value="all">Semua status</option><option value="pending">Menunggu verifikasi</option><option value="approved">Lunas</option><option value="rejected">Ditolak</option></select></div><div class="filter-control"><label for="visibilityFilter">Tampilkan</label><select id="visibilityFilter" name="visibility"><option value="active">Pesanan aktif</option><option value="trash">Sampah</option></select></div></div>
+          </form>
+          <p id="listError" class="form-error panel-error" role="alert" hidden></p>
+          <div class="table-scroll"><table class="orders-table"><thead><tr><th scope="col">Pesanan / pelanggan</th><th scope="col">Total</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Rincian</span></th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+          <div id="listEmpty" class="empty-state" hidden><span class="empty-icon" aria-hidden="true">⌕</span><h3>Tidak ada pesanan</h3><p>Coba kata pencarian atau filter yang berbeda.</p></div>
+          <div class="pagination"><span id="pageLabel" class="muted small"></span><div><button type="button" id="previousButton" class="button button-light" disabled>← Sebelumnya</button><button type="button" id="nextButton" class="button button-light" disabled>Berikutnya →</button></div></div>
+        </section>
+
+        <aside id="detailPanel" class="detail-panel panel" aria-labelledby="detailHeading">
+          <div id="detailPlaceholder" class="detail-placeholder"><span class="detail-illustration" aria-hidden="true">▤<span>✓</span></span><h2>Pilih satu pesanan</h2><p>Rincian pelanggan, bukti pembayaran, dan materi akan ditampilkan di sini.</p></div>
+          <div id="detailView" hidden>
+            <div class="detail-header"><div><span class="eyebrow">RINCIAN PESANAN</span><h2 id="detailHeading" tabindex="-1"></h2><span id="detailDate" class="muted small"></span></div><button id="closeDetailButton" type="button" class="button button-icon" aria-label="Tutup rincian pesanan">×</button></div>
+            <div class="detail-status-row"><span id="detailStatus" class="status-badge"></span><span id="detailTrash" class="trash-label" hidden>Di sampah · hanya baca</span></div>
+            <p id="detailError" class="form-error" role="alert" hidden></p>
+            <div id="conflictNotice" class="notice notice-warning" hidden><strong>Data pesanan sudah berubah.</strong><p>Salin catatan Anda bila diperlukan, lalu muat ulang data sebelum menyimpan lagi.</p><button id="reloadDetailButton" class="button button-light" type="button">Muat ulang rincian</button></div>
+            <section class="detail-section" aria-labelledby="customerHeading"><h3 id="customerHeading">Pelanggan</h3><dl class="detail-fields"><div><dt>Nama</dt><dd id="detailCustomer"></dd></div><div><dt>WhatsApp</dt><dd id="detailWhatsapp"></dd></div><div><dt>Email</dt><dd id="detailEmail"></dd></div><div><dt>Kota</dt><dd id="detailCity"></dd></div><div><dt>Paket</dt><dd id="detailPackage"></dd></div></dl></section>
+            <section class="detail-section" aria-labelledby="paymentHeading"><h3 id="paymentHeading">Pembayaran</h3><dl class="payment-lines"><div><dt>Harga paket</dt><dd id="detailBaseAmount"></dd></div><div><dt>Kode unik</dt><dd id="detailUniqueCode"></dd></div><div class="payment-total"><dt>Total pembayaran</dt><dd id="detailAmount"></dd></div></dl><p class="muted small">Nominal mengikuti pesanan asli saat dibuat.</p></section>
+            <section class="detail-section" aria-labelledby="filesHeading"><h3 id="filesHeading">Bukti &amp; materi</h3><div id="filesList" class="files-list"></div></section>
+            <section class="detail-section" aria-labelledby="textHeading"><h3 id="textHeading">Materi teks</h3><div class="field"><label for="adText">Teks lowongan</label><textarea id="adText" readonly rows="5"></textarea></div><div class="field"><div class="label-row"><label for="caption">Caption</label><button type="button" id="copyCaptionButton" class="text-button">Salin caption</button></div><textarea id="caption" readonly rows="5"></textarea></div><div id="sourceNotesSection" class="source-notes" hidden><h4>Catatan pesanan asli</h4><p id="sourceNotes"></p></div></section>
+            <section class="detail-section" aria-labelledby="manageHeading"><h3 id="manageHeading">Kelola pesanan</h3><form id="orderForm"><fieldset id="orderFieldset"><div class="field"><label for="orderStatus">Status pembayaran</label><select id="orderStatus" required><option value="pending">Menunggu verifikasi</option><option value="approved">Lunas</option><option value="rejected">Ditolak</option></select></div><div class="field"><label for="adminNote">Catatan internal</label><textarea id="adminNote" rows="3" maxlength="4000" placeholder="Catatan untuk pengelola…"></textarea><small>Catatan ini hanya tersimpan di panel Cloudflare.</small></div><button id="saveOrderButton" class="button button-primary button-block" type="submit">Simpan perubahan</button></fieldset></form></section>
+            <section class="detail-section events-section" aria-labelledby="historyHeading"><h3 id="historyHeading">Riwayat pengelolaan</h3><ol id="eventsList" class="events-list"></ol></section>
+          </div>
+        </aside>
+      </div>
+      <footer class="dashboard-footer"><span>PosLoker · Pengelolaan pesanan</span><span>Data dan berkas pelanggan bersifat privat.</span></footer>
+    </section>
+    <noscript><section class="noscript panel"><h1>JavaScript diperlukan</h1><p>Aktifkan JavaScript untuk menggunakan panel admin PosLoker.</p></section></noscript>
+  </main>
+
+  <dialog id="confirmDialog" aria-labelledby="confirmTitle"><form id="confirmForm"><span class="dialog-symbol" aria-hidden="true">✓</span><h2 id="confirmTitle">Simpan perubahan pesanan?</h2><p id="confirmDescription" class="muted"></p><p id="paidConfirmation" class="notice notice-info" hidden>Pastikan bukti sudah diperiksa dan pembayaran benar-benar sudah diterima sebelum menandai lunas.</p><div id="reasonField" class="field"><label for="changeReason">Alasan perubahan</label><textarea id="changeReason" rows="3" minlength="3" maxlength="500" required placeholder="Tuliskan alasan perubahan…" aria-describedby="reasonHint"></textarea><small id="reasonHint">Wajib 3–500 karakter dan akan disimpan di riwayat.</small></div><p id="confirmError" class="form-error" role="alert" hidden></p><div class="dialog-actions"><button id="cancelConfirmButton" class="button button-light" type="button">Batal</button><button id="confirmSaveButton" class="button button-primary" type="submit">Ya, simpan</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

@@ -1,13 +1,16 @@
 # Migrasi data pelanggan privat
 
 Database tujuan proyek ini adalah D1 `new-posloker-customers`, binding
-`CUSTOMER_DB`. Aset website tetap berada di `public/`; tidak ada endpoint
-publik yang membaca tabel pelanggan. Akses administrasi database mengikuti
-akun Cloudflare dan izin binding Worker.
+`CUSTOMER_DB`. Aset website tetap berada di `public/`; data pelanggan tidak
+tersedia melalui API tanpa autentikasi. Panel `/admin/` menggunakan API
+terlindungi untuk membaca salinan pesanan dan mencatat perubahan admin.
+Akses administrasi database tetap mengikuti akun Cloudflare dan izin
+binding Worker.
 
 Berkas pesanan berada di bucket R2 privat `new-posloker-customer-files`,
 binding `CUSTOMER_FILES`. Akses publik bucket dinonaktifkan; tidak ada
-domain publik, akses `r2.dev`, atau endpoint website yang menyajikan isinya.
+domain publik atau akses `r2.dev`. Endpoint unduhan admin memeriksa sesi
+sebelum mengakses berkas; tidak ada tautan unduhan pelanggan tanpa autentikasi.
 Snapshot berkas sudah diunduh kembali melalui akses terautentikasi dan
 dibandingkan ukuran byte serta SHA-256-nya dengan manifest sumber.
 Katalog D1 sudah dicocokkan seluruh kolom, checksum baris, dan relasinya
@@ -29,6 +32,25 @@ dan email. Jumlah profil kontak bukan klaim jumlah orang unik.
 WordPress/PHP, sesi staf, PIN, dan kredensial sumber bukan implementasi
 backend baru. Pesanan baru masih masuk ke hosting asal sampai proses
 cutover terpisah selesai. Salinan ini bukan replikasi database langsung.
+
+## Status kerja admin
+
+Skema `0003_admin.sql` menambahkan autentikasi pemilik dan
+`0004_order_admin.sql` menambahkan status kerja serta riwayat audit.
+Perubahan panel disimpan pada `order_admin_state` dan `order_admin_events`;
+tabel snapshot sumber tidak diubah. Status efektif memakai status kerja
+jika ada, lalu status snapshot. Penyimpanan memakai pemeriksaan revisi
+agar perubahan yang lebih baru tidak tertimpa.
+
+Audit mencatat pelaku, waktu, alasan, serta status dan catatan sebelum/sesudah.
+Pesanan berstatus trash tetap dapat ditinjau sebagai arsip dan tidak dapat
+diubah dari panel. Perubahan ini hanya berlaku pada salinan Cloudflare,
+tanpa penulisan balik ke WordPress. Rekonsiliasi delta berikutnya perlu
+mempertimbangkan status kerja dan riwayat tersebut sebelum cutover.
+
+Token aktivasi, kata sandi, hash kredensial, sesi, dan hasil pembacaan API
+yang berisi pelanggan tetap privat. Panduan aktivasi ada di
+[panduan admin](admin.md).
 
 ## Lokasi privat
 
@@ -103,5 +125,5 @@ Pemeriksaan snapshot saat ini sudah lulus untuk katalog dan isi objek.
 Untuk sinkronisasi berikutnya, ambil snapshot/delta sumber yang baru dan
 ulang kedua pemeriksaan tersebut. Jangan menganggap penambahan binding
 sebagai pemindahan handler PHP atau replikasi pesanan baru: checkout,
-unggahan baru, dan dashboard WordPress tetap menggunakan hosting asal
+unggahan baru, dan administrasi WordPress tetap menggunakan hosting asal
 sampai adaptasi backend dan cutover terpisah selesai.
