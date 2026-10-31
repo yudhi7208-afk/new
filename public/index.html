@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Website percobaan menggunakan Cloudflare Workers Static Assets." />
+    <title>Website Berhasil Terhubung</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: #f0fdf4;
+        color: #14532d;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      main {
+        width: min(100%, 640px);
+        padding: clamp(24px, 6vw, 56px);
+        border: 1px solid #bbf7d0;
+        border-radius: 24px;
+        background: #ffffff;
+        text-align: center;
+        box-shadow: 0 16px 48px #14532d0d;
+      }
+      .icon {
+        display: grid;
+        place-items: center;
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 24px;
+        border-radius: 50%;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 36px;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(1.75rem, 5vw, 2.75rem);
+        line-height: 1.2;
+        overflow-wrap: break-word;
+      }
+      p {
+        margin: 20px 0 0;
+        color: #475569;
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="icon" aria-hidden="true">&#10003;</div>
+      <h1>Website Berhasil Terhubung</h1>
+      <p>Website percobaan dengan Cloudflare Workers Static Assets.</p>
+    </main>
+  </body>
+</html>
