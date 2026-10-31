@@ -20,6 +20,13 @@ diadaptasi sebelum pengalihan trafik.
 Lihat [catatan migrasi](docs/migration.md) dan [manifest ekspor](docs/migration-manifest.json).
 Alur persiapan dan validasi data ada di [panduan data pelanggan](docs/customer-data-migration.md).
 
+## Pedoman pengelolaan proyek
+
+Keputusan pengguna: **satu website satu proyek** agar mudah dikelola.
+Repository dan Worker `new` khusus PosLoker; website lain dibuat sebagai
+proyek terpisah. Biaya mengikuti pemakaian setiap layanan.
+Pedoman ini juga disimpan di [AGENTS.md](AGENTS.md) untuk pekerjaan berikutnya.
+
 ## Persiapan
 
 Gunakan Node.js 22 atau lebih baru yang masih didukung Cloudflare, lalu instal
