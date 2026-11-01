@@ -35,6 +35,7 @@ input,select,textarea{font-size:14px}
 .stat-label{font-size:12px}
 .stat-caption{font-size:11px}
 .filter-control label{font-size:11px}
+.filter-row{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}.filter-control{min-width:0}
 .filter-control select,.search-field input{font-size:13px}
 .search-field input{min-height:43px}
 .search-button{font-size:12px}

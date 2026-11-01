@@ -3,7 +3,7 @@
 
   const $ = id => document.getElementById(id);
   const labels = { pending: 'Menunggu verifikasi', approved: 'Lunas', rejected: 'Ditolak' };
-  const state = { authenticated: false, csrfToken: '', user: null, page: 1, pages: 1, query: '', status: 'all', trash: false, selectedId: null, order: null, stale: false, listTicket: 0, detailTicket: 0, authEpoch: 0, pendingSave: null };
+  const state = { authenticated: false, csrfToken: '', user: null, page: 1, pages: 1, query: '', status: 'all', source: 'all', trash: false, selectedId: null, order: null, stale: false, listTicket: 0, detailTicket: 0, authEpoch: 0, pendingSave: null };
   // Activation secrets are kept only in memory, never in persistent browser storage.
   let setupToken = (new URLSearchParams(location.hash.slice(1)).get('setup') || '').trim().toLowerCase();
   if (!/^[a-f0-9]{64}$/.test(setupToken)) setupToken = '';
@@ -69,10 +69,10 @@
   function clearPrivateState() {
     state.authEpoch++; state.listTicket++; clearDetail();
     state.authenticated = false; state.csrfToken = ''; state.user = null;
-    state.query = ''; state.status = 'all'; state.page = 1; state.pages = 1; state.trash = false;
+    state.query = ''; state.status = 'all'; state.source = 'all'; state.page = 1; state.pages = 1; state.trash = false;
     $('ordersBody').replaceChildren(); $('accountEmail').textContent = ''; $('snapshotDate').textContent = '';
     for (const id of ['statTotal', 'statPending', 'statApproved', 'statRejected']) text(id, '—');
-    $('searchInput').value = ''; $('statusFilter').value = 'all'; $('visibilityFilter').value = 'active';
+    $('searchInput').value = ''; $('statusFilter').value = 'all'; $('sourceFilter').value = 'all'; $('visibilityFilter').value = 'active';
     errorIn('listError', ''); $('toast').hidden = true; clearTimeout(toastTimer);
   }
 
@@ -152,7 +152,7 @@
     if (!state.authenticated) return;
     const ticket = ++state.listTicket, epoch = state.authEpoch;
     renderLoading(); errorIn('listError', '');
-    const query = new URLSearchParams({ q: state.query, status: state.status, page: String(state.page), trash: state.trash ? '1' : '0' });
+    const query = new URLSearchParams({ q: state.query, status: state.status, source: state.source, page: String(state.page), trash: state.trash ? '1' : '0' });
     try {
       const result = await api('/api/admin/orders?' + query);
       if (ticket !== state.listTicket || epoch !== state.authEpoch || !state.authenticated) return;
@@ -175,7 +175,8 @@
         row.append(customerCell, amountCell, statusCell, arrowCell); $('ordersBody').append(row);
       }
       $('listEmpty').hidden = orders.length !== 0;
-      const scope = state.trash ? 'Pesanan di sampah' : state.query ? 'Sesuai pencarian' : 'Pesanan aktif';
+      const sourceLabel = { wordpress: 'WordPress', cloudflare: 'Cloudflare' }[state.source];
+      const scope = [state.trash ? 'Pesanan di sampah' : state.query ? 'Sesuai pencarian' : 'Pesanan aktif', sourceLabel].filter(Boolean).join(' · ');
       text('statScope', scope); $('statsGrid').setAttribute('aria-label', 'Ringkasan ' + scope.toLowerCase());
       if (result.migration?.sourceSnapshotAt) text('snapshotDate', 'Snapshot sumber: ' + date(result.migration.sourceSnapshotAt));
       text('listCount', `${Number(result.total) || 0} pesanan ${state.trash ? 'di sampah' : 'ditemukan'}`);
@@ -264,6 +265,7 @@
   $('filterForm').addEventListener('submit', event => { event.preventDefault(); state.query = $('searchInput').value.trim(); state.page = 1; loadOrders(); });
   $('statusFilter').addEventListener('change', () => { state.status = $('statusFilter').value; state.page = 1; loadOrders(); });
   $('visibilityFilter').addEventListener('change', () => { state.trash = $('visibilityFilter').value === 'trash'; state.page = 1; clearDetail(); loadOrders(); });
+  $('sourceFilter').addEventListener('change', () => { state.source = $('sourceFilter').value; state.page = 1; clearDetail(); loadOrders(); });
   $('refreshButton').addEventListener('click', () => loadOrders());
   $('previousButton').addEventListener('click', () => { if (state.page > 1) { state.page--; loadOrders(); } });
   $('nextButton').addEventListener('click', () => { if (state.page < state.pages) { state.page++; loadOrders(); } });
@@ -281,7 +283,9 @@
     const changed = status !== state.order.status;
     if (!changed && adminNote === (state.order.adminNote || '')) { toast('Tidak ada perubahan untuk disimpan.'); return; }
     state.pendingSave = { status, adminNote, expectedRevision: state.order.revision, orderId: state.order.id };
-    text('confirmDescription', changed ? 'Status pembayaran akan menjadi “' + labels[status] + '”. Perubahan hanya berlaku di Cloudflare dan tercatat di riwayat.' : 'Catatan internal akan diperbarui pada salinan Cloudflare.');
+    const simulatedApproval = state.order.isTest === true && changed && status === 'approved';
+    text('confirmDescription', simulatedApproval ? 'Status pesanan SIMULASI akan menjadi “Lunas”. Ini hanya menguji alur admin dan tidak menyatakan adanya pembayaran nyata. Perubahan tercatat di riwayat.' : changed ? 'Status pembayaran akan menjadi “' + labels[status] + '”. Perubahan hanya berlaku di Cloudflare dan tercatat di riwayat.' : 'Catatan internal akan diperbarui pada salinan Cloudflare.');
+    text('paidConfirmation', simulatedApproval ? 'SIMULASI: tidak ada pembayaran nyata yang diverifikasi. Simpan hanya untuk menguji perubahan status pesanan.' : 'Pastikan bukti sudah diperiksa dan pembayaran benar-benar sudah diterima sebelum menandai lunas.');
     $('reasonField').hidden = false; $('changeReason').required = true; $('changeReason').value = ''; $('paidConfirmation').hidden = !(changed && status === 'approved'); errorIn('confirmError', '');
     $('confirmDialog').showModal(); $('changeReason').focus();
   });
