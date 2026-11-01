@@ -151,8 +151,8 @@
     const previousCity = retainSelection ? $('citySelect').value : initial.get('city') || '', previousPackage = retainSelection ? $('packageSelect').value : initial.get('package') || '';
     const result = await api('/api/checkout/session');
     if (typeof result.preview !== 'boolean' || typeof result.canSubmit !== 'boolean') throw new Error('Status akses pemesanan belum tersedia. Silakan coba kembali.');
-    if (!result.csrfToken || !Array.isArray(result.catalog?.cities) || !result.catalog.cities.length || !result.catalog.pricing || !result.payment) throw new Error('Daftar kota dan paket belum tersedia. Silakan coba kembali.');
-    state.csrfToken = result.csrfToken; state.catalog = result.catalog; state.payment = result.payment; state.preview = result.preview; state.canSubmit = result.canSubmit;
+    if ((result.canSubmit && (typeof result.csrfToken !== 'string' || !/^[a-f0-9]{64}$/.test(result.csrfToken))) || !Array.isArray(result.catalog?.cities) || !result.catalog.cities.length || !result.catalog.pricing || !result.payment) throw new Error('Daftar kota dan paket belum tersedia. Silakan coba kembali.');
+    state.csrfToken = result.canSubmit ? result.csrfToken : ''; state.catalog = result.catalog; state.payment = result.payment; state.preview = result.preview; state.canSubmit = result.canSubmit;
     if (!validLimits()) throw new Error('Aturan unggah belum tersedia. Silakan coba kembali setelah pengaturan selesai.');
     $('citySelect').replaceChildren();
     for (const city of state.catalog.cities) { const option = element('option', '', city.name); option.value = city.name; $('citySelect').append(option); }

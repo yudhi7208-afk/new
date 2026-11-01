@@ -137,6 +137,14 @@ async function sessionOf(request, db) {
   return db.prepare('SELECT token_hash,csrf_token,expires_at FROM checkout_sessions WHERE token_hash=? AND expires_at>?').bind(await sha(raw), now()).first();
 }
 async function getSession(request, env, db, settings) {
+  const canSubmit = !settings.preview || Boolean(await requireAdmin(request, env));
+  const view = csrfToken => ({ csrfToken, catalog: settings.catalog, payment: {
+    bankName: settings.payout.bankName, bankAccount: settings.payout.bankAccount, bankHolder: settings.payout.bankHolder,
+    whatsapp: settings.payout.whatsapp, limits: settings.limits,
+  }, preview: settings.preview, canSubmit });
+  // Viewing a preview catalog must not allocate persistent sessions or counters.
+  // Only an authenticated owner can begin a simulated checkout.
+  if (!canSubmit) return json(view(''));
   let session = await sessionOf(request, db); let cookie;
   if (!session) {
     await rate(request, db, 'session', 20, 500);
@@ -145,10 +153,7 @@ async function getSession(request, env, db, settings) {
     await db.prepare('INSERT INTO checkout_sessions(token_hash,csrf_token,created_at,expires_at) VALUES(?,?,?,?)').bind(session.token_hash, session.csrf_token, now(), session.expires_at).run();
     cookie = `${COOKIE}=${raw}; Path=/; Max-Age=${HOUR}; Secure; HttpOnly; SameSite=Strict`;
   }
-  return json({ csrfToken: session.csrf_token, catalog: settings.catalog, payment: {
-    bankName: settings.payout.bankName, bankAccount: settings.payout.bankAccount, bankHolder: settings.payout.bankHolder,
-    whatsapp: settings.payout.whatsapp, limits: settings.limits,
-  }, preview: settings.preview, canSubmit: !settings.preview || Boolean(await requireAdmin(request, env)) }, 200, cookie ? { 'Set-Cookie': cookie } : {});
+  return json(view(session.csrf_token), 200, cookie ? { 'Set-Cookie': cookie } : {});
 }
 function selectedPackage(settings, cityName, packageId) {
   const city = settings.catalog.cities.find(city => city.name === cityName);

@@ -105,7 +105,8 @@ async function session(env, ip = '203.0.113.8', authenticated = true) {
   const response = await api(env, '/api/checkout/session', undefined, { ip, cookie: authenticated ? adminCookie : undefined });
   assert.equal(response.status, 200);
   const body = await response.json();
-  return { cookie: response.headers.get('Set-Cookie').split(';')[0] + (authenticated ? '; ' + adminCookie : ''), csrf: body.csrfToken, ip, body };
+  const checkoutCookie = response.headers.get('Set-Cookie')?.split(';')[0] || '';
+  return { cookie: [checkoutCookie, authenticated ? adminCookie : ''].filter(Boolean).join('; '), csrf: body.csrfToken, ip, body };
 }
 async function quote(env, user, city = 'Kota Sintetis', packageId = 'singkat') {
   return (await (await api(env, '/api/checkout/quote', { city, packageId }, user)).json()).quote;
@@ -144,6 +145,14 @@ try {
   assert.equal((await existingSession.json()).csrfToken, user.csrf);
   const previewAnonymous = fixture(), anon = await session(previewAnonymous, '203.0.113.90', false);
   assert.equal(anon.body.preview, true); assert.equal(anon.body.canSubmit, false);
+  assert.equal(anon.body.csrfToken, ''); assert.equal(anon.cookie, '');
+  for (let index = 0; index < 60; index++) {
+    const readOnly = await api(previewAnonymous, '/api/checkout/session');
+    assert.equal(readOnly.headers.get('Set-Cookie'), null);
+    assert.equal((await readOnly.json()).canSubmit, false);
+  }
+  assert.equal(count(previewAnonymous, 'checkout_sessions'), 0, 'Anonymous preview catalog requests cannot allocate checkout sessions');
+  assert.equal(count(previewAnonymous, 'checkout_rate_limits'), 0, 'Anonymous preview catalog requests cannot write rate counters');
   await rejected(() => quote(previewAnonymous, anon), 401);
   await rejected(() => api(previewAnonymous, '/api/checkout/submit', new FormData(), anon), 401);
   assert.equal(count(previewAnonymous, 'checkout_quotes'), 0);
@@ -241,7 +250,7 @@ try {
   assert.equal(liveSaved.order.isTest, false); assert.match(liveSaved.order.orderNumber, /^CF-\d{6}-/);
   assert.ok(!decodeURIComponent(liveSaved.whatsappUrl).includes('SIMULASI'));
 
-  const sessionLimited = fixture();
+  const sessionLimited = fixture('live');
   for (let index = 0; index < 20; index++) await session(sessionLimited, '203.0.113.100', false);
   await rejected(() => session(sessionLimited, '203.0.113.100', false), 429);
   assert.equal(count(sessionLimited, 'checkout_sessions'), 20);
