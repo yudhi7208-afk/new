@@ -1,80 +1,110 @@
 # Pratinjau perpindahan PosLoker
 
-Target saat ini adalah `new.yudhi7208.workers.dev`. Domain dan hosting WordPress
-asal tidak diubah.
+Target pratinjau adalah `new.yudhi7208.workers.dev`. Website WordPress lama
+tetap beroperasi dan melayani pelanggan. Domain, DNS, dan hosting asal belum
+diubah. Implementasi checkout Cloudflare masih untuk simulasi pemilik,
+bukan pengalihan transaksi pelanggan.
 
-## Sudah dipindahkan
+## Halaman publik dan checkout
 
-- HTML publik beranda, direktori area, dan seluruh halaman kota yang terdaftar.
-- Gambar, logo, stylesheet, JavaScript tampilan, dan font disimpan di `public/`.
-- Navigasi publik, pencarian kota, filter wilayah, pemilih paket, dan kalkulator
-  harga berjalan dari aset statis. Harga disalin dari sumber saat ekspor.
-- Banner menandai versi pratinjau. Robots dan `X-Robots-Tag` mencegah pratinjau
-  diindeks mesin pencari sebelum domain siap.
+- HTML beranda, direktori area, halaman kota, gambar, logo, CSS, JavaScript,
+  dan font tersedia sebagai aset statis.
+- Navigasi, pencarian kota, filter wilayah, pilihan paket, dan kalkulator
+  harga mempertahankan data katalog sumber saat ekspor.
+- Tautan pemesanan pratinjau membuka `/pembayaran/` pada Worker yang sama.
+  Checkout memakai katalog D1 berisi 49 kota dan 16 kelompok harga; server
+  memeriksa kota/paket dan menetapkan nominal serta kode unik.
+- Alur baru mencakup penawaran, formulir pelanggan, unggahan bukti/materi
+  ke R2 privat, penyimpanan pesanan D1, ringkasan terikat sesi browser, dan
+  tombol WhatsApp yang dibuka serta dikirim sendiri oleh pengguna.
 
+Mode yang disiapkan adalah `preview`. Pengunjung dapat melihat katalog,
+tetapi penawaran, pengiriman, dan ringkasan memerlukan pemilik yang sudah
+masuk ke admin serta sesi checkout yang sesuai. Pesanan pratinjau selalu
+ditandai `is_test=1` dan **SIMULASI**. Gunakan data dan berkas contoh;
+**jangan melakukan transfer**. Tidak ada pesan WhatsApp, notifikasi, atau
+publikasi otomatis dari simulasi ini.
+
+Banner, robots, dan `X-Robots-Tag` tetap menandai pratinjau serta mencegah
+pengindeksan. Jangan menghapus `noindex` pada tahap simulasi.
 Daftar halaman dan checksum aset ada di `migration-manifest.json`.
+Rincian alur, konfigurasi, dan pemulihan ada di [panduan checkout](checkout.md).
 
-## Tetap pada hosting asal
+## Snapshot historis privat
 
-Pemesanan, pembayaran, konfirmasi pembayaran, serta unggahan bukti dan materi
-tetap diarahkan ke `https://posloker.my.id`. Halaman transaksi tidak diekspor:
-kode unik, nonce WordPress, dan handler PHP harus dibuat oleh server asal.
-Statistik PosLoker / PosLoker Insights dihapus dari WordPress sesuai keputusan
-pengguna. Pelacak statistik pengunjung tidak dipasang atau dimigrasikan ke
-Cloudflare; ekspor ulang tetap membuang skrip pelacak tersebut.
+Salinan pelanggan, pesanan, dan seluruh metadata terkait sudah dipindahkan
+ke D1 privat `new-posloker-customers` melalui binding `CUSTOMER_DB`.
+Hasil impor dicocokkan seluruh kolomnya dengan snapshot sumber. Data ini
+tidak berada di repository maupun direktori aset publik.
 
-Salinan pelanggan, pesanan, dan seluruh metadata terkait sudah dipindahkan ke
-D1 privat `new-posloker-customers` melalui binding `CUSTOMER_DB`. Hasil impor
-dicocokkan seluruh kolomnya dengan snapshot sumber. Data ini tidak berada di
-repository maupun direktori aset publik.
+Bukti dan materi sumber sudah disalin ke R2 privat
+`new-posloker-customer-files`, binding `CUSTOMER_FILES`. Semua objek dibaca
+kembali melalui akses privat; ukuran byte dan SHA-256-nya cocok dengan
+staging sumber. Katalog `order_files` di D1 juga dicocokkan seluruh kolom,
+checksum baris, dan hubungan pesanan/snapshot-nya.
 
-Berkas bukti dan materi yang dirujuk pesanan sudah disalin ke bucket R2
-privat `new-posloker-customer-files`, binding `CUSTOMER_FILES`. Semua objek
-dibaca kembali melalui akses akun Cloudflare; ukuran byte dan SHA-256-nya
-cocok dengan staging sumber. Katalog `order_files` di D1 juga dicocokkan
-seluruh kolom, checksum baris, dan hubungan pesanan/snapshot-nya.
-Bucket tidak memiliki domain publik atau akses `r2.dev`. Berkas hanya dapat
-diunduh melalui API admin yang memeriksa sesi sebelum membaca D1 dan R2.
+Bucket tidak memiliki domain publik atau akses `r2.dev`. Unduhan berkas
+memerlukan sesi admin. Pesanan Cloudflare baru memakai tabel
+`commerce_orders`, `commerce_files`, dan `commerce_events`; snapshot
+WordPress beserta ID, nomor, metadata mentah, dan checksum asal dipertahankan.
 
-## Panel admin Cloudflare
+## Panel admin
 
-Implementasi panel `/admin/` menyediakan masuk pemilik, daftar dan pencarian
-pesanan, filter status/arsip, detail, unduhan bukti/materi, serta perubahan
-status dan catatan dengan riwayat audit. Aktivasi awal menggunakan tautan
-sekali pakai yang kedaluwarsa; pemilik mengisi kata sandinya sendiri.
+Panel `/admin/` menyediakan masuk pemilik, daftar dan pencarian pesanan,
+filter status/arsip/sumber, detail, unduhan privat, serta perubahan status
+dan catatan dengan riwayat audit. Daftar menggabungkan pesanan WordPress
+dan Cloudflare dengan penanda sumber; pesanan percobaan memiliki badge
+**SIMULASI**. Aktivasi pertama memakai token sekali pakai; pemilik memilih
+kata sandinya sendiri.
 
-Perubahan admin disimpan pada tabel kerja terpisah dari snapshot impor.
-Pemeriksaan revisi menolak penimpaan perubahan yang lebih baru. Snapshot
-WordPress, metadata mentah, dan checksum asal tetap dipertahankan.
+Status kerja historis disimpan terpisah dari snapshot. Pesanan native
+Cloudflare memiliki status kerja dan riwayatnya sendiri. Pemeriksaan revisi
+menolak penimpaan perubahan yang lebih baru.
 
-Panel ini mengelola salinan Cloudflare. Perubahannya tidak ditulis kembali
-ke WordPress dan pesanan baru WordPress belum otomatis tersinkronisasi.
-Handler pemesanan, pembayaran, kode unik, unggahan baru, dan notifikasi
-masih perlu diadaptasi sebelum transaksi dilayani dari Worker. Lakukan
-rekonsiliasi delta menjelang cutover. Domain dan DNS belum diubah.
-
-Lihat [panduan data pelanggan](customer-data-migration.md) untuk persiapan
-privat, pemeriksaan database/objek, dan batas snapshot; lihat
-[panduan admin](admin.md) untuk aktivasi dan penggunaan panel.
+Panel Cloudflare tidak menulis balik ke WordPress. Pesanan, berkas, atau
+perubahan baru di WordPress belum otomatis direplikasi. Lihat
+[panduan data pelanggan](customer-data-migration.md) dan
+[panduan admin](admin.md).
 
 ## Ekspor ulang dan deploy
 
 ```sh
 npm ci
 node scripts/export-posloker.mjs
+npm run test:migration
+npm run test:admin
+node scripts/test-checkout.mjs
 npx wrangler deploy --dry-run
 npx wrangler deploy
 ```
 
-Ekspor menggunakan cache lokal `.cache/posloker-source` agar tidak mengambil
-ulang sumber yang sama. Untuk snapshot baru gunakan direktori cache baru lewat
-environment variable `POSLOKER_EXPORT_CACHE`.
+Checkout memerlukan migrasi `0005_checkout.sql` dan konfigurasi privat D1
+sebelum diuji pada lingkungan tujuan. Perintah deploy tidak mengalihkan
+domain atau mengaktifkan mode layanan nyata dengan sendirinya.
 
-## Tahap backend berikutnya
+Ekspor memakai cache lokal `.cache/posloker-source`. Untuk snapshot publik
+baru, gunakan direktori cache baru melalui `POSLOKER_EXPORT_CACHE`, lalu
+periksa perubahan halaman dan harga. Konfigurasi harga D1 perlu disiapkan
+ulang secara terpisah bila katalog berubah.
 
-Backup tema `posloker-premium`, plugin `posloker-payment`, database sumber,
-dan berkas terkait sudah disiapkan di folder kerja privat. Pisahkan rahasia
-dan data pelanggan dari Git. Adaptasikan handler pemesanan, kode unik,
-unggahan baru, dan notifikasi pada backend baru. Panel pemilik Cloudflare
-tidak menggantikan seluruh fungsi administrasi WordPress.
-Domain baru dialihkan setelah fungsi tersebut diuji dan disetujui.
+Statistik PosLoker / PosLoker Insights dihapus dari WordPress sesuai
+keputusan pengguna. Pelacak pengunjung tidak dipasang atau dimigrasikan ke
+Cloudflare; ekspor ulang tetap membuang skrip tersebut.
+
+## Sebelum pengalihan domain
+
+Selesaikan pemeriksaan browser dan pengujian alur gratis/berbayar,
+unggahan, ringkasan, WhatsApp manual, dan pengelolaan admin. Periksa pula
+penolakan akses anonim, pesanan ganda, serta kegagalan database/penyimpanan.
+Pengujian kode tidak berarti transaksi pelanggan sudah dialihkan.
+
+Menjelang pengalihan, ambil backup sumber terbaru dan rekonsiliasi delta
+pesanan, status, metadata, serta berkas yang masuk ke WordPress setelah
+snapshot. Pertahankan perubahan kerja admin Cloudflare dan pisahkan data
+simulasi dari riwayat transaksi nyata.
+
+Mode `live`, pengalihan domain/DNS, penyesuaian tautan/canonical, dan perubahan
+SEO/`noindex` hanya dilakukan setelah pengujian, rekonsiliasi terakhir, dan
+permintaan pengalihan eksplisit pengguna. Hosting lama tetap berjalan
+selama proses tersebut. Jangan menganggap snapshot yang sudah diverifikasi
+sebagai replikasi langsung atau seluruh migrasi telah selesai melayani pelanggan.

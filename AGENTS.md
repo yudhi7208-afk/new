@@ -6,6 +6,9 @@ Disimpan pada 1 November 2026.
 - Repository `yudhi7208-afk/new` dan Worker `new` khusus untuk PosLoker.
 - Website lain dibuat sebagai proyek terpisah; jangan digabungkan ke proyek ini.
 - Biaya mengikuti pemakaian setiap layanan.
+- Website WordPress lama tetap beroperasi selama penyalinan ke Cloudflare.
+  Jangan mengalihkan domain/DNS atau menghentikan hosting lama sebelum
+  seluruh alur migrasi lengkap, diuji, dan pengguna meminta pengalihan.
 - Statistik PosLoker / PosLoker Insights tidak diperlukan. Jangan memasang,
   mengaktifkan, mengekspor, atau memigrasikan pelacak statistik pengunjung
   ke Cloudflare kecuali pengguna meminta kembali.

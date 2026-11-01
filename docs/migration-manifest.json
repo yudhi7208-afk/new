@@ -1,7 +1,7 @@
 {
   "source": "https://posloker.my.id",
-  "exportedAt": "2026-10-31T22:23:51.949Z",
-  "mode": "Public static preview; orders and payment remain on the original hosting",
+  "exportedAt": "2026-11-01T00:34:44.282Z",
+  "mode": "Public preview with Cloudflare checkout simulation; original WordPress remains live",
   "cityCount": 49,
   "pageCount": 51,
   "assetCount": 57,

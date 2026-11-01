@@ -1,5 +1,6 @@
 import { handleAuth, requireAdmin, HttpError } from './admin-auth.mjs';
 import { handleOrders, json } from './admin-orders.mjs';
+import { handleCheckout } from './checkout.mjs';
 
 export function protect(response) {
   const headers = new Headers(response.headers);
@@ -17,6 +18,18 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/admin') return protect(Response.redirect(url.origin + '/admin/', 302));
+    if (url.pathname === '/pembayaran') return protect(Response.redirect(url.origin + '/pembayaran/', 302));
+    if (url.pathname.startsWith('/pembayaran/') || url.pathname.startsWith('/checkout/')) {
+      if (!['GET', 'HEAD'].includes(request.method)) return protect(json({ error: 'Metode tidak diizinkan.' }, 405));
+      return protect(await env.ASSETS.fetch(request));
+    }
+    if (url.pathname.startsWith('/api/checkout/')) {
+      try {
+        return protect(await handleCheckout(request, env, url) || json({ error: 'Halaman tidak ditemukan.' }, 404));
+      } catch (error) {
+        return protect(json({ error: error instanceof HttpError ? error.message : 'Pemesanan belum siap. Coba lagi nanti.' }, error instanceof HttpError ? error.status : 503));
+      }
+    }
     if (url.pathname.startsWith('/admin/')) {
       if (!['GET', 'HEAD'].includes(request.method)) return protect(json({ error: 'Metode tidak diizinkan.' }, 405));
       return protect(await env.ASSETS.fetch(request));

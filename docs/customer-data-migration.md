@@ -2,8 +2,8 @@
 
 Database tujuan proyek ini adalah D1 `new-posloker-customers`, binding
 `CUSTOMER_DB`. Aset website tetap berada di `public/`; data pelanggan tidak
-tersedia melalui API tanpa autentikasi. Panel `/admin/` menggunakan API
-terlindungi untuk membaca salinan pesanan dan mencatat perubahan admin.
+disimpan sebagai aset publik. Panel `/admin/` menggunakan API terlindungi
+untuk membaca snapshot dan pesanan Cloudflare serta mencatat perubahan admin.
 Akses administrasi database tetap mengikuti akun Cloudflare dan izin
 binding Worker.
 
@@ -29,9 +29,11 @@ postmeta, bukan tabel akun pelanggan tersendiri. Impor mempertahankan:
 Profil kontak diturunkan secara konservatif dari kombinasi nama, WhatsApp,
 dan email. Jumlah profil kontak bukan klaim jumlah orang unik.
 
-WordPress/PHP, sesi staf, PIN, dan kredensial sumber bukan implementasi
-backend baru. Pesanan baru masih masuk ke hosting asal sampai proses
-cutover terpisah selesai. Salinan ini bukan replikasi database langsung.
+WordPress/PHP, sesi staf, PIN, dan kredensial sumber tidak dijadikan
+kredensial backend baru. Website lama tetap melayani pesanan pelanggan
+sampai cutover terpisah. Checkout Cloudflare yang sudah diimplementasikan
+masih simulasi khusus pemilik; salinan WordPress ini bukan replikasi
+database langsung.
 
 ## Status kerja admin
 
@@ -51,6 +53,28 @@ mempertimbangkan status kerja dan riwayat tersebut sebelum cutover.
 Token aktivasi, kata sandi, hash kredensial, sesi, dan hasil pembacaan API
 yang berisi pelanggan tetap privat. Panduan aktivasi ada di
 [panduan admin](admin.md).
+
+## Pesanan native Cloudflare
+
+Migrasi `0005_checkout.sql` menambahkan konfigurasi bisnis privat D1,
+sesi checkout, penawaran harga/kode unik, reservasi nominal, penguncian
+pengiriman, dan tabel `commerce_orders`, `commerce_files`, serta
+`commerce_events`. Pesanan baru tidak ditambahkan ke tabel snapshot
+`orders`/`order_meta`; ID, nomor, metadata, dan checksum historis tetap utuh.
+Objek baru memakai namespace privat R2 terpisah dari objek impor.
+
+Panel menggabungkan kedua sumber dan menampilkan badge WordPress/Cloudflare
+serta **SIMULASI** untuk `is_test=1`. Selama mode `preview`, seluruh pesanan
+baru diberi penanda tersebut. Penawaran, pengiriman, dan ringkasan memerlukan
+pemilik yang masuk; ringkasan juga terikat sesi browser checkout pembuatnya.
+Gunakan data/berkas contoh dan jangan melakukan transfer. Berkas tetap
+diunduh melalui API admin terautentikasi.
+
+Konfigurasi rekening/kontak operasional disimpan pada D1, bukan dalam Git
+atau HTML statis. Jangan memasukkan nilai aktualnya, identitas pelanggan,
+token sesi, atau hasil API ke dokumentasi dan log publik. Alat persiapan
+konfigurasi dan prosedur rekonsiliasi `checkout_submissions` yang tertahan
+ada di [panduan checkout](checkout.md).
 
 ## Lokasi privat
 
@@ -123,7 +147,13 @@ mencocokkan setiap kunci objek, ukuran byte, dan SHA-256 dengan staging.
 Pemeriksaan snapshot saat ini sudah lulus untuk katalog dan isi objek.
 
 Untuk sinkronisasi berikutnya, ambil snapshot/delta sumber yang baru dan
-ulang kedua pemeriksaan tersebut. Jangan menganggap penambahan binding
-sebagai pemindahan handler PHP atau replikasi pesanan baru: checkout,
-unggahan baru, dan administrasi WordPress tetap menggunakan hosting asal
-sampai adaptasi backend dan cutover terpisah selesai.
+ulang kedua pemeriksaan tersebut. Pesanan, status, dan berkas WordPress
+yang masuk setelah snapshot belum otomatis direplikasi; perubahan admin
+Cloudflare juga tidak ditulis kembali ke sumber. Perbarui backup sumber dan
+rekonsiliasi delta terakhir menjelang cutover tanpa menimpa riwayat kerja
+admin atau mencampurkan pesanan simulasi dengan transaksi nyata.
+
+Implementasi checkout baru tidak dengan sendirinya mengalihkan pelanggan.
+WordPress tetap berjalan; mode `live`, domain/DNS, dan SEO/`noindex` hanya
+diubah setelah pengujian lengkap, rekonsiliasi, dan permintaan pengalihan
+eksplisit pengguna. Cadangan sumber dan artefak verifikasi tetap privat.

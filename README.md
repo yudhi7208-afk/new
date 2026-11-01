@@ -8,19 +8,33 @@ Beranda, direktori area, 49 halaman kota, gambar, CSS, JavaScript, dan font
 berjalan dari `public/`. Pencarian kota, filter wilayah, dan pilihan paket
 mempertahankan perilaku serta data harga situs asal saat ekspor.
 
-**Pesanan dan pembayaran masih dilanjutkan di situs asal.** Salinan data
-pelanggan dan riwayat pesanan disimpan privat di D1 `new-posloker-customers`
-melalui binding `CUSTOMER_DB`. Bukti dan materi yang dirujuk pesanan sudah
-disalin ke R2 privat `new-posloker-customer-files`, binding `CUSTOMER_FILES`.
-Isi objek sudah diunduh kembali melalui akses privat dan dicocokkan ukuran
-serta SHA-256-nya; katalog D1 juga sudah diperiksa seluruh kolom dan relasinya.
-Panel `/admin/` menggunakan API terautentikasi untuk mengelola salinan
-pesanan dan mengunduh berkas privat. Data pelanggan tidak tersedia melalui
-API tanpa sesi admin. Handler pemesanan, pembayaran, dan unggahan baru
-masih perlu diadaptasi sebelum pengalihan trafik.
+Kode pratinjau memuat checkout `/pembayaran/`: pilihan kota/paket, harga dan
+kode unik dari server, formulir pelanggan, unggahan privat, serta ringkasan
+pesanan dan tombol WhatsApp manual. Katalog D1 memuat 49 kota dan 16 kelompok
+harga. **Checkout masih mode simulasi: jangan melakukan transfer.** Pengunjung
+dapat melihat katalog; hanya pemilik yang masuk ke admin dapat membuat
+penawaran, mengirim simulasi, dan membuka ringkasannya pada sesi browser yang
+sama. Pesanan baru pratinjau diberi `is_test=1` dan label **SIMULASI**.
+
+Salinan pelanggan dan riwayat WordPress disimpan privat di D1
+`new-posloker-customers` melalui `CUSTOMER_DB`. Bukti dan materi sumber
+sudah disalin ke R2 privat `new-posloker-customer-files`, binding
+`CUSTOMER_FILES`; isi objek serta katalog D1 sudah dicocokkan dengan sumber.
+Pesanan Cloudflare baru disimpan terpisah dari snapshot historis.
+Panel `/admin/` menggabungkan keduanya dengan penanda sumber, riwayat
+perubahan, dan unduhan privat yang memerlukan sesi admin.
+
+**WordPress lama tetap melayani pelanggan.** Domain, DNS, dan hosting lama
+belum diubah. Pesanan WordPress yang masuk berikutnya tidak otomatis
+direplikasi ke Cloudflare. Mode layanan nyata baru diaktifkan setelah
+pengujian lengkap, pembaruan backup/delta terakhir, rekonsiliasi, dan
+permintaan pengalihan eksplisit dari pengguna. Aturan `noindex` pratinjau
+tetap berlaku sampai tahap tersebut.
 Lihat [catatan migrasi](docs/migration.md) dan [manifest ekspor](docs/migration-manifest.json).
 Alur persiapan dan validasi data ada di [panduan data pelanggan](docs/customer-data-migration.md).
 Aktivasi pemilik dan pengoperasian panel ada di [panduan admin](docs/admin.md).
+Alur simulasi, konfigurasi privat, dan pemulihan checkout ada di
+[panduan checkout](docs/checkout.md).
 
 ## Pedoman pengelolaan proyek
 
@@ -46,6 +60,8 @@ npx wrangler dev
 
 Panel admin berada di `/admin/`. Sebelum digunakan, terapkan migrasi skema
 admin dan siapkan aktivasi pemilik sekali pakai sesuai panduan admin.
+Checkout memerlukan `0005_checkout.sql` dan konfigurasi bisnis pada D1;
+lihat panduan checkout. Pertahankan mode `preview`.
 Jangan memakai data pelanggan produksi untuk pengujian lokal.
 
 ## Validasi konfigurasi
@@ -88,6 +104,8 @@ SQLite. Pengujian memakai data sintetis:
 
 ```sh
 npm run test:migration
+npm run test:admin
+node scripts/test-checkout.mjs
 ```
 
 Dump database, SQL berisi pelanggan, SQLite lokal, bukti transfer, dan hasil

@@ -59,6 +59,7 @@
     $('workspace').classList.remove('has-detail');
     for (const id of ['detailHeading', 'detailDate', 'detailCustomer', 'detailWhatsapp', 'detailEmail', 'detailCity', 'detailPackage', 'detailBaseAmount', 'detailUniqueCode', 'detailAmount', 'sourceNotes']) text(id, '', '');
     $('detailStatus').textContent = ''; $('filesList').replaceChildren(); $('eventsList').replaceChildren();
+    $('detailSource').textContent = ''; $('detailSource').hidden = true; $('detailTest').hidden = true;
     $('adText').value = ''; $('caption').value = ''; $('adminNote').value = ''; $('changeReason').value = '';
     $('conflictNotice').hidden = true; errorIn('detailError', ''); errorIn('confirmError', '');
     if ($('confirmDialog').open) $('confirmDialog').close();
@@ -164,6 +165,10 @@
         const customerCell = node('td');
         const open = node('button', 'order-open', order.orderNumber || 'Pesanan #' + order.id); open.type = 'button'; open.addEventListener('click', () => loadDetail(order.id, true));
         customerCell.append(open, node('span', 'order-name', order.customerName || 'Tanpa nama'), node('span', 'order-meta', [order.city, date(order.orderedAt)].filter(Boolean).join(' · ')));
+        const origin = node('span', 'order-origin-line');
+        if (['wordpress', 'cloudflare'].includes(order.source)) origin.append(node('span', 'source-badge', order.source === 'cloudflare' ? 'Cloudflare' : 'WordPress'));
+        if (order.isTest === true) { origin.append(node('span', 'test-badge', 'SIMULASI')); row.classList.add('is-test-order'); }
+        if (origin.childNodes.length) customerCell.append(origin);
         const amountCell = node('td', 'order-amount', currency(order.amount));
         const statusCell = node('td'), status = node('span'); badge(status, order.status); statusCell.append(status);
         const arrowCell = node('td'), arrow = node('button', 'row-arrow', '›'); arrow.type = 'button'; arrow.setAttribute('aria-label', 'Lihat rincian ' + (order.orderNumber || 'pesanan')); arrow.addEventListener('click', () => loadDetail(order.id, true)); arrowCell.append(arrow);
@@ -229,6 +234,7 @@
       const order = result.order; if (!order || String(order.id) !== String(id)) throw new Error('Rincian pesanan belum tersedia.');
       state.order = order; state.stale = false;
       text('detailHeading', order.orderNumber || 'Pesanan #' + order.id); text('detailDate', date(order.orderedAt)); badge($('detailStatus'), order.status);
+      $('detailSource').hidden = !['wordpress', 'cloudflare'].includes(order.source); text('detailSource', order.source === 'cloudflare' ? 'Cloudflare' : 'WordPress'); $('detailTest').hidden = order.isTest !== true;
       for (const [key, target] of [['customerName', 'detailCustomer'], ['whatsapp', 'detailWhatsapp'], ['email', 'detailEmail'], ['city', 'detailCity'], ['packageName', 'detailPackage']]) text(target, order[key]);
       text('detailBaseAmount', currency(order.baseAmount)); text('detailUniqueCode', Number.isSafeInteger(Number(order.uniqueCode)) ? String(Number(order.uniqueCode)) : '—'); text('detailAmount', currency(order.amount));
       $('adText').value = order.adText || ''; $('caption').value = order.caption || ''; $('sourceNotes').textContent = order.notes || ''; $('sourceNotesSection').hidden = !order.notes;

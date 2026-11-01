@@ -56,7 +56,7 @@
     </section>
 
     <section id="dashboardView" class="dashboard" hidden aria-labelledby="dashboardTitle">
-      <div class="migration-banner"><span class="banner-icon" aria-hidden="true">i</span><div><strong>Salinan migrasi</strong><p>Pesanan baru masih masuk melalui WordPress. Perubahan di panel ini hanya berlaku di Cloudflare.</p><span id="snapshotDate" class="snapshot-date"></span></div><a href="https://posloker.my.id/?posloker_manage=1" target="_blank" rel="noreferrer noopener">Panel asal <span aria-hidden="true">↗</span></a></div>
+      <div class="migration-banner"><span class="banner-icon" aria-hidden="true">i</span><div><strong>Salinan migrasi</strong><p>Pesanan baru masih masuk melalui WordPress. Perubahan di panel ini hanya berlaku di Cloudflare.</p><span class="migration-test-note">Checkout Cloudflare dapat diuji oleh admin. Pesanan percobaan diberi label SIMULASI.</span><span id="snapshotDate" class="snapshot-date"></span></div><a href="https://posloker.my.id/?posloker_manage=1" target="_blank" rel="noreferrer noopener">Panel asal <span aria-hidden="true">↗</span></a></div>
       <div class="page-title-row"><div><span class="eyebrow">RUANG ADMIN</span><h1 id="dashboardTitle">Pesanan</h1><p class="muted">Periksa pembayaran dan siapkan materi publikasi.</p></div><div class="account-chip"><span class="account-dot" aria-hidden="true"></span><span id="accountEmail"></span></div></div>
 
       <div class="stats-grid" id="statsGrid" aria-label="Ringkasan pesanan aktif">
@@ -83,7 +83,7 @@
           <div id="detailPlaceholder" class="detail-placeholder"><span class="detail-illustration" aria-hidden="true">▤<span>✓</span></span><h2>Pilih satu pesanan</h2><p>Rincian pelanggan, bukti pembayaran, dan materi akan ditampilkan di sini.</p></div>
           <div id="detailView" hidden>
             <div class="detail-header"><div><span class="eyebrow">RINCIAN PESANAN</span><h2 id="detailHeading" tabindex="-1"></h2><span id="detailDate" class="muted small"></span></div><button id="closeDetailButton" type="button" class="button button-icon" aria-label="Tutup rincian pesanan">×</button></div>
-            <div class="detail-status-row"><span id="detailStatus" class="status-badge"></span><span id="detailTrash" class="trash-label" hidden>Di sampah · hanya baca</span></div>
+            <div class="detail-status-row"><span id="detailStatus" class="status-badge"></span><span id="detailSource" class="source-badge" hidden></span><span id="detailTest" class="test-badge" hidden>SIMULASI</span><span id="detailTrash" class="trash-label" hidden>Di sampah · hanya baca</span></div>
             <p id="detailError" class="form-error" role="alert" hidden></p>
             <div id="conflictNotice" class="notice notice-warning" hidden><strong>Data pesanan sudah berubah.</strong><p>Salin catatan Anda bila diperlukan, lalu muat ulang data sebelum menyimpan lagi.</p><button id="reloadDetailButton" class="button button-light" type="button">Muat ulang rincian</button></div>
             <section class="detail-section" aria-labelledby="customerHeading"><h3 id="customerHeading">Pelanggan</h3><dl class="detail-fields"><div><dt>Nama</dt><dd id="detailCustomer"></dd></div><div><dt>WhatsApp</dt><dd id="detailWhatsapp"></dd></div><div><dt>Email</dt><dd id="detailEmail"></dd></div><div><dt>Kota</dt><dd id="detailCity"></dd></div><div><dt>Paket</dt><dd id="detailPackage"></dd></div></dl></section>

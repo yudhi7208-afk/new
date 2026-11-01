@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Export public pages only. WordPress order handlers and customer data stay on
-// the existing hosting until the backend is migrated separately.
+// the existing hosting. Cloudflare checkout is a separate simulation until cutover.
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'public');
 const CACHE = process.env.POSLOKER_EXPORT_CACHE || path.join(ROOT, '.cache', 'posloker-source');
@@ -76,6 +76,11 @@ function transform(html, pathname) {
     '<meta name="robots" content="noindex, nofollow">');
   html = html.replace(/<a\b[^>]*>/gi, tag => attributes(tag, ['href'], value => {
     const url = new URL(value.replaceAll('&amp;', '&'), SOURCE + pathname);
+    if (url.origin === SOURCE && ['/pembayaran/', '/konfirmasi-pembayaran/'].includes(url.pathname)) {
+      const query = new URLSearchParams();
+      for (const key of ['city', 'package']) if (url.searchParams.has(key)) query.set(key, url.searchParams.get(key));
+      return ('/pembayaran/' + (query.size ? '?' + query : '')).replaceAll('&', '&amp;');
+    }
     if (url.origin === SOURCE && pagePaths.has(url.pathname)) {
       return (url.pathname + url.search + url.hash).replaceAll('&', '&amp;');
     }
@@ -93,10 +98,10 @@ function transform(html, pathname) {
   if (/<form\b[^>]*(?:method=["']post["']|action=["'][^"']*admin-post)/i.test(html)) {
     throw new Error('A backend form must not be exported: ' + pathname);
   }
-  html = html.replace('</head>', '<link rel="stylesheet" href="/assets/preview.css">\n</head>');
+  html = html.replace('</head>', '<link rel="stylesheet" href="/assets/preview.css">\n<script src="/checkout/preview-links.js"></script>\n</head>');
   html = html.replace(/(<body\b[^>]*>)/i, '$1\n<aside class="migration-preview" aria-label="Informasi pratinjau">' +
-    '<strong>Pratinjau PosLoker</strong><span>Pesanan dan pembayaran dilanjutkan di ' +
-    '<a href="https://posloker.my.id/">situs utama</a>.</span></aside>');
+    '<strong>Pratinjau PosLoker</strong><span>Checkout Cloudflare hanya simulasi. Jangan transfer uang. ' +
+    '<a href="https://posloker.my.id/">Website utama tetap beroperasi</a>.</span></aside>');
   return html.replace(/\r\n?/g, '\n').replace(/[\t ]+$/gm, '');
 }
 
@@ -143,7 +148,7 @@ while (completed.size < assets.size) {
 const manifest = {
   source: SOURCE,
   exportedAt: new Date().toISOString(),
-  mode: 'Public static preview; orders and payment remain on the original hosting',
+  mode: 'Public preview with Cloudflare checkout simulation; original WordPress remains live',
   cityCount: pagePaths.size - 2,
   pageCount: pagePaths.size,
   assetCount: completed.size,

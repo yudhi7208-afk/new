@@ -10,6 +10,7 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
 /* Comfortable desk typography, including compact screens. */
+.migration-test-note{display:block;margin-top:4px;font-size:11px;color:#6681a3}.order-origin-line{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.source-badge,.test-badge{display:inline-flex;align-items:center;padding:3px 6px;border:1px solid #dce6f3;border-radius:5px;background:#f1f5fb;color:#7387a1;font-size:9px;font-weight:700;line-height:1.4;white-space:nowrap}.test-badge{background:#fff3d4;color:#96701e;border-color:#edd9a6;letter-spacing:.04em;font-weight:800}.detail-status-row{flex-wrap:wrap}.detail-status-row .source-badge,.detail-status-row .test-badge{font-size:10px;padding:4px 7px}
 body{font-size:14px}
 input,select,textarea{font-size:14px}
 .eyebrow{font-size:11px}
