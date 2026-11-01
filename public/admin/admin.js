@@ -5,7 +5,8 @@
   const labels = { pending: 'Menunggu verifikasi', approved: 'Lunas', rejected: 'Ditolak' };
   const state = { authenticated: false, csrfToken: '', user: null, page: 1, pages: 1, query: '', status: 'all', trash: false, selectedId: null, order: null, stale: false, listTicket: 0, detailTicket: 0, authEpoch: 0, pendingSave: null };
   // Activation secrets are kept only in memory, never in persistent browser storage.
-  let setupToken = new URLSearchParams(location.hash.slice(1)).get('setup') || '';
+  let setupToken = (new URLSearchParams(location.hash.slice(1)).get('setup') || '').trim().toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(setupToken)) setupToken = '';
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
   let toastTimer, savingOrder = false;
 
@@ -74,29 +75,41 @@
     errorIn('listError', ''); $('toast').hidden = true; clearTimeout(toastTimer);
   }
 
-  function showLogin(message = '', setupRequired = false) {
+  function showLogin(message = '', setupRequired = false, setupAvailable = true) {
     clearPrivateState();
     $('globalStatus').hidden = true; $('dashboardView').hidden = true; $('logoutButton').hidden = true; $('authView').hidden = false;
     $('loginPassword').value = ''; $('setupPassword').value = ''; $('setupPasswordConfirm').value = '';
-    $('loginForm').hidden = false; $('setupForm').hidden = true; $('authNotice').hidden = true;
+    $('loginForm').hidden = false; $('setupForm').hidden = true; $('authNotice').hidden = true; $('retrySessionButton').hidden = true;
     text('authTitle', 'Masuk ke ruang admin'); text('authDescription', 'Gunakan akun pengelola PosLoker untuk panel ini.'); errorIn('authError', message);
-    if (setupRequired && setupToken) {
+    $('setupButton').disabled = false;
+    if (setupRequired) {
       $('loginForm').hidden = true; $('setupForm').hidden = false;
+      $('setupCodeField').hidden = Boolean(setupToken); $('setupCode').required = !setupToken;
       text('authTitle', 'Aktifkan akun admin'); text('authDescription', 'Buat akun pemilik untuk mengelola pesanan PosLoker di Cloudflare.');
-      text('authNotice', 'Tautan aktivasi ini hanya dapat digunakan satu kali. Simpan kata sandi Anda dengan aman.'); $('authNotice').hidden = false;
-    } else if (setupRequired) {
-      text('authNotice', 'Panel belum diaktifkan. Gunakan tautan aktivasi khusus yang diberikan kepada pemilik situs.'); $('authNotice').hidden = false;
-    } else if (setupToken) {
+      text('authNotice', setupAvailable ? 'Akun admin belum dibuat. Gunakan tautan aktivasi khusus atau masukkan kode aktivasi pemilik. Buat kata sandi baru minimal 15 karakter.' : 'Akun admin belum dibuat, tetapi aktivasi belum tersedia atau sudah kedaluwarsa. Mintalah tautan atau kode aktivasi baru dari pemilik situs.'); $('authNotice').hidden = false;
+      $('setupButton').disabled = !setupAvailable;
+    } else {
+      const hadActivation = Boolean(setupToken || $('setupCode').value);
       setupToken = '';
-      text('authNotice', 'Aktivasi tidak tersedia atau sudah selesai. Silakan masuk dengan akun admin Anda.'); $('authNotice').hidden = false;
+      $('setupCode').value = ''; $('setupCode').required = false;
+      if (hadActivation) { text('authNotice', 'Aktivasi tidak tersedia atau sudah selesai. Silakan masuk dengan akun admin Anda.'); $('authNotice').hidden = false; }
     }
+  }
+
+  function showSessionError(error) {
+    clearPrivateState();
+    $('globalStatus').hidden = true; $('dashboardView').hidden = true; $('logoutButton').hidden = true; $('authView').hidden = false;
+    $('loginForm').hidden = true; $('setupForm').hidden = true; $('authNotice').hidden = true; $('retrySessionButton').hidden = false;
+    $('loginPassword').value = ''; $('setupPassword').value = ''; $('setupPasswordConfirm').value = '';
+    text('authTitle', 'Status akun belum dapat diperiksa'); text('authDescription', 'Periksa koneksi, lalu coba kembali untuk melanjutkan aktivasi atau masuk.');
+    errorIn('authError', error.message);
   }
 
   async function loadSession() {
     const session = await api('/api/admin/session');
-    if (!session.authenticated) { showLogin('', Boolean(session.setupRequired)); return; }
+    if (!session.authenticated) { showLogin('', Boolean(session.setupRequired), session.setupAvailable !== false); return; }
     clearPrivateState(); state.authenticated = true; state.csrfToken = session.csrfToken || ''; state.user = session.user || {};
-    setupToken = ''; $('loginPassword').value = ''; $('setupPassword').value = ''; $('setupPasswordConfirm').value = '';
+    setupToken = ''; $('setupCode').value = ''; $('loginPassword').value = ''; $('setupPassword').value = ''; $('setupPasswordConfirm').value = '';
     $('globalStatus').hidden = true; $('authView').hidden = true; $('dashboardView').hidden = false; $('logoutButton').hidden = false;
     text('accountEmail', session.user?.email || 'Admin PosLoker');
     const snapshot = session.migration?.sourceSnapshotAt;
@@ -114,12 +127,14 @@
     if (setup) {
       if (password.length < 15) { errorIn('authError', 'Gunakan kata sandi dengan minimal 15 karakter.'); return; }
       if (password !== $('setupPasswordConfirm').value) { errorIn('authError', 'Kedua kata sandi belum sama. Silakan periksa kembali.'); $('setupPasswordConfirm').focus(); return; }
-      if (!setupToken) { errorIn('authError', 'Tautan aktivasi tidak tersedia. Buka kembali tautan aktivasi pemilik.'); return; }
-      payload.token = setupToken; payload.passwordConfirm = $('setupPasswordConfirm').value;
+      const token = (setupToken || $('setupCode').value.trim()).toLowerCase();
+      if (!/^[a-f0-9]{64}$/.test(token)) { errorIn('authError', 'Masukkan kode aktivasi pemilik yang terdiri dari 64 karakter huruf a–f dan angka 0–9, atau buka tautan aktivasi khusus.'); $('setupCodeField').hidden = false; $('setupCode').required = true; $('setupCode').focus(); return; }
+      payload.token = token; payload.passwordConfirm = $('setupPasswordConfirm').value;
     }
     busy(button, true, label);
     try {
       await api(setup ? '/api/admin/setup' : '/api/admin/login', { method: 'POST', body: payload });
+      if (setup) { setupToken = ''; $('setupCode').value = ''; }
       await loadSession();
       if (state.authenticated && setup) toast('Akun admin aktif. Selamat datang di PosLoker.');
     } catch (error) { errorIn('authError', error.message); }
@@ -229,9 +244,14 @@
 
   $('loginForm').addEventListener('submit', event => authenticate(event, false));
   $('setupForm').addEventListener('submit', event => authenticate(event, true));
+  $('retrySessionButton').addEventListener('click', async () => {
+    busy($('retrySessionButton'), true, 'Periksa status akun kembali');
+    try { await loadSession(); } catch (error) { showSessionError(error); }
+    finally { busy($('retrySessionButton'), false, 'Periksa status akun kembali'); }
+  });
   $('logoutButton').addEventListener('click', async () => {
     const button = $('logoutButton'); busy(button, true, 'Keluar');
-    try { await api('/api/admin/logout', { method: 'POST', body: {} }); showLogin(); }
+    try { await api('/api/admin/logout', { method: 'POST', body: {} }); setupToken = ''; $('setupCode').value = ''; showLogin(); }
     catch (error) { if (state.authenticated) toast(error.message); }
     finally { busy(button, false, 'Keluar'); }
   });
@@ -280,7 +300,7 @@
   });
   // A restored page must revalidate its server session before showing customer data.
   addEventListener('pagehide', () => { if (state.authenticated) { clearPrivateState(); $('dashboardView').hidden = true; } });
-  addEventListener('pageshow', event => { if (event.persisted) { $('authView').hidden = true; $('globalStatus').hidden = false; text('globalStatus', 'Memeriksa sesi…'); loadSession().catch(error => { showLogin(); errorIn('authError', error.message); }); } });
+  addEventListener('pageshow', event => { if (event.persisted) { $('authView').hidden = true; $('globalStatus').hidden = false; text('globalStatus', 'Memeriksa sesi…'); loadSession().catch(showSessionError); } });
 
-  loadSession().catch(error => { showLogin(); errorIn('authError', error.message); });
+  loadSession().catch(showSessionError);
 })();

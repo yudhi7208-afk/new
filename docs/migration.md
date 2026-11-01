@@ -19,7 +19,9 @@ Daftar halaman dan checksum aset ada di `migration-manifest.json`.
 Pemesanan, pembayaran, konfirmasi pembayaran, serta unggahan bukti dan materi
 tetap diarahkan ke `https://posloker.my.id`. Halaman transaksi tidak diekspor:
 kode unik, nonce WordPress, dan handler PHP harus dibuat oleh server asal.
-Tracker statistik WordPress tidak dijalankan dari pratinjau.
+Statistik PosLoker / PosLoker Insights dihapus dari WordPress sesuai keputusan
+pengguna. Pelacak statistik pengunjung tidak dipasang atau dimigrasikan ke
+Cloudflare; ekspor ulang tetap membuang skrip pelacak tersebut.
 
 Salinan pelanggan, pesanan, dan seluruh metadata terkait sudah dipindahkan ke
 D1 privat `new-posloker-customers` melalui binding `CUSTOMER_DB`. Hasil impor

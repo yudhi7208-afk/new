@@ -28,6 +28,9 @@ kata sandi WordPress tidak disalin sebagai kredensial baru.
    halaman publik, log, tangkapan layar, atau dokumentasi.
 4. Pemilik membuka tautan HTTPS, mengisi email dan kata sandi 15–128 karakter,
    mengulangi kata sandi, lalu mengirim formulir sendiri.
+   Jika membuka alamat panel biasa tanpa token di fragment, halaman tetap
+   menampilkan aktivasi selama pemilik belum terbentuk. Masukkan kode aktivasi
+   privat pada kolom yang tersedia; email dan kata sandi baru dipilih pemilik.
 5. Aktivasi yang berhasil membuat pemilik dan mengonsumsi token secara
    atomik. Tautan yang sama tidak dapat membuat akun kedua.
 
