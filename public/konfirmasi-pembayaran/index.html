@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>Ringkasan pesanan — PosLoker</title>
+  <link rel="icon" href="/wp-content/uploads/2026/07/cropped-favicon-32x32.png">
+  <link rel="stylesheet" href="/assets/fonts/manrope.css">
+  <link rel="stylesheet" href="/konfirmasi-pembayaran/legacy.css">
+  <script src="/konfirmasi-pembayaran/legacy.js" defer></script>
+</head>
+<body>
+  <header class="header"><a href="/" aria-label="PosLoker, beranda"><img src="/wp-content/themes/posloker-premium/assets/images/logo-posloker.png" width="150" height="56" alt="PosLoker"></a><span>RINGKASAN PESANAN</span></header>
+  <main>
+    <p class="eyebrow">POSLOKER</p>
+    <h1>Pesanan Anda tetap tercatat.</h1>
+    <p class="intro">Periksa ringkasan dan status pesanan yang dibuat sebelum perpindahan website.</p>
+    <section class="card" aria-labelledby="receiptTitle">
+      <div class="symbol" aria-hidden="true">▤</div>
+      <h2 id="receiptTitle">Ringkasan pesanan</h2>
+      <p id="receiptStatus" role="status" aria-live="polite">Memeriksa tautan pesanan…</p>
+      <p id="receiptError" class="error" role="alert" hidden></p>
+      <div id="receiptView" hidden>
+        <p class="order-number" id="orderNumber"></p>
+        <dl><div><dt>Kota</dt><dd id="orderCity"></dd></div><div><dt>Paket</dt><dd id="orderPackage"></dd></div><div><dt>Total pesanan</dt><dd id="orderAmount"></dd></div><div><dt>Status pembayaran</dt><dd><span id="orderState" class="status-badge"></span></dd></div></dl>
+        <p class="notice">Ringkasan ini tidak membuat pesanan baru. Jangan melakukan transfer tambahan hanya karena membuka halaman ini.</p>
+      </div>
+      <button id="retryReceipt" type="button" hidden>Periksa kembali</button>
+      <p class="privacy">Tautan ini bersifat pribadi. Simpan dan buka kembali melalui tautan asli pesanan Anda.</p>
+    </section>
+    <a class="home-link" href="/">← Kembali ke beranda PosLoker</a>
+    <noscript><p class="notice">Aktifkan JavaScript untuk memeriksa ringkasan pesanan melalui tautan pribadi Anda.</p></noscript>
+  </main>
+  <footer>PosLoker · Pos loker kamu di sosial media.</footer>
+</body>
+</html>

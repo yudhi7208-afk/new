@@ -15,12 +15,14 @@ bukan pengalihan transaksi pelanggan.
   Checkout memakai katalog D1 berisi 49 kota dan 16 kelompok harga; server
   memeriksa kota/paket dan menetapkan nominal serta kode unik.
 - Alur baru mencakup penawaran, formulir pelanggan, unggahan bukti/materi
-  ke R2 privat, penyimpanan pesanan D1, ringkasan terikat sesi browser, dan
+  ke R2 privat, penyimpanan pesanan D1, ringkasan dengan tautan pribadi, dan
   tombol WhatsApp yang dibuka serta dikirim sendiri oleh pengguna.
 
 Mode yang disiapkan adalah `preview`. Pengunjung dapat melihat katalog,
 tetapi penawaran, pengiriman, dan ringkasan memerlukan pemilik yang sudah
-masuk ke admin serta sesi checkout yang sesuai. Pesanan pratinjau selalu
+masuk ke admin. Penawaran/pengiriman memakai sesi checkout; ringkasan baru
+memakai kapabilitas fragment dan tetap memerlukan pemilik untuk simulasi.
+Pesanan pratinjau selalu
 ditandai `is_test=1` dan **SIMULASI**. Gunakan data dan berkas contoh;
 **jangan melakukan transfer**. Tidak ada pesan WhatsApp, notifikasi, atau
 publikasi otomatis dari simulasi ini.
@@ -73,14 +75,23 @@ npm ci
 node scripts/export-posloker.mjs
 npm run test:migration
 npm run test:admin
+npm run test:business
+npm run test:legacy
 node scripts/test-checkout.mjs
 npx wrangler deploy --dry-run
 npx wrangler deploy
 ```
 
-Checkout memerlukan migrasi `0005_checkout.sql` dan konfigurasi privat D1
+Checkout dan panel lengkap memerlukan migrasi sampai `0008_receipt_access.sql` serta konfigurasi privat D1
 sebelum diuji pada lingkungan tujuan. Perintah deploy tidak mengalihkan
 domain atau mengaktifkan mode layanan nyata dengan sendirinya.
+
+Pengaturan bisnis dan isi dasar halaman tersedia di `/admin/business.html`.
+Harga, kontak, konfigurasi kalkulator, kartu paket, dan data terstruktur
+halaman kota menggunakan D1. Arsip/pulihkan pesanan tidak mengubah snapshot.
+Tautan admin dan ringkasan WordPress lama ditangani melalui rute kompatibel.
+Guard pengalihan sumber tersedia sebagai [artefak terpisah](wordpress-handover.md),
+belum dipasang atau diaktifkan pada hosting lama.
 
 Ekspor memakai cache lokal `.cache/posloker-source`. Untuk snapshot publik
 baru, gunakan direktori cache baru melalui `POSLOKER_EXPORT_CACHE`, lalu

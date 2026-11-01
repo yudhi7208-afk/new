@@ -2,8 +2,9 @@ import { HttpError, assertMutation } from './admin-auth.mjs';
 
 const STATUSES = ['pending', 'approved', 'rejected'];
 const EFFECTIVE_STATUS = "COALESCE(s.status,CASE WHEN o.business_status IN ('pending','approved','rejected') THEN o.business_status ELSE 'pending' END)";
+const EFFECTIVE_POST_STATUS = 'COALESCE(s.post_status,o.post_status)';
 const FROM = ' FROM orders o LEFT JOIN order_admin_state s ON s.order_id=o.source_post_id ';
-const LEGACY_SUMMARY = `o.source_post_id AS id,o.order_number AS orderNumber,o.customer_name_original AS customerName,o.city,o.package_name AS packageName,o.amount,${EFFECTIVE_STATUS} AS status,o.post_status AS postStatus,o.ordered_at_local AS orderedAt,COALESCE(s.revision,0) AS revision,'wordpress' AS source,0 AS isTest`;
+const LEGACY_SUMMARY = `o.source_post_id AS id,o.order_number AS orderNumber,o.customer_name_original AS customerName,o.city,o.package_name AS packageName,o.amount,${EFFECTIVE_STATUS} AS status,${EFFECTIVE_POST_STATUS} AS postStatus,o.ordered_at_local AS orderedAt,COALESCE(s.revision,0) AS revision,'wordpress' AS source,0 AS isTest`;
 const NATIVE_SUMMARY = "o.id,o.order_number AS orderNumber,o.customer_name AS customerName,o.city,o.package_name AS packageName,o.amount,o.status,o.post_status AS postStatus,o.ordered_at_local AS orderedAt,o.revision,'cloudflare' AS source,o.is_test AS isTest";
 const SUMMARY_COLUMNS = 'id,orderNumber,customerName,city,packageName,amount,status,postStatus,orderedAt,revision,source,isTest';
 // Normalize only the public desk fields; raw WordPress metadata, checkout
@@ -70,7 +71,7 @@ async function orderDetail(env, id) {
     const responses = await db.batch([
       db.prepare('SELECT ad_text AS adText,caption,notes FROM commerce_orders WHERE id=?').bind(id),
       db.prepare('SELECT id,kind,position,original_name AS name,mime,byte_count AS bytes,0 AS missing FROM commerce_files WHERE order_id=? ORDER BY kind,position').bind(id),
-      db.prepare('SELECT e.created_at AS at,e.action,e.status,e.note,e.reason,e.revision,u.email AS actor FROM commerce_events e LEFT JOIN admin_users u ON u.id=e.admin_id WHERE e.order_id=? ORDER BY e.created_at DESC,e.revision DESC LIMIT 100').bind(id),
+      db.prepare('SELECT e.created_at AS at,COALESCE(e.archive_action,e.action) AS action,e.previous_post_status AS previousPostStatus,e.post_status AS postStatus,e.status,e.note,e.reason,e.revision,u.email AS actor FROM commerce_events e LEFT JOIN admin_users u ON u.id=e.admin_id WHERE e.order_id=? ORDER BY e.created_at DESC,e.revision DESC LIMIT 100').bind(id),
     ]);
     Object.assign(order, resultRows(responses[0])[0]);
     return json({ order, files: fileDtos(resultRows(responses[1])), events: resultRows(responses[2]) });
@@ -80,7 +81,7 @@ async function orderDetail(env, id) {
   const responses = await db.batch([
     db.prepare("SELECT meta_key,meta_value FROM order_meta WHERE order_id=? AND meta_key IN ('_posloker_ad_text','_posloker_ad_caption','_posloker_notes') ORDER BY source_meta_id").bind(id),
     db.prepare('SELECT id,kind,position,original_name AS name,mime,byte_count AS bytes,missing FROM order_files WHERE order_id=? ORDER BY kind,position').bind(id),
-    db.prepare('SELECT e.created_at AS at,e.action,e.status,e.note,e.reason,e.revision,u.email AS actor FROM order_admin_events e JOIN admin_users u ON u.id=e.admin_id WHERE e.order_id=? ORDER BY e.created_at DESC,e.revision DESC LIMIT 100').bind(id),
+    db.prepare('SELECT e.created_at AS at,COALESCE(e.archive_action,e.action) AS action,e.previous_post_status AS previousPostStatus,e.post_status AS postStatus,e.status,e.note,e.reason,e.revision,u.email AS actor FROM order_admin_events e JOIN admin_users u ON u.id=e.admin_id WHERE e.order_id=? ORDER BY e.created_at DESC,e.revision DESC LIMIT 100').bind(id),
   ]);
   const meta = new Map();
   for (const row of resultRows(responses[0])) if (!meta.has(row.meta_key)) meta.set(row.meta_key, row.meta_value);
@@ -137,11 +138,60 @@ async function updateOrder(request, env, auth, id) {
   const results = await db.batch([
     db.prepare(`INSERT INTO order_admin_state(order_id,status,admin_note,revision,updated_at,updated_by,last_change_id)
       SELECT o.source_post_id,?,?,1,?,?,? FROM orders o
-      WHERE o.source_post_id=? AND o.post_status<>'trash' AND COALESCE((SELECT revision FROM order_admin_state WHERE order_id=o.source_post_id),0)=?
+      WHERE o.source_post_id=? AND COALESCE((SELECT post_status FROM order_admin_state WHERE order_id=o.source_post_id),o.post_status)<>'trash' AND COALESCE((SELECT revision FROM order_admin_state WHERE order_id=o.source_post_id),0)=?
       ON CONFLICT(order_id) DO UPDATE SET status=excluded.status,admin_note=excluded.admin_note,revision=order_admin_state.revision+1,updated_at=excluded.updated_at,updated_by=excluded.updated_by,last_change_id=excluded.last_change_id
       WHERE order_admin_state.revision=? RETURNING revision`).bind(input.status, input.adminNote, now, auth.user.id, changeId, id, input.expectedRevision, input.expectedRevision),
     db.prepare(`INSERT INTO order_admin_events(id,order_id,admin_id,action,previous_status,status,previous_note,note,reason,revision,created_at)
       SELECT ?,order_id,?,'update',?,status,?,admin_note,?,revision,updated_at FROM order_admin_state WHERE order_id=? AND last_change_id=?`).bind(changeId, auth.user.id, current.status, current.adminNote, input.reason.trim(), id, changeId),
+  ]);
+  if (resultRows(results[0])[0]?.revision !== nextRevision || results[1].meta?.changes !== 1) throw new HttpError(409, 'Pesanan sudah berubah. Muat ulang sebelum menyimpan.');
+  return orderDetail(env, id);
+}
+async function archiveOrder(request, env, auth, id) {
+  assertMutation(request, auth.session);
+  const input = await requestJson(request);
+  if (!input || Array.isArray(input) || typeof input.archived !== 'boolean' || !Number.isSafeInteger(input.expectedRevision) || input.expectedRevision < 0 ||
+    typeof input.reason !== 'string' || input.reason.trim().length < 3 || input.reason.length > 500 || Object.keys(input).some(key => !['archived','expectedRevision','reason'].includes(key))) {
+    throw new HttpError(400, 'Isi pilihan arsip dan alasan perubahan dengan benar.');
+  }
+  const db = env.CUSTOMER_DB, current = await orderRow(db, id);
+  if (!current) throw new HttpError(404, 'Pesanan tidak ditemukan.');
+  if (current.revision !== input.expectedRevision) throw new HttpError(409, 'Pesanan sudah berubah. Muat ulang sebelum menyimpan.');
+  if ((current.postStatus === 'trash') === input.archived) return json({ saved: true, order: current, unchanged: true });
+  const timestamp = Math.floor(Date.now() / 1000), changeId = crypto.randomUUID(), nextRevision = input.expectedRevision + 1;
+  const action = input.archived ? 'archive' : 'restore';
+  if (current.source === 'cloudflare') {
+    const nextPostStatus = input.archived ? 'trash' : 'publish';
+    const results = await db.batch([
+      db.prepare(`INSERT INTO commerce_events(id,order_id,admin_id,action,previous_status,status,previous_note,note,reason,revision,created_at,archive_action,previous_post_status,post_status)
+        SELECT ?,id,?,'update',status,status,admin_note,admin_note,?,revision+1,?,?,post_status,? FROM commerce_orders
+        WHERE id=? AND revision=? AND post_status=?`).bind(changeId, auth.user.id, input.reason.trim(), timestamp, action, nextPostStatus, id, input.expectedRevision, current.postStatus),
+      db.prepare(`UPDATE commerce_orders SET post_status=?,revision=revision+1,updated_at=?,updated_by=?
+        WHERE id=? AND revision=? AND post_status=?
+        AND EXISTS(SELECT 1 FROM commerce_events WHERE id=? AND order_id=commerce_orders.id AND revision=commerce_orders.revision+1)
+        RETURNING revision`).bind(nextPostStatus, timestamp, auth.user.id, id, input.expectedRevision, current.postStatus, changeId),
+    ]);
+    if (results[0].meta?.changes !== 1 || resultRows(results[1])[0]?.revision !== nextRevision) throw new HttpError(409, 'Pesanan sudah berubah. Muat ulang sebelum menyimpan.');
+    return orderDetail(env, id);
+  }
+  const validRestore = value => ['publish','private','pending','draft','future','auto-draft','inherit'].includes(value);
+  let restoreStatus = current.postStatus;
+  if (!input.archived) {
+    const working = await db.prepare('SELECT restore_post_status FROM order_admin_state WHERE order_id=?').bind(id).first();
+    const original = await db.prepare("SELECT meta_value FROM order_meta WHERE order_id=? AND meta_key='_wp_trash_meta_status' ORDER BY source_meta_id LIMIT 1").bind(id).first();
+    restoreStatus = validRestore(working?.restore_post_status) ? working.restore_post_status : validRestore(original?.meta_value) ? original.meta_value : 'publish';
+  }
+  const nextPostStatus = input.archived ? 'trash' : restoreStatus;
+  const previousActiveStatus = validRestore(restoreStatus) ? restoreStatus : 'publish';
+  const results = await db.batch([
+    db.prepare(`INSERT INTO order_admin_state(order_id,status,admin_note,revision,updated_at,updated_by,last_change_id,post_status,restore_post_status)
+      SELECT o.source_post_id,?,?,1,?,?,?,?,? FROM orders o
+      WHERE o.source_post_id=? AND COALESCE((SELECT revision FROM order_admin_state WHERE order_id=o.source_post_id),0)=?
+      AND COALESCE((SELECT post_status FROM order_admin_state WHERE order_id=o.source_post_id),o.post_status)=?
+      ON CONFLICT(order_id) DO UPDATE SET revision=order_admin_state.revision+1,updated_at=excluded.updated_at,updated_by=excluded.updated_by,last_change_id=excluded.last_change_id,post_status=excluded.post_status,restore_post_status=excluded.restore_post_status
+      WHERE order_admin_state.revision=? RETURNING revision`).bind(current.status, current.adminNote, timestamp, auth.user.id, changeId, nextPostStatus, previousActiveStatus, id, input.expectedRevision, current.postStatus, input.expectedRevision),
+    db.prepare(`INSERT INTO order_admin_events(id,order_id,admin_id,action,previous_status,status,previous_note,note,reason,revision,created_at,archive_action,previous_post_status,post_status)
+      SELECT ?,order_id,?,'update',?,status,?,admin_note,?,revision,updated_at,?,?,post_status FROM order_admin_state WHERE order_id=? AND last_change_id=?`).bind(changeId, auth.user.id, current.status, current.adminNote, input.reason.trim(), action, current.postStatus, id, changeId),
   ]);
   if (resultRows(results[0])[0]?.revision !== nextRevision || results[1].meta?.changes !== 1) throw new HttpError(409, 'Pesanan sudah berubah. Muat ulang sebelum menyimpan.');
   return orderDetail(env, id);
@@ -178,6 +228,11 @@ function validStorageKey(file, native) {
 export async function handleOrders(request, env, url, auth) {
   const path = url.pathname;
   if (path === '/api/admin/orders' && request.method === 'GET') return listOrders(env, url);
+  const archiveMatch = path.match(/^\/api\/admin\/orders\/([1-9]\d{0,14}|cf_[a-f0-9]{32})\/archive$/);
+  if (archiveMatch) {
+    if (request.method !== 'POST') throw new HttpError(405, 'Metode tidak diizinkan.');
+    return archiveOrder(request, env, auth, idFrom(archiveMatch[1]));
+  }
   const orderMatch = path.match(/^\/api\/admin\/orders\/([1-9]\d{0,14}|cf_[a-f0-9]{32})$/);
   if (orderMatch) {
     const id = idFrom(orderMatch[1]);

@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const state = { catalog: null, payment: null, csrfToken: '', preview: true, canSubmit: false, quote: null, quoteTicket: 0, quoteExpired: false, submitting: false, uncertain: false, attempt: null, idempotencyKey: crypto.randomUUID(), receiptId: null, step: 1 };
+  const state = { catalog: null, payment: null, csrfToken: '', preview: true, canSubmit: false, quote: null, quoteTicket: 0, quoteExpired: false, submitting: false, uncertain: false, attempt: null, idempotencyKey: crypto.randomUUID(), receiptId: null, receiptKey: '', step: 1 };
   const initial = new URLSearchParams(location.search);
   let quoteTimer;
   const money = value => Number.isSafeInteger(Number(value)) ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value)) : '—';
@@ -165,11 +165,21 @@
   async function boot() {
     message('pageError', ''); $('bootStatus').hidden = false; $('retryBootButton').hidden = true; $('checkoutLayout').hidden = true; $('receiptStep').hidden = true;
     try {
-      await loadSession();
       const requestedOrder = initial.get('order');
-      if (requestedOrder) { if (!/^[A-Za-z0-9_-]{1,100}$/.test(requestedOrder)) throw new Error('Nomor referensi pesanan tidak valid.'); await loadReceipt(requestedOrder); }
-      else { setStep(1); await requestQuote(); }
-    } catch (error) { message('pageError', error.message); $('retryBootButton').hidden = false; }
+      const fragment = new URLSearchParams(location.hash.slice(1));
+      if (fragment.has('key')) {
+        const key = fragment.get('key');
+        if (!/^cf_[a-f0-9]{32}$/.test(requestedOrder || '') || !/^[a-f0-9]{64}$/.test(key || '')) throw new Error('Tautan ringkasan pesanan tidak lengkap atau tidak valid.');
+        state.receiptKey = key;
+        // A durable receipt must not allocate or depend on a checkout session.
+        await loadReceipt(requestedOrder);
+      } else {
+        state.receiptKey = '';
+        await loadSession();
+        if (requestedOrder) { if (!/^cf_[a-f0-9]{32}$/.test(requestedOrder)) throw new Error('Nomor referensi pesanan tidak valid.'); await loadReceipt(requestedOrder); }
+        else { setStep(1); await requestQuote(); }
+      }
+    } catch (error) { message('pageError', error.message); $('retryBootButton').hidden = false; if (state.receiptKey && error.status === 401) $('accessNotice').hidden = false; }
     finally { $('bootStatus').hidden = true; }
   }
 
@@ -231,18 +241,28 @@
   function renderReceipt(result) {
     const order = result?.order;
     if (!order || !order.id || order.isTest !== state.preview) throw Object.assign(new Error('Hasil pesanan belum dapat dipastikan. Hubungi pengelola sebelum mencoba lagi.'), { uncertain: true });
+    if (typeof order.id !== 'string' || !/^cf_[a-f0-9]{32}$/.test(order.id) || (result.receiptKey !== undefined && (typeof result.receiptKey !== 'string' || !/^[a-f0-9]{64}$/.test(result.receiptKey)))) throw Object.assign(new Error('Tautan ringkasan belum dapat dipastikan. Hubungi pengelola sebelum mencoba lagi.'), { uncertain: true });
+    if (result.receiptKey) state.receiptKey = result.receiptKey;
+    else if (state.receiptId && state.receiptId !== order.id) state.receiptKey = '';
+    if (state.receiptKey) text('receiptDescription', (state.preview ? 'Data telah diterima di Cloudflare dan dapat diperiksa melalui panel pengelola.' : 'Materi dan konfirmasi Anda akan diperiksa oleh tim PosLoker.') + ' Simpan tautan halaman ini untuk memeriksa status nanti. Tautan ini bersifat pribadi.');
     state.receiptId = order.id; clearInterval(quoteTimer); state.attempt = null; state.uncertain = false; state.quote = null; state.idempotencyKey = crypto.randomUUID();
     $('orderForm').reset(); for (const values of [['proofInput', 'proofFiles', 'clearProofButton'], ['materialsInput', 'materialFiles', 'clearMaterialsButton'], ['videoInput', 'videoFiles', 'clearVideoButton']]) renderChosen(...values);
     text('captionCount', '0 / 500 karakter'); text('receiptNumber', order.orderNumber); text('receiptCity', order.city); text('receiptPackage', order.packageName); text('receiptAmount', money(order.amount));
     text('receiptStatus', ({ pending: 'Menunggu verifikasi', approved: 'Lunas', rejected: 'Ditolak' })[order.status] || 'Menunggu verifikasi');
     const whatsapp = safeWhatsapp(result.whatsappUrl); $('whatsappButton').hidden = !whatsapp; $('whatsappHint').hidden = !whatsapp;
     if (whatsapp) $('whatsappButton').href = whatsapp; else $('whatsappButton').removeAttribute('href');
-    history.replaceState(null, '', '/pembayaran/?order=' + encodeURIComponent(order.id));
+    // The capability is a fragment only: never a server query, storage value,
+    // WhatsApp message or external link. Keeping it supports later bookmarks.
+    history.replaceState(null, '', '/pembayaran/?order=' + encodeURIComponent(order.id) + (state.receiptKey ? '#key=' + state.receiptKey : ''));
     message('pageError', ''); message('submissionError', ''); $('bootStatus').hidden = true; $('retryBootButton').hidden = true;
     setStep(3); $('receiptTitle').focus({ preventScroll: true });
     if (matchMedia('(max-width: 760px)').matches) $('receiptStep').scrollIntoView({ behavior: 'auto', block: 'start' });
   }
-  async function loadReceipt(id) { const result = await api('/api/checkout/orders/' + encodeURIComponent(id)); renderReceipt(result); }
+  async function loadReceipt(id) {
+    const result = state.receiptKey ? await api('/api/checkout/receipt', { method: 'POST', body: { orderId: id, key: state.receiptKey } }) : await api('/api/checkout/orders/' + encodeURIComponent(id));
+    if (typeof result?.order?.isTest !== 'boolean') throw new Error('Ringkasan pesanan belum dapat dibaca.');
+    state.preview = result.order.isTest; state.canSubmit = true; renderMode(); renderReceipt(result);
+  }
   async function renewSession() {
     if (state.submitting || state.uncertain) return; $('renewSessionButton').disabled = true;
     try { await loadSession({ retainSelection: true }); clearAttempt(); setStep(1); await requestQuote(); if (state.quote) notice('Sesi diperbarui. Periksa kota, paket, dan nominal sebelum melanjutkan.'); }
@@ -258,7 +278,7 @@
   $('orderForm').addEventListener('submit', event => { event.preventDefault(); submitOrder(); });
   $('retrySubmitButton').addEventListener('click', () => submitOrder(true));
   $('renewSessionButton').addEventListener('click', renewSession);
-  $('checkAccessButton').addEventListener('click', async () => { $('checkAccessButton').disabled = true; try { await loadSession({ retainSelection: true }); if (state.canSubmit && !state.uncertain) { const receiptId = state.receiptId || initial.get('order'); if (receiptId) await loadReceipt(receiptId); else await requestQuote(); } } catch (error) { message('pageError', error.message); } finally { $('checkAccessButton').disabled = false; } });
+  $('checkAccessButton').addEventListener('click', async () => { $('checkAccessButton').disabled = true; try { const receiptId = state.receiptId || initial.get('order'); if (state.receiptKey && receiptId) await loadReceipt(receiptId); else { await loadSession({ retainSelection: true }); if (state.canSubmit && !state.uncertain) { if (receiptId) await loadReceipt(receiptId); else await requestQuote(); } } } catch (error) { message('pageError', error.message); } finally { $('checkAccessButton').disabled = false; } });
   $('retryBootButton').addEventListener('click', boot);
   $('caption').addEventListener('input', () => text('captionCount', $('caption').value.length + ' / 500 karakter'));
   for (const [input, list, clear] of [['proofInput', 'proofFiles', 'clearProofButton'], ['materialsInput', 'materialFiles', 'clearMaterialsButton'], ['videoInput', 'videoFiles', 'clearVideoButton']]) {
@@ -267,12 +287,12 @@
   }
   $('refreshReceiptButton').addEventListener('click', async () => { if (!state.receiptId) return; $('refreshReceiptButton').disabled = true; try { await loadReceipt(state.receiptId); notice('Status pesanan diperbarui.'); } catch (error) { message('pageError', error.message); } finally { $('refreshReceiptButton').disabled = false; } });
   $('newOrderButton').addEventListener('click', async () => {
-    clearAttempt(); state.receiptId = null; $('orderForm').reset(); history.replaceState(null, '', '/pembayaran/'); initial.delete('order');
+    clearAttempt(); state.receiptId = null; state.receiptKey = ''; $('orderForm').reset(); history.replaceState(null, '', '/pembayaran/'); initial.delete('order');
     message('pageError', ''); setStep(1); try { await loadSession({ retainSelection: true }); await requestQuote(); } catch (error) { message('pageError', error.message); }
   });
   $('copyBankButton').addEventListener('click', async () => { if (state.preview || !state.payment?.bankAccount) return; try { await navigator.clipboard.writeText(String(state.payment.bankAccount)); notice('Nomor rekening disalin.'); } catch { notice('Pilih nomor rekening lalu salin secara manual.'); } });
   $('copyAmountButton').addEventListener('click', async () => { if (state.preview || !state.quote) return; try { await navigator.clipboard.writeText(String(state.quote.amount)); notice('Total pembayaran disalin.'); } catch { notice('Pilih total pembayaran lalu salin secara manual.'); } });
-  addEventListener('pagehide', () => { clearInterval(quoteTimer); state.attempt = null; state.csrfToken = ''; $('orderForm').reset(); });
+  addEventListener('pagehide', () => { clearInterval(quoteTimer); state.attempt = null; state.csrfToken = ''; state.receiptKey = ''; $('orderForm').reset(); });
   addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
   boot();
 })();

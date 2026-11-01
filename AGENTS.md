@@ -7,6 +7,8 @@ Disimpan pada 1 November 2026.
 - Website lain dibuat sebagai proyek terpisah; jangan digabungkan ke proyek ini.
 - Biaya mengikuti pemakaian setiap layanan.
 - Website WordPress lama tetap beroperasi selama penyalinan ke Cloudflare.
+  Sistem, database, berkas, dan pengelolaan Cloudflare harus disiapkan serta
+  diuji sebelum nameserver dipindahkan; pengalihan domain adalah tahap akhir.
   Jangan mengalihkan domain/DNS atau menghentikan hosting lama sebelum
   seluruh alur migrasi lengkap, diuji, dan pengguna meminta pengalihan.
 - Statistik PosLoker / PosLoker Insights tidak diperlukan. Jangan memasang,

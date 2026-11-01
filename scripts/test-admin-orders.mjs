@@ -11,10 +11,11 @@ for (const file of ['0001_customer_data.sql', '0002_order_files.sql']) sqlite.ex
 sqlite.exec("CREATE TABLE admin_users(id INTEGER PRIMARY KEY,email TEXT);INSERT INTO admin_users VALUES(1,'admin@example.test');");
 sqlite.exec(await readFile(new URL('../migrations/0004_order_admin.sql', import.meta.url), 'utf8'));
 sqlite.exec(await readFile(new URL('../migrations/0005_checkout.sql', import.meta.url), 'utf8'));
+sqlite.exec(await readFile(new URL('../migrations/0007_order_archive.sql', import.meta.url), 'utf8'));
 sqlite.prepare('INSERT INTO migration_runs VALUES(?,?,?,?,?,?,?,?,?,?)').run('synthetic-run','hash','wp_','2026-01-01T00:00:00Z',null,'2026-01-01T00:00:00Z',3,1,4,'hash');
 sqlite.prepare('INSERT INTO customers VALUES(?,?,?,?,?,?,?,?,?,?,?)').run('synthetic-customer','synthetic-run','identity','Example Customer','0800000000','customer@example.test','example','0800000000','customer@example.test',101,'hash');
 const orderColumns = ['source_post_id','migration_run_id','customer_id','order_number','post_status','business_status','customer_name_original','whatsapp_original','email_original','city','package_id','package_name','base_amount','unique_code','amount','ordered_at_local','ordered_at_gmt','modified_at_local','raw_post_json','source_post_sha256','row_sha256'];
-for (const [id, postStatus, status, name] of [[101,'publish','pending','Example Customer'],[102,'publish','approved',"Example 100%_\\' Customer"],[103,'trash','pending','Example Archived']]) {
+for (const [id, postStatus, status, name] of [[101,'publish','pending','Example Customer'],[102,'private','approved',"Example 100%_\\' Customer"],[103,'trash','pending','Example Archived']]) {
   sqlite.prepare('INSERT INTO orders(' + orderColumns.join(',') + ') VALUES(' + orderColumns.map(() => '?').join(',') + ')').run(id,'synthetic-run','synthetic-customer','PL-TEST-'+id,postStatus,status,name,'0800000000','customer@example.test','Kota Contoh','pkg','Paket Contoh',100000,17,100017,'2026-01-01 07:00:00','2026-01-01 00:00:00','2026-01-01 07:00:00','{"never":"EXCLUDED_RAW_POST"}','hash','hash');
 }
 for (const [id,key,value] of [[1,'_posloker_ad_text','<script>synthetic ad</script>'],[2,'_posloker_ad_caption','Unicode É😀 caption'],[3,'_posloker_notes','Customer note'],[4,'_posloker_public_token','EXCLUDED_SOURCE_BEARER']]) {
@@ -48,7 +49,7 @@ for (let index = 1; index <= 23; index++) {
 }
 assert.equal(nativeIds[0],nativeId);
 sqlite.prepare('INSERT INTO commerce_files(id,order_id,kind,position,original_name,mime,storage_key,sha256,byte_count,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)').run(nativeFileId,nativeId,'proof',0,'Native\r\nÉ😀".pdf','application/pdf',nativeKey,nativeDigest,nativeBody.length,1767312001);
-const nativeFixedColumns = nativeColumns.filter(column => !['status','revision','admin_note','updated_at','updated_by'].includes(column));
+const nativeFixedColumns = nativeColumns.filter(column => !['status','post_status','revision','admin_note','updated_at','updated_by'].includes(column));
 const nativeFixedBefore = JSON.stringify(sqlite.prepare('SELECT ' + nativeFixedColumns.join(',') + ' FROM commerce_orders ORDER BY id').all());
 const nativeFilesBefore = JSON.stringify(sqlite.prepare('SELECT * FROM commerce_files ORDER BY id').all());
 
@@ -175,6 +176,62 @@ try {
   assert.deepEqual(sqlite.prepare('SELECT revision FROM commerce_events WHERE order_id=? ORDER BY revision').all(nativeId).map(row=>row.revision),[0,1,2]);
   await assert.rejects(call(get('/api/admin/orders/cf_'+ 'G'.repeat(32))),e=>e.status===404);
 
+  // Reversible visibility changes share the status/note revision and preserve
+  // every immutable source row and stored attachment.
+  const archiveReason = 'Arsipkan contoh pengujian tanpa menghapus berkas';
+  for (const orderId of [101,102,nativeId]) {
+    const path = '/api/admin/orders/'+orderId, archivePath = path+'/archive';
+    const before = (await (await call(get(path))).json()).order;
+    const archiveInput = { archived:true, expectedRevision:before.revision, reason:archiveReason };
+    await assert.rejects(call(post(archivePath,archiveInput,{'X-CSRF-Token':'wrong'})),e=>e.status===403);
+    await assert.rejects(call(post(archivePath,archiveInput,{Origin:'https://evil.example.test'})),e=>e.status===403);
+    await assert.rejects(call(post(archivePath,{...archiveInput,archived:'true'})),e=>e.status===400);
+    await assert.rejects(call(post(archivePath,{...archiveInput,amount:0})),e=>e.status===400);
+    await assert.rejects(call(get(archivePath)),e=>e.status===405);
+    failAudit = true;
+    await assert.rejects(call(post(archivePath,archiveInput)));
+    failAudit = false;
+    assert.equal((await (await call(get(path))).json()).order.revision,before.revision,'Archive audit failure rolls back order visibility');
+    if (orderId === nativeId) {
+      failNativeUpdate = true;
+      await assert.rejects(call(post(archivePath,archiveInput)));
+      failNativeUpdate = false;
+      assert.equal((await (await call(get(path))).json()).order.revision,before.revision,'Native archive state failure rolls back its audit claim');
+    }
+    data = await (await call(post(archivePath,archiveInput))).json();
+    assert.equal(data.order.postStatus,'trash'); assert.equal(data.order.revision,before.revision+1);
+    assert.equal(data.order.status,before.status); assert.equal(data.order.adminNote,before.adminNote);
+    assert.equal(data.events[0].action,'archive'); assert.equal(data.events[0].previousPostStatus,before.postStatus); assert.equal(data.events[0].postStatus,'trash');
+    assert.equal(data.events[0].reason,archiveReason);
+    assert.ok((await (await call(get('/api/admin/orders?trash=1'))).json()).orders.some(order=>String(order.id)===String(orderId)));
+    assert.ok(!(await (await call(get('/api/admin/orders'))).json()).orders.some(order=>String(order.id)===String(orderId)));
+    await assert.rejects(call(post(archivePath,archiveInput)),e=>e.status===409,'A stale archive retry cannot add another event');
+    await assert.rejects(call(post(path,{...payload,expectedRevision:data.order.revision})),e=>e.status===409,'Archived orders cannot change status/notes');
+    const unchangedArchive = await (await call(post(archivePath,{...archiveInput,expectedRevision:data.order.revision}))).json();
+    assert.equal(unchangedArchive.unchanged,true);
+    const restoreInput = { archived:false, expectedRevision:data.order.revision, reason:'Pulihkan pesanan contoh' };
+    data = await (await call(post(archivePath,restoreInput))).json();
+    assert.equal(data.order.postStatus,before.postStatus); assert.equal(data.order.revision,before.revision+2);
+    assert.equal(data.order.status,before.status); assert.equal(data.order.adminNote,before.adminNote);
+    assert.equal(data.events[0].action,'restore'); assert.equal(data.events[0].previousPostStatus,'trash'); assert.equal(data.events[0].postStatus,before.postStatus);
+    const raceInput = {...archiveInput,expectedRevision:data.order.revision};
+    const archiveRace = await Promise.allSettled([
+      call(post(archivePath,raceInput)),
+      call(post(path,{status:before.status==='approved'?'pending':'approved',adminNote:before.adminNote,reason:'Status bersaing dengan arsip',expectedRevision:data.order.revision})),
+    ]);
+    assert.equal(archiveRace.filter(result=>result.status==='fulfilled').length,1,'Archive and normal edits must share one revision CAS');
+    assert.equal(archiveRace.find(result=>result.status==='rejected').reason.status,409);
+    const racedOrder = (await (await call(get(path))).json()).order;
+    if (racedOrder.postStatus === 'trash') await call(post(archivePath,{archived:false,expectedRevision:racedOrder.revision,reason:'Pulihkan setelah pengujian bersamaan'}));
+  }
+  // A source snapshot which already arrived in trash can be restored without
+  // changing that raw snapshot. Its following ordinary update must then work.
+  data = await (await call(post('/api/admin/orders/103/archive',{archived:false,expectedRevision:0,reason:'Pulihkan arsip impor contoh'}))).json();
+  assert.equal(data.order.postStatus,'publish'); assert.equal(sqlite.prepare('SELECT post_status FROM orders WHERE source_post_id=103').get().post_status,'trash');
+  data = await (await call(post('/api/admin/orders/103',{status:'approved',adminNote:'Restored historical example',expectedRevision:data.order.revision,reason:'Periksa pesanan yang dipulihkan'}))).json();
+  assert.equal(data.order.status,'approved');
+  await call(post('/api/admin/orders/103/archive',{archived:true,expectedRevision:data.order.revision,reason:'Kembalikan contoh ke arsip'}));
+
   const file = await call(get('/api/admin/files/'+fileId));
   assert.equal(Buffer.from(await file.arrayBuffer()).compare(fileBody),0);
   assert.match(file.headers.get('Content-Disposition'),/^attachment;/);
@@ -205,6 +262,7 @@ try {
   assert.equal(anonymousFile.status,401); assert.equal(r2Reads,readsBeforeAnonymous,'Anonymous requests cannot reach legacy R2');
   assert.equal((await worker.fetch(get('/api/admin/files/'+nativeFileId),env)).status,401);
   assert.equal((await worker.fetch(get(nativePath),env)).status,401);
+  assert.equal((await worker.fetch(post(nativePath+'/archive',{archived:true,expectedRevision:0,reason:'Anonymous request denied'}),env)).status,401);
   assert.equal(r2Reads,readsBeforeAnonymous,'Anonymous requests cannot reach native R2');
   const anonymousOrders = await worker.fetch(get('/api/admin/orders'),env);
   assert.equal(anonymousOrders.status,401);
@@ -215,7 +273,7 @@ try {
   assert.ok(shell.headers.get('Content-Security-Policy').includes("frame-ancestors 'none'"));
   assert.equal(await (await worker.fetch(get('/'),env)).text(),'Synthetic public asset');
   assert.equal(JSON.stringify(['orders','customers','order_meta','migration_runs','order_files'].map(t => sqlite.prepare('SELECT * FROM '+t).all())),immutableBefore,'Admin changes must leave every migrated source table unchanged');
-  assert.equal(JSON.stringify(sqlite.prepare('SELECT ' + nativeFixedColumns.join(',') + ' FROM commerce_orders ORDER BY id').all()),nativeFixedBefore,'Native admin updates may only change status, note, revision and audit actor/time');
+  assert.equal(JSON.stringify(sqlite.prepare('SELECT ' + nativeFixedColumns.join(',') + ' FROM commerce_orders ORDER BY id').all()),nativeFixedBefore,'Native admin updates may only change status, note, reversible visibility, revision and audit actor/time');
   assert.equal(JSON.stringify(sqlite.prepare('SELECT * FROM commerce_files ORDER BY id').all()),nativeFilesBefore);
   assert.equal(sqlite.prepare('PRAGMA foreign_key_check').all().length,0);
   console.log('Synthetic admin desk checks passed: unified sources and pagination, literal search and filters, safe source/test DTOs, CSRF, legacy/native private downloads, immutable snapshots and checkout fields, bidirectional atomic audit rollback, revision conflicts and concurrent update protection.');

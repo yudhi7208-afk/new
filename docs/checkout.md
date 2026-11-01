@@ -29,10 +29,11 @@ Seluruh pesanan baru preview ditandai `is_test=1` dan **SIMULASI**.
    Idempotency key serta klaim pengiriman mencegah percobaan yang sama
    membuat pesanan ganda. Ulangi data yang sama bila hasil belum pasti;
    jangan membuat pesanan pengganti untuk melewati penguncian.
-5. Ringkasan menampilkan nomor, kota, paket, nominal, dan status. Ringkasan
-   terikat sesi browser checkout pembuatnya, bukan tautan publik yang dapat
-   dibuka hanya dengan mengetahui nomor/ID. Dalam preview, sesi pemilik
-   juga tetap diperlukan.
+5. Ringkasan menampilkan nomor, kota, paket, nominal, dan status. Pesanan baru
+   memberikan tautan pribadi dengan kunci pada fragment `#key=...`, sehingga
+   dapat dibuka kembali setelah sesi checkout berakhir. Nomor/ID saja tidak
+   memberikan akses. Ringkasan simulasi selalu memerlukan pemilik, termasuk
+   setelah mode layanan berubah menjadi live.
 6. Tombol WhatsApp membuka pesan siap isi. Pengguna sendiri memilih untuk
    membuka dan mengirimnya. Aplikasi maupun agen tidak otomatis mengirim
    pesan, email, notifikasi, atau memublikasikan lowongan.
@@ -42,6 +43,17 @@ bersamaan dengan sesi. Total berbayar direservasi dalam mode yang sama;
 reservasi pesanan yang tersimpan diperpanjang sampai 24 jam setelah
 penyimpanan. Reservasi preview dan live dipisahkan. Ini bukan verifikasi
 bank otomatis: status pembayaran tetap diperiksa oleh pemilik.
+
+Kunci ringkasan diturunkan dari rahasia sesi asal dan ID pesanan; database
+menyimpan hanya hash kunci. Pengiriman ulang idempoten menghasilkan kunci
+yang sama. Browser mengirim kunci melalui body JSON ke
+`POST /api/checkout/receipt`, tanpa menaruhnya di query, WhatsApp, atau
+penyimpanan browser. Respons hanya berisi ringkasan dan tombol WhatsApp;
+kontak pelanggan, catatan, bukti, serta materi tetap tidak tersedia melalui
+tautan ini. Simpan tautannya secara privat. Pesanan arsip menolak akses.
+Pesanan uji lama dengan hash NULL tetap memakai jalur sesi asal selama sesi
+itu berlaku. Tautan WordPress lama ditangani terpisah di
+`/konfirmasi-pembayaran/` dengan validasi kapabilitas sumber dan DTO minimal.
 
 ## Berkas dan panel admin
 
@@ -65,10 +77,17 @@ Panel `/admin/` menggabungkan kedua sumber dengan filter dan badge
 percobaan. Detail, unduhan, perubahan status/catatan, riwayat, dan pemeriksaan
 revisi tersedia tanpa mengubah snapshot sumber.
 
+Panel juga menyediakan arsip/pulihkan dengan alasan serta audit, dan
+`/admin/business.html` untuk pengaturan harga, pembayaran, kontak, dan isi
+dasar 51 halaman. Halaman publik dirender memakai konfigurasi D1 yang sama
+dengan checkout; harga lama, penawaran lama, dan snapshot sumber tetap utuh.
+
 ## Konfigurasi privat
 
-Terapkan `migrations/0005_checkout.sql` setelah migrasi snapshot, berkas,
-dan admin. Skema membuat `commerce_settings` dengan mode awal `preview`.
+Terapkan seluruh migrasi berurutan sampai `0008_receipt_access.sql` setelah
+snapshot, berkas, dan admin. `0005` membuat `commerce_settings` dengan mode
+awal `preview`; `0006` menambahkan pengaturan/konten/audit, `0007` arsip
+reversibel, dan `0008` hash kunci ringkasan.
 Katalog, pengaturan pembayaran, serta batas bukti diisi melalui konfigurasi
 D1; nilai rekening/kontak aktual tidak ditulis pada HTML, Git, atau panduan.
 

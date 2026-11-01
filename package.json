@@ -6,6 +6,8 @@
     "test:migration": "node scripts/test-customer-migration.mjs && node scripts/customer-console-tools.mjs self-test && node scripts/test-order-files.mjs && node scripts/test-order-files-console.mjs",
     "test:admin": "node scripts/test-admin-auth.mjs && node scripts/test-admin-orders.mjs",
     "test:checkout": "node scripts/test-checkout.mjs",
+    "test:business": "node scripts/test-admin-business.mjs",
+    "test:legacy": "node scripts/test-legacy-receipt.mjs",
     "export:posloker": "node scripts/export-posloker.mjs",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"

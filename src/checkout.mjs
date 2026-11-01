@@ -38,6 +38,16 @@ function origin(request) {
 function csrf(value, session) {
   if (typeof value !== 'string' || !TOKEN.test(value) || value !== session.csrf_token) throw new HttpError(403, 'Sesi formulir berakhir. Muat ulang halaman.');
 }
+function sameTokenHash(left, right) {
+  if (!TOKEN.test(left || '') || !TOKEN.test(right || '')) return false;
+  let difference = 0;
+  for (let index = 0; index < 64; index++) difference |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  return difference === 0;
+}
+async function receiptKeyFor(session, orderId) {
+  if (!TOKEN.test(session.raw_token || '') || !ORDER_ID.test(orderId)) throw new HttpError(503, 'Tautan ringkasan belum siap.');
+  return sha('posloker:receipt:v1\u0000' + session.raw_token + '\u0000' + orderId);
+}
 async function readBody(request, limit) {
   const length = request.headers.get('Content-Length');
   if (length && (!/^\d+$/.test(length) || Number(length) > limit)) throw new HttpError(413, 'Ukuran formulir terlalu besar.');
@@ -124,7 +134,8 @@ async function rate(request, db, scope, ipLimit, globalLimit) {
   for (const [key, limit] of [[await sha(scope + ':address:' + setup.token_hash + ':' + address), ipLimit], [globalKey, globalLimit]]) {
     const counter = await db.prepare(`INSERT INTO checkout_rate_limits(bucket_hash,window_start,attempts) VALUES(?,?,1)
       ON CONFLICT(bucket_hash) DO UPDATE SET attempts=CASE WHEN checkout_rate_limits.window_start=excluded.window_start THEN checkout_rate_limits.attempts+1 ELSE 1 END,
-      window_start=excluded.window_start RETURNING attempts`).bind(key, window).first();
+      window_start=excluded.window_start
+      WHERE checkout_rate_limits.window_start<>excluded.window_start OR checkout_rate_limits.attempts<? RETURNING attempts`).bind(key, window, limit).first();
     if (!counter || counter.attempts > limit) throw new HttpError(429, 'Permintaan sedang dibatasi. Coba lagi setelah beberapa saat.');
   }
   await db.prepare('DELETE FROM checkout_rate_limits WHERE bucket_hash IN (SELECT bucket_hash FROM checkout_rate_limits WHERE window_start<? LIMIT 100)').bind(window - 900).run();
@@ -134,7 +145,9 @@ async function sessionOf(request, db) {
   if (candidates.length !== 1) return null;
   const raw = candidates[0].slice(COOKIE.length + 1);
   if (!TOKEN.test(raw)) return null;
-  return db.prepare('SELECT token_hash,csrf_token,expires_at FROM checkout_sessions WHERE token_hash=? AND expires_at>?').bind(await sha(raw), now()).first();
+  const session = await db.prepare('SELECT token_hash,csrf_token,expires_at FROM checkout_sessions WHERE token_hash=? AND expires_at>?').bind(await sha(raw), now()).first();
+  // The raw token stays request-local and is never returned, logged or stored.
+  return session ? { ...session, raw_token: raw } : null;
 }
 async function getSession(request, env, db, settings) {
   const canSubmit = !settings.preview || Boolean(await requireAdmin(request, env));
@@ -245,6 +258,13 @@ async function validateFiles(form, quote, limits) {
   if (video) checked.push(await checkedFile(video, 'material', materials.length, MATERIAL_BYTES, true));
   return checked;
 }
+function quoteUploadLimits(quote) {
+  try {
+    const payout = JSON.parse(quote.payout_json), mb = payout?.maxUploadMb ?? 10;
+    if (!payout || typeof payout !== 'object' || Array.isArray(payout) || !Number.isSafeInteger(mb) || mb < 1 || mb > 10) throw Error();
+    return { proofMaxBytes: mb * MIB };
+  } catch { throw new HttpError(503, 'Pengaturan penawaran tidak valid. Pilih paket kembali.'); }
+}
 function receiptOrder(order) {
   return { id: order.id, orderNumber: order.order_number, status: order.status, city: order.city, packageName: order.package_name, amount: order.amount, isTest: Boolean(order.is_test) };
 }
@@ -254,9 +274,31 @@ function whatsappUrl(order, payout) {
     'Total: Rp' + order.amount.toLocaleString('id-ID'), 'Mohon periksa melalui panel admin.'].join('\n');
   return 'https://wa.me/' + payout.whatsapp + '?text=' + encodeURIComponent(message);
 }
-async function receipt(db, session, id) {
+async function receipt(request, env, db, session, id) {
   const order = await db.prepare('SELECT o.*,q.payout_json FROM commerce_orders o JOIN checkout_quotes q ON q.id=o.quote_id WHERE o.id=? AND o.session_hash=?').bind(id, session.token_hash).first();
-  if (!order) throw new HttpError(404, 'Pesanan tidak ditemukan pada sesi ini.');
+  if (!order || order.post_status === 'trash') throw new HttpError(404, 'Pesanan tidak ditemukan pada sesi ini.');
+  if (order.is_test && !(await requireAdmin(request, env))) throw new HttpError(401, 'Masuk sebagai admin untuk membuka ringkasan simulasi.');
+  let receiptKey;
+  if (order.receipt_token_hash !== null && order.receipt_token_hash !== undefined) {
+    receiptKey = await receiptKeyFor(session, id);
+    if (!sameTokenHash(await sha(receiptKey), order.receipt_token_hash)) throw new HttpError(503, 'Tautan ringkasan belum sesuai.');
+  }
+  return json({ order: receiptOrder(order), whatsappUrl: whatsappUrl(order, JSON.parse(order.payout_json)), ...(receiptKey ? { receiptKey } : {}) });
+}
+async function durableReceipt(request, env, db, settings) {
+  origin(request);
+  if (new URL(request.url).search) throw new HttpError(400, 'Tautan pesanan tidak valid.');
+  const input = await readJson(request);
+  if (Object.keys(input).some(key => !['orderId','key'].includes(key)) || typeof input.orderId !== 'string' ||
+      !ORDER_ID.test(input.orderId) || typeof input.key !== 'string' || !TOKEN.test(input.key)) throw new HttpError(400, 'Tautan pesanan tidak valid.');
+  await rate(request, db, 'receipt', 20, 200);
+  const order = await db.prepare(`SELECT o.id,o.order_number,o.city,o.package_name,o.amount,o.status,o.is_test,o.post_status,o.receipt_token_hash,q.payout_json
+    FROM commerce_orders o JOIN checkout_quotes q ON q.id=o.quote_id WHERE o.id=?`).bind(input.orderId).first();
+  const submittedHash = await sha(input.key);
+  const matched = sameTokenHash(submittedHash, order?.receipt_token_hash || '0'.repeat(64));
+  if (!order || !TOKEN.test(order.receipt_token_hash || '') || !matched || order.post_status === 'trash') throw new HttpError(404, 'Tautan pesanan tidak tersedia atau tidak valid.');
+  // Simulations never acquire public access merely because the site goes live.
+  if (order.is_test && !settings.preview && !(await requireAdmin(request, env))) throw new HttpError(401, 'Masuk sebagai admin untuk membuka ringkasan simulasi.');
   return json({ order: receiptOrder(order), whatsappUrl: whatsappUrl(order, JSON.parse(order.payout_json)) });
 }
 function jakartaDate(seconds) { return new Date(seconds * 1000 + 7 * 3600000).toISOString().slice(0,19).replace('T',' '); }
@@ -279,7 +321,7 @@ async function submit(request, env, db, session, settings) {
   if (!QUOTE_ID.test(quoteId) || !UUID.test(idempotency)) throw new HttpError(400, 'Sesi pesanan tidak valid.');
   const old = await previousSubmission(db, session, idempotency, quoteId);
   if (old) {
-    if (old.state === 'complete') return receipt(db, session, old.order_id);
+    if (old.state === 'complete') return receipt(request, env, db, session, old.order_id);
     throw new HttpError(409, 'Pesanan sedang disimpan. Tunggu sebentar lalu coba kembali.');
   }
   const quote = await db.prepare('SELECT * FROM checkout_quotes WHERE id=? AND session_hash=? AND expires_at>? AND consumed_at IS NULL').bind(quoteId, session.token_hash, now()).first();
@@ -288,15 +330,18 @@ async function submit(request, env, db, session, settings) {
   const customerName = simpleText(formValue(form, 'customerName', 120, true), 120, true);
   const whatsapp = phone(formValue(form, 'whatsapp', 30, true)), contactEmail = email(formValue(form, 'email', 254));
   const adText = formValue(form, 'adText', 2000), caption = formValue(form, 'caption', 500), notes = formValue(form, 'notes', 500);
-  const files = await validateFiles(form, quote, settings.limits);
+  // A displayed quote keeps the upload terms captured when it was created,
+  // even if the owner changes the proof limit before this form is submitted.
+  const files = await validateFiles(form, quote, quoteUploadLimits(quote));
   if (!env.CUSTOMER_FILES?.put || !env.CUSTOMER_FILES?.delete) throw new HttpError(503, 'Penyimpanan berkas belum siap.');
   const claimId = random(16), orderId = 'cf_' + random(16), timestamp = now();
+  const receiptTokenHash = await sha(await receiptKeyFor(session, orderId));
   const claim = await db.prepare(`INSERT INTO checkout_submissions(session_hash,idempotency_key,quote_id,claim_id,state,created_at)
     SELECT ?,?,?,?,'processing',? FROM checkout_quotes WHERE id=? AND session_hash=? AND expires_at>? AND consumed_at IS NULL
     ON CONFLICT DO NOTHING RETURNING claim_id`).bind(session.token_hash, idempotency, quoteId, claimId, timestamp, quoteId, session.token_hash, now()).first();
   if (!claim || claim.claim_id !== claimId) {
     const concurrent = await previousSubmission(db, session, idempotency, quoteId);
-    if (concurrent?.state === 'complete') return receipt(db, session, concurrent.order_id);
+    if (concurrent?.state === 'complete') return receipt(request, env, db, session, concurrent.order_id);
     if (concurrent) throw new HttpError(409, 'Pesanan sedang disimpan. Tunggu sebentar lalu coba kembali.');
     throw new HttpError(410, 'Sesi pesanan berakhir. Pilih paket kembali.');
   }
@@ -310,11 +355,11 @@ async function submit(request, env, db, session, settings) {
     }
     const localDate = jakartaDate(timestamp), month = localDate.slice(0,7).replace('-','');
     const number = (quote.is_test ? 'CF-TEST-' : 'CF-') + month + '-' + orderId.slice(3,19).toUpperCase();
-    const statements = [db.prepare(`INSERT INTO commerce_orders(id,order_number,quote_id,session_hash,idempotency_key,customer_name,whatsapp,email,city,package_id,package_name,features_json,base_amount,unique_code,amount,ad_text,caption,notes,status,post_status,ordered_at_local,created_at,revision,admin_note,updated_at,is_test)
-      SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending','publish',?,?,0,'',?,? FROM checkout_quotes
+    const statements = [db.prepare(`INSERT INTO commerce_orders(id,order_number,quote_id,session_hash,idempotency_key,customer_name,whatsapp,email,city,package_id,package_name,features_json,base_amount,unique_code,amount,ad_text,caption,notes,status,post_status,ordered_at_local,created_at,revision,admin_note,updated_at,is_test,receipt_token_hash)
+      SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'pending','publish',?,?,0,'',?,?,? FROM checkout_quotes
       WHERE id=? AND session_hash=? AND expires_at>? AND consumed_at IS NULL AND EXISTS(SELECT 1 FROM checkout_submissions WHERE claim_id=? AND state='processing') RETURNING id`)
       .bind(orderId, number, quoteId, session.token_hash, idempotency, customerName, whatsapp, contactEmail, quote.city, quote.package_id, quote.package_name, quote.features_json,
-        quote.base_amount, quote.unique_code, quote.amount, adText, caption, notes, localDate, timestamp, timestamp, quote.is_test, quoteId, session.token_hash, now(), claimId)];
+        quote.base_amount, quote.unique_code, quote.amount, adText, caption, notes, localDate, timestamp, timestamp, quote.is_test, receiptTokenHash, quoteId, session.token_hash, now(), claimId)];
     for (const file of files) statements.push(db.prepare(`INSERT INTO commerce_files(id,order_id,kind,position,original_name,mime,storage_key,sha256,byte_count,created_at)
       SELECT ?,id,?,?,?,?,?,?,?,? FROM commerce_orders WHERE id=?`).bind(file.id, file.kind, file.position, file.originalName, file.mime, file.key, file.sha256, file.bytes.length, timestamp, orderId));
     statements.push(db.prepare(`INSERT INTO commerce_events(id,order_id,admin_id,action,previous_status,status,previous_note,note,reason,revision,created_at)
@@ -325,14 +370,14 @@ async function submit(request, env, db, session, settings) {
     persistenceAttempted = true;
     const saved = await db.batch(statements);
     if (rows(saved[0])[0]?.id !== orderId || saved.at(-1)?.meta?.changes !== 1) throw new HttpError(410, 'Sesi pesanan berakhir sebelum tersimpan. Pilih paket kembali.');
-    return receipt(db, session, orderId);
+    return receipt(request, env, db, session, orderId);
   } catch (error) {
     if (persistenceAttempted) {
       // Do not destroy files after an ambiguous commit. A same-key retry can recover it.
       let saved;
       try { saved = await db.prepare('SELECT state,order_id FROM checkout_submissions WHERE claim_id=?').bind(claimId).first(); }
       catch { throw new HttpError(503, 'Status penyimpanan belum dapat dipastikan. Coba kembali dengan formulir yang sama.'); }
-      if (saved?.state === 'complete' && saved.order_id === orderId) return receipt(db, session, orderId);
+      if (saved?.state === 'complete' && saved.order_id === orderId) return receipt(request, env, db, session, orderId);
       if (!saved || saved.state !== 'processing') throw new HttpError(503, 'Status penyimpanan perlu diperiksa. Jangan membuat pesanan lain dahulu.');
     }
     const cleanupClaimId = random(16);
@@ -346,7 +391,7 @@ async function submit(request, env, db, session, settings) {
     } catch { throw new HttpError(503, 'Status penyimpanan belum dapat dipastikan. Coba kembali dengan formulir yang sama.'); }
     if (!cancelled || cancelled.claim_id !== cleanupClaimId) {
       const committed = await db.prepare('SELECT state,order_id FROM checkout_submissions WHERE claim_id=?').bind(claimId).first();
-      if (committed?.state === 'complete' && committed.order_id === orderId) return receipt(db, session, orderId);
+      if (committed?.state === 'complete' && committed.order_id === orderId) return receipt(request, env, db, session, orderId);
       throw new HttpError(503, 'Status penyimpanan perlu diperiksa. Jangan membuat pesanan lain dahulu.');
     }
     if (!(await removeOwnUploads(env, uploaded))) {
@@ -362,7 +407,19 @@ async function submit(request, env, db, session, settings) {
 export async function handleCheckout(request, env, url = new URL(request.url)) {
   if (!url.pathname.startsWith('/api/checkout/')) return null;
   transport(request);
-  const db = database(env), settings = await config(db);
+  const db = database(env);
+  if (url.pathname === '/api/checkout/receipt') {
+    // A historical receipt uses its saved order/payment snapshot, not today's
+    // catalogue. Only the current publication mode controls its owner barrier.
+    const entry = await db.prepare("SELECT value_json FROM commerce_settings WHERE key='mode'").first();
+    let mode;
+    try { mode = entry ? JSON.parse(entry.value_json) : 'preview'; } catch { throw new HttpError(503, 'Ringkasan pesanan belum siap.'); }
+    if (!['preview','live'].includes(mode)) throw new HttpError(503, 'Ringkasan pesanan belum siap.');
+    const settings = { preview: mode !== 'live' };
+    if (settings.preview && !(await requireAdmin(request, env))) throw new HttpError(401, 'Masuk sebagai admin untuk mencoba pemesanan pratinjau.');
+    return durableReceipt(request, env, db, settings);
+  }
+  const settings = await config(db);
   if (url.pathname === '/api/checkout/session') {
     if (request.method !== 'GET') throw new HttpError(405, 'Metode tidak diizinkan.');
     return getSession(request, env, db, settings);
@@ -376,7 +433,7 @@ export async function handleCheckout(request, env, url = new URL(request.url)) {
   if (receiptMatch) {
     if (request.method !== 'GET') throw new HttpError(405, 'Metode tidak diizinkan.');
     if (!ORDER_ID.test(receiptMatch[1])) throw new HttpError(404, 'Pesanan tidak ditemukan.');
-    return receipt(db, session, receiptMatch[1]);
+    return receipt(request, env, db, session, receiptMatch[1]);
   }
   if (['/api/checkout/quote','/api/checkout/submit'].includes(url.pathname)) {
     origin(request);

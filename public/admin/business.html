@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light">
+  <title>Pengaturan Website — PosLoker</title>
+  <link rel="stylesheet" href="/assets/fonts/manrope.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <link rel="stylesheet" href="/admin/business.css">
+  <script src="/admin/business.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke isi</a>
+  <header class="site-header">
+    <a class="brand" href="/admin/" aria-label="PosLoker, halaman admin"><span class="brand-icon" aria-hidden="true">P<span>•</span></span><span>PosLoker<span class="brand-caption">RUANG ADMIN</span></span></a>
+    <div class="header-actions"><a href="/admin/" class="quiet-link">Pesanan</a><a href="/" class="quiet-link" target="_blank" rel="noreferrer noopener">Lihat website <span aria-hidden="true">↗</span></a><button id="logoutButton" class="button button-light" type="button" hidden>Keluar</button></div>
+  </header>
+  <main id="main" class="business-main">
+    <div id="globalStatus" class="global-status" role="status" aria-live="polite">Memeriksa sesi…</div>
+    <section id="loginView" class="access-card panel" hidden aria-labelledby="loginTitle"><span class="eyebrow">AKSES PENGELOLA</span><h1 id="loginTitle">Masuk untuk mengatur website.</h1><p id="loginMessage" class="muted">Gunakan akun admin PosLoker untuk membuka pengaturan ini.</p><a href="/admin/" class="button button-primary">Masuk ke admin →</a></section>
+    <section id="loadErrorView" class="access-card panel" hidden aria-labelledby="loadErrorTitle"><span class="eyebrow">PENGATURAN WEBSITE</span><h1 id="loadErrorTitle">Data belum dapat dimuat.</h1><p id="loadErrorMessage" class="form-error" role="alert"></p><button id="retryButton" class="button button-primary" type="button">Coba lagi</button></section>
+    <div id="settingsView" hidden>
+      <div class="migration-banner"><span class="banner-icon" aria-hidden="true">i</span><div><strong>Persiapan Cloudflare</strong><p>Perubahan di halaman ini berlaku pada salinan Cloudflare. Website WordPress lama tetap beroperasi.</p><span class="migration-test-note">Pengaturan ini tidak mengalihkan domain atau mengaktifkan transaksi nyata.</span></div></div>
+      <div class="page-title-row"><div><span class="eyebrow">RUANG ADMIN</span><h1>Pengaturan website</h1><p class="muted">Kelola paket, tujuan pembayaran, dan isi halaman PosLoker.</p></div><a class="button button-light" href="/admin/">← Kembali ke pesanan</a></div>
+      <nav class="settings-nav" aria-label="Bagian pengaturan"><a href="#prices">Harga paket</a><a href="#payments">Pembayaran</a><a href="#content">Konten halaman</a><a href="#history">Riwayat</a></nav>
+      <form id="businessForm">
+        <fieldset id="businessFieldset">
+          <section id="prices" class="settings-panel panel" aria-labelledby="pricesTitle">
+            <div class="settings-heading"><div><span class="eyebrow">PAKET & HARGA</span><h2 id="pricesTitle">Harga sesuai kota tujuan</h2><p class="muted">Pilih kota untuk melihat kelompok harga yang dipakai.</p></div></div>
+            <div class="settings-body">
+              <div class="fields-grid"><div class="field"><label for="citySelect">Kota tujuan</label><select id="citySelect" aria-describedby="cityGroupHint"></select></div><div class="field"><label for="cityGroupSelect">Kelompok harga kota ini</label><select id="cityGroupSelect" aria-describedby="cityGroupHint"></select></div></div>
+              <p id="cityGroupHint" class="field-hint">Beberapa kota memakai kelompok harga yang sama. Anda dapat memilih kelompok yang sudah tersedia untuk kota ini.</p>
+              <div class="group-editor"><div class="field"><label for="priceGroupSelect">Kelompok harga yang diedit</label><select id="priceGroupSelect"></select></div><p id="groupCities" class="group-cities"></p><div id="packageEditors" class="package-grid"></div></div>
+            </div>
+          </section>
+          <section id="payments" class="settings-panel panel" aria-labelledby="paymentsTitle">
+            <div class="settings-heading"><div><span class="eyebrow">PEMBAYARAN</span><h2 id="paymentsTitle">Informasi untuk pemesan</h2><p class="muted">Informasi ini ditampilkan pada penawaran baru di Cloudflare.</p></div></div>
+            <div class="settings-body"><div class="fields-grid"><div class="field"><label for="bankName">Nama bank</label><input id="bankName" maxlength="100" required autocomplete="off"></div><div class="field"><label for="bankAccount">Nomor rekening</label><input id="bankAccount" maxlength="80" required autocomplete="off" inputmode="numeric"></div><div class="field"><label for="bankHolder">Nama pemilik rekening</label><input id="bankHolder" maxlength="200" required autocomplete="off"></div><div class="field"><label for="whatsapp">WhatsApp pengelola</label><input id="whatsapp" maxlength="16" required autocomplete="off" inputmode="tel" aria-describedby="whatsappHint"><small id="whatsappHint">Gunakan kode negara, misalnya awalan 62 untuk Indonesia. Nomor lokal akan disesuaikan.</small></div><div class="field"><label for="maxUploadMb">Batas ukuran bukti transfer</label><select id="maxUploadMb"><option value="1">1 MB</option><option value="2">2 MB</option><option value="3">3 MB</option><option value="4">4 MB</option><option value="5">5 MB</option><option value="6">6 MB</option><option value="7">7 MB</option><option value="8">8 MB</option><option value="9">9 MB</option><option value="10">10 MB</option></select></div></div><p class="field-hint">Penawaran dan pesanan yang sudah dibuat mempertahankan harga serta informasi pembayaran saat pembuatannya.</p><div class="group-editor"><h3 class="contact-heading">Kontak pada website</h3><div class="fields-grid"><div class="field"><label for="contactEmail">Email kontak</label><input id="contactEmail" type="email" maxlength="254" autocomplete="off"></div><div class="field"><label for="instagramUrl">Tautan Instagram</label><input id="instagramUrl" type="url" maxlength="500" autocomplete="off" aria-describedby="instagramHint"><small id="instagramHint">Tautan profil dengan awalan https://instagram.com/.</small></div><div class="field"><label for="facebookUrl">Tautan Facebook</label><input id="facebookUrl" type="url" maxlength="500" autocomplete="off" aria-describedby="facebookHint"><small id="facebookHint">Tautan profil atau halaman dengan awalan https://facebook.com/.</small></div></div></div></div>
+          </section>
+          <div class="settings-savebar"><div><strong>Pengaturan paket dan pembayaran</strong><span id="businessChanged" class="muted">Belum ada perubahan.</span></div><div class="savebar-actions"><button id="reloadBusinessButton" class="button button-light" type="button">Muat ulang</button><button id="reviewBusinessButton" class="button button-primary" type="submit">Tinjau perubahan →</button></div></div>
+        </fieldset>
+        <p id="businessError" class="form-error" role="alert" hidden></p>
+      </form>
+      <section id="content" class="settings-panel panel" aria-labelledby="contentTitle">
+        <div class="settings-heading"><div><span class="eyebrow">KONTEN HALAMAN</span><h2 id="contentTitle">Perbarui isi website</h2><p class="muted">Ubah judul, deskripsi pencarian, dan teks pembuka halaman.</p></div></div>
+        <form id="contentForm" class="settings-body"><fieldset id="contentFieldset"><div class="field"><label for="pageSelect">Halaman yang diedit</label><select id="pageSelect"></select><small><a id="pagePreviewLink" href="/" target="_blank" rel="noreferrer noopener">Lihat halaman ↗</a></small></div><div class="fields-grid"><div class="field"><label for="pageTitle">Judul halaman</label><input id="pageTitle" maxlength="150" required aria-describedby="pageTitleHint"><small id="pageTitleHint">Tampil pada tab browser dan hasil pencarian.</small></div><div class="field"><label for="pageHeading">Judul utama pada halaman</label><input id="pageHeading" maxlength="250" required></div></div><div class="field"><label for="pageDescription">Deskripsi hasil pencarian</label><textarea id="pageDescription" rows="3" maxlength="320" aria-describedby="pageDescriptionHint"></textarea><small id="pageDescriptionHint">Ringkasan singkat yang menjelaskan isi halaman.</small></div><div class="field"><label for="pageIntro">Teks pembuka halaman</label><textarea id="pageIntro" rows="5" maxlength="3000" aria-describedby="pageIntroHint"></textarea><small id="pageIntroHint">Tulis teks biasa. Tata letak dan gambar halaman tetap dipertahankan.</small></div><div class="content-foot"><span id="contentChanged" class="muted">Belum ada perubahan.</span><button id="restoreContentButton" class="text-button" type="button">Gunakan isi bawaan</button></div><div class="content-actions"><button id="reloadContentButton" class="button button-light" type="button">Muat ulang halaman</button><button id="reviewContentButton" class="button button-primary" type="submit">Tinjau perubahan halaman →</button></div></fieldset><p id="contentError" class="form-error" role="alert" hidden></p></form>
+      </section>
+      <section id="history" class="settings-panel panel" aria-labelledby="historyTitle"><div class="settings-heading"><div><span class="eyebrow">RIWAYAT</span><h2 id="historyTitle">Perubahan pengaturan</h2><p class="muted">Alasan dan waktu perubahan dicatat untuk pengelola.</p></div></div><div class="settings-body"><ol id="businessEvents" class="business-events"></ol></div></section>
+      <footer class="dashboard-footer"><span>PosLoker · Pengaturan website</span><span>Akses khusus pengelola.</span></footer>
+    </div>
+    <noscript><section class="noscript panel"><h1>JavaScript diperlukan</h1><p>Aktifkan JavaScript untuk menggunakan pengaturan PosLoker.</p></section></noscript>
+  </main>
+  <dialog id="reviewDialog" aria-labelledby="reviewTitle"><form id="reviewForm"><span class="dialog-symbol" aria-hidden="true">✓</span><h2 id="reviewTitle">Tinjau perubahan</h2><p id="reviewDescription" class="muted"></p><div id="reviewChanges" class="review-changes"></div><div class="field"><label for="changeReason">Alasan perubahan</label><textarea id="changeReason" rows="3" minlength="3" maxlength="500" required aria-describedby="reasonHint" placeholder="Tuliskan alasan perubahan…"></textarea><small id="reasonHint">Alasan 3–500 karakter akan disimpan dalam riwayat.</small></div><p id="reviewError" class="form-error" role="alert" hidden></p><div class="dialog-actions"><button id="cancelReviewButton" class="button button-light" type="button">Kembali</button><button id="confirmSaveButton" class="button button-primary" type="submit">Ya, simpan perubahan</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

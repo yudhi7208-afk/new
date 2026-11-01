@@ -45,8 +45,10 @@ jika ada, lalu status snapshot. Penyimpanan memakai pemeriksaan revisi
 agar perubahan yang lebih baru tidak tertimpa.
 
 Audit mencatat pelaku, waktu, alasan, serta status dan catatan sebelum/sesudah.
-Pesanan berstatus trash tetap dapat ditinjau sebagai arsip dan tidak dapat
-diubah dari panel. Perubahan ini hanya berlaku pada salinan Cloudflare,
+Pesanan berstatus trash dapat ditinjau dan dipulihkan. Migrasi `0007`
+menyimpan visibilitas WordPress pada overlay, tanpa mengubah post sumber;
+arsip/pulihkan berbagi pemeriksaan revisi dan audit dengan status/catatan.
+Status/catatan tidak dapat diedit saat diarsipkan. Perubahan hanya berlaku pada salinan Cloudflare,
 tanpa penulisan balik ke WordPress. Rekonsiliasi delta berikutnya perlu
 mempertimbangkan status kerja dan riwayat tersebut sebelum cutover.
 
@@ -66,7 +68,10 @@ Objek baru memakai namespace privat R2 terpisah dari objek impor.
 Panel menggabungkan kedua sumber dan menampilkan badge WordPress/Cloudflare
 serta **SIMULASI** untuk `is_test=1`. Selama mode `preview`, seluruh pesanan
 baru diberi penanda tersebut. Penawaran, pengiriman, dan ringkasan memerlukan
-pemilik yang masuk; ringkasan juga terikat sesi browser checkout pembuatnya.
+pemilik yang masuk. Migrasi `0008` menambahkan hash kapabilitas ringkasan
+pesanan baru; tautan fragment pribadinya tetap bekerja setelah sesi checkout
+berakhir. Ringkasan simulasi tetap memerlukan pemilik bahkan pada mode live.
+Ringkasan hanya menampilkan DTO minimal, tanpa kontak atau berkas pelanggan.
 Gunakan data/berkas contoh dan jangan melakukan transfer. Berkas tetap
 diunduh melalui API admin terautentikasi.
 

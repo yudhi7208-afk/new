@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { preparePublicContent } from './prepare-public-content.mjs';
 
 // Export public pages only. WordPress order handlers and customer data stay on
 // the existing hosting. Cloudflare checkout is a separate simulation until cutover.
@@ -156,4 +157,5 @@ const manifest = {
   assets: Object.fromEntries(Object.entries(hashes).sort()),
 };
 await save(path.join(ROOT, 'docs', 'migration-manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+await preparePublicContent();
 console.log(JSON.stringify({ pages: manifest.pageCount, cities: manifest.cityCount, assets: manifest.assetCount }));

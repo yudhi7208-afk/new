@@ -6,7 +6,7 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/admin", "/admin/*", "/api/admin/*", "/pembayaran", "/pembayaran/*", "/checkout/*", "/api/checkout/*"]
+    "run_worker_first": ["/", "/area", "/area/*", "/admin", "/admin/*", "/api/admin/*", "/pembayaran", "/pembayaran/*", "/checkout/*", "/api/checkout/*", "/konfirmasi-pembayaran", "/konfirmasi-pembayaran/*", "/api/legacy/*", "/wp-admin", "/wp-admin/*", "/wp-login.php"]
   },
   "d1_databases": [
     {

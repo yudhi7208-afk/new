@@ -1,6 +1,9 @@
 import { handleAuth, requireAdmin, HttpError } from './admin-auth.mjs';
 import { handleOrders, json } from './admin-orders.mjs';
 import { handleCheckout } from './checkout.mjs';
+import { handleBusiness } from './admin-business.mjs';
+import { handlePublicSite } from './public-site.mjs';
+import { handleLegacyReceipt } from './legacy-receipt.mjs';
 
 export function protect(response) {
   const headers = new Headers(response.headers);
@@ -14,11 +17,42 @@ export function protect(response) {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
+function oldFormResponse() {
+  return protect(new Response('<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Formulir telah diperbarui — PosLoker</title><link rel="stylesheet" href="/assets/fonts/manrope.css"><link rel="stylesheet" href="/checkout/checkout.css"></head><body><header class="header"><a class="brand" href="/">PosLoker</a></header><main class="page"><section class="panel"><h1>Formulir telah diperbarui.</h1><p>Pengiriman dari formulir lama ini belum diproses di Cloudflare.</p><p>Jika sudah melakukan transfer atau pernah mengirim pesanan, jangan membayar ulang atau membuat pesanan pengganti sebelum pengelola memeriksa pesanan Anda.</p><p>Hubungi pengelola melalui informasi kontak pada website dengan menyertakan nomor pesanan atau bukti transfer yang sudah ada.</p><p><a class="button" href="/pembayaran/">Buka halaman pemesanan</a></p><p><a href="/">Lihat kontak PosLoker</a> · <a href="/admin/">Masuk admin</a></p></section></main></body></html>', { status: 409, headers: { 'Content-Type': 'text/html; charset=utf-8' } }));
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname === '/admin') return protect(Response.redirect(url.origin + '/admin/', 302));
-    if (url.pathname === '/pembayaran') return protect(Response.redirect(url.origin + '/pembayaran/', 302));
+    const oldAdminPath = /^\/wp-admin(?:\/|$)/.test(url.pathname) || url.pathname === '/wp-login.php';
+    const oldAdminQuery = ['posloker_manage', 'posloker_proof', 'posloker_material', 'posloker_caption'].find(key => url.searchParams.has(key));
+    if (oldAdminPath || (url.pathname === '/' && oldAdminQuery)) {
+      if (url.pathname === '/wp-admin/admin-post.php' && request.method === 'POST') return oldFormResponse();
+      if (!['GET', 'HEAD'].includes(request.method)) return protect(json({ error: 'Buka panel admin Cloudflare untuk melanjutkan.' }, 405));
+      const candidate = oldAdminQuery === 'posloker_manage' ? url.searchParams.get('order') : url.searchParams.get(oldAdminQuery);
+      const target = new URL('/admin/', url.origin);
+      if (/^(?:[1-9]\d{0,14}|cf_[a-f0-9]{32})$/.test(candidate || '')) target.searchParams.set('order', candidate);
+      return protect(Response.redirect(target.href, 302));
+    }
+    if (['/admin', '/pembayaran', '/konfirmasi-pembayaran'].includes(url.pathname)) {
+      if (!['GET', 'HEAD'].includes(request.method)) return protect(json({ error: 'Muat ulang halaman sebelum melanjutkan.' }, 405));
+      return protect(Response.redirect(url.origin + url.pathname + '/' + url.search, 302));
+    }
+    if (url.pathname.startsWith('/konfirmasi-pembayaran/')) {
+      if (!['GET', 'HEAD'].includes(request.method)) return protect(json({ error: 'Metode tidak diizinkan.' }, 405));
+      if (url.pathname === '/konfirmasi-pembayaran/' && url.searchParams.has('key')) {
+        const target = new URL('/konfirmasi-pembayaran/', url.origin);
+        if (/^[1-9]\d{0,14}$/.test(url.searchParams.get('order') || '')) target.searchParams.set('order', url.searchParams.get('order'));
+        const key = url.searchParams.get('key') || '';
+        if (key.length >= 16 && key.length <= 256 && !/[^\x21-\x7e]/.test(key)) target.hash = new URLSearchParams({ key }).toString();
+        return protect(Response.redirect(target.href, 302));
+      }
+      return protect(await env.ASSETS.fetch(request));
+    }
+    if (url.pathname.startsWith('/api/legacy/')) {
+      try { return protect(await handleLegacyReceipt(request, env, url) || json({ error: 'Halaman tidak ditemukan.' }, 404)); }
+      catch (error) { return protect(json({ error: error instanceof HttpError ? error.message : 'Ringkasan belum dapat dibuka.' }, error instanceof HttpError ? error.status : 503)); }
+    }
     if (url.pathname.startsWith('/pembayaran/') || url.pathname.startsWith('/checkout/')) {
       if (!['GET', 'HEAD'].includes(request.method)) return protect(json({ error: 'Metode tidak diizinkan.' }, 405));
       return protect(await env.ASSETS.fetch(request));
@@ -40,12 +74,12 @@ export default {
         if (authResponse) return protect(authResponse);
         const auth = await requireAdmin(request, env);
         if (!auth) throw new HttpError(401, 'Silakan masuk sebagai admin.');
-        return protect(await handleOrders(request, env, url, auth));
+        return protect(await handleBusiness(request, env, url, auth) || await handleOrders(request, env, url, auth));
       } catch (error) {
         // Never expose database errors, SQL, source values, or stack traces.
         return protect(json({ error: error instanceof HttpError ? error.message : 'Layanan admin belum siap. Coba lagi nanti.' }, error instanceof HttpError ? error.status : 503));
       }
     }
-    return env.ASSETS.fetch(request);
+    return await handlePublicSite(request, env, url) || env.ASSETS.fetch(request);
   },
 };

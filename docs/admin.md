@@ -8,7 +8,8 @@ dan unduhan memerlukan sesi admin valid.
 **WordPress asal tetap melayani transaksi pelanggan.** Checkout
 `/pembayaran/` di Cloudflare masih mode `preview`: pengunjung dapat melihat
 katalog, tetapi hanya pemilik yang masuk dapat membuat penawaran, mengirim
-pesanan simulasi, dan membaca ringkasan pada sesi browser checkout yang sama.
+pesanan simulasi, dan membaca ringkasan. Tautan ringkasan baru mempunyai
+kapabilitas pribadi; ringkasan simulasi tetap memerlukan sesi pemilik.
 Semua pesanan baru pratinjau ditandai `is_test=1` dan **SIMULASI**;
 **jangan melakukan transfer**.
 
@@ -26,7 +27,7 @@ Panel mendukung satu pemilik. Tidak ada pendaftaran publik dan PIN atau
 kata sandi WordPress tidak disalin sebagai kredensial baru.
 
 1. Operator menerapkan skema `0003_admin.sql`, `0004_order_admin.sql`, dan
-   `0005_checkout.sql` pada D1 tujuan, setelah skema snapshot dan katalog
+   seluruh migrasi `0005_checkout.sql` sampai `0008_receipt_access.sql` pada D1 tujuan, setelah skema snapshot dan katalog
    berkas tersedia. Daftar gabungan memerlukan tabel checkout meskipun belum
    ada pesanan Cloudflare.
 2. Operator membuat token acak 32 byte (64 karakter hex), lalu menyimpan
@@ -74,8 +75,10 @@ alamat, bukan alamat IP mentah.
   tetap privat; tautan API tersebut memerlukan sesi admin aktif.
 - Pilih status **Menunggu Verifikasi**, **Lunas**, atau **Ditolak**, isi
   catatan admin dan alasan perubahan, lalu simpan setelah pemeriksaan.
-- Tinjau riwayat perubahan pada detail pesanan. Pesanan arsip/trash dapat
-  ditinjau, tetapi tidak dapat diedit.
+- Tinjau riwayat perubahan pada detail pesanan. Tombol **Pindahkan pesanan
+  ke arsip** menyembunyikan pesanan tanpa menghapus data/berkas. Filter
+  **Sampah** menyediakan tombol **Pulihkan pesanan dari arsip**. Isi alasan
+  pada kedua tindakan; status/catatan tidak dapat diedit selama diarsipkan.
 
 Perubahan status/catatan pesanan WordPress tersimpan pada tabel kerja
 terpisah. Snapshot beserta checksum dan metadata aslinya dipertahankan.
@@ -92,11 +95,27 @@ sama. Gunakan data serta berkas contoh. Server memeriksa harga dan kode unik;
 setelah pengiriman berhasil, periksa ringkasan, badge **SIMULASI**, detail,
 unduhan privat, serta riwayat pada panel.
 
-Ringkasan checkout terikat sesi browser pembuatnya dan memerlukan sesi
-pemilik selama preview. Nomor/URL pesanan saja tidak memberikan akses.
+Ringkasan pesanan baru memakai kunci pribadi pada fragment URL dan tetap
+dapat dibuka setelah sesi checkout berakhir. Nomor/ID saja tidak memberikan
+akses; simulasi tetap memerlukan pemilik. Kunci tidak memberikan akses
+kontak pelanggan, catatan internal, atau berkas privat.
 Tombol WhatsApp membuka pesan yang sudah disiapkan; pemilik memilih sendiri
 apakah mengirimnya. Simulasi tidak mengirim pesan, notifikasi, atau publikasi
 otomatis. Rincian batas berkas dan alur ada di [panduan checkout](checkout.md).
+
+## Pengaturan website
+
+Buka **Pengaturan** pada header atau `/admin/business.html`. Pilih kota dan
+kelompok harga, lalu ubah harga/nama/label/fitur paket. Bagian pembayaran
+mengatur rekening, WhatsApp, serta batas bukti; kontak mengatur email dan
+tautan media sosial. Nilai aktual hanya dimuat setelah pemilik masuk.
+
+Editor konten menyediakan judul halaman, deskripsi, judul utama, dan teks
+pembuka untuk halaman yang sudah tersedia. **Gunakan isi bawaan** menyiapkan
+pemulihan sumber; perubahan baru berlaku setelah ditinjau dan disimpan.
+Setiap penyimpanan menampilkan ringkasan, memerlukan alasan, dan dicatat pada
+riwayat. Konflik revisi mempertahankan draf serta meminta pemuatan ulang.
+Panel ini tidak mengalihkan domain atau mengaktifkan mode transaksi nyata.
 
 ## Catatan operator dan pemulihan
 

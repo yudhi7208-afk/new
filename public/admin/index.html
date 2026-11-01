@@ -15,7 +15,7 @@
   <a class="skip-link" href="#main">Lewati ke isi</a>
   <header class="site-header">
     <a class="brand" href="/admin/" aria-label="PosLoker, halaman admin"><span class="brand-icon" aria-hidden="true">P<span>•</span></span><span>PosLoker<span class="brand-caption">RUANG ADMIN</span></span></a>
-    <div class="header-actions"><a href="/" class="quiet-link">Lihat website <span aria-hidden="true">↗</span></a><button id="logoutButton" class="button button-light" type="button" hidden>Keluar</button></div>
+    <div class="header-actions"><a href="/admin/business.html" class="quiet-link">Pengaturan</a><a href="/" class="quiet-link">Lihat website <span aria-hidden="true">↗</span></a><button id="logoutButton" class="button button-light" type="button" hidden>Keluar</button></div>
   </header>
 
   <main id="main">
@@ -83,7 +83,7 @@
           <div id="detailPlaceholder" class="detail-placeholder"><span class="detail-illustration" aria-hidden="true">▤<span>✓</span></span><h2>Pilih satu pesanan</h2><p>Rincian pelanggan, bukti pembayaran, dan materi akan ditampilkan di sini.</p></div>
           <div id="detailView" hidden>
             <div class="detail-header"><div><span class="eyebrow">RINCIAN PESANAN</span><h2 id="detailHeading" tabindex="-1"></h2><span id="detailDate" class="muted small"></span></div><button id="closeDetailButton" type="button" class="button button-icon" aria-label="Tutup rincian pesanan">×</button></div>
-            <div class="detail-status-row"><span id="detailStatus" class="status-badge"></span><span id="detailSource" class="source-badge" hidden></span><span id="detailTest" class="test-badge" hidden>SIMULASI</span><span id="detailTrash" class="trash-label" hidden>Di sampah · hanya baca</span></div>
+            <div class="detail-status-row"><span id="detailStatus" class="status-badge"></span><span id="detailSource" class="source-badge" hidden></span><span id="detailTest" class="test-badge" hidden>SIMULASI</span><span id="detailTrash" class="trash-label" hidden>Di arsip · dapat dipulihkan</span></div>
             <p id="detailError" class="form-error" role="alert" hidden></p>
             <div id="conflictNotice" class="notice notice-warning" hidden><strong>Data pesanan sudah berubah.</strong><p>Salin catatan Anda bila diperlukan, lalu muat ulang data sebelum menyimpan lagi.</p><button id="reloadDetailButton" class="button button-light" type="button">Muat ulang rincian</button></div>
             <section class="detail-section" aria-labelledby="customerHeading"><h3 id="customerHeading">Pelanggan</h3><dl class="detail-fields"><div><dt>Nama</dt><dd id="detailCustomer"></dd></div><div><dt>WhatsApp</dt><dd id="detailWhatsapp"></dd></div><div><dt>Email</dt><dd id="detailEmail"></dd></div><div><dt>Kota</dt><dd id="detailCity"></dd></div><div><dt>Paket</dt><dd id="detailPackage"></dd></div></dl></section>
@@ -92,6 +92,7 @@
             <section class="detail-section" aria-labelledby="textHeading"><h3 id="textHeading">Materi teks</h3><div class="field"><label for="adText">Teks lowongan</label><textarea id="adText" readonly rows="5"></textarea></div><div class="field"><div class="label-row"><label for="caption">Caption</label><button type="button" id="copyCaptionButton" class="text-button">Salin caption</button></div><textarea id="caption" readonly rows="5"></textarea></div><div id="sourceNotesSection" class="source-notes" hidden><h4>Catatan pesanan asli</h4><p id="sourceNotes"></p></div></section>
             <section class="detail-section" aria-labelledby="manageHeading"><h3 id="manageHeading">Kelola pesanan</h3><form id="orderForm"><fieldset id="orderFieldset"><div class="field"><label for="orderStatus">Status pembayaran</label><select id="orderStatus" required><option value="pending">Menunggu verifikasi</option><option value="approved">Lunas</option><option value="rejected">Ditolak</option></select></div><div class="field"><label for="adminNote">Catatan internal</label><textarea id="adminNote" rows="3" maxlength="4000" placeholder="Catatan untuk pengelola…"></textarea><small>Catatan ini hanya tersimpan di panel Cloudflare.</small></div><button id="saveOrderButton" class="button button-primary button-block" type="submit">Simpan perubahan</button></fieldset></form></section>
             <section class="detail-section events-section" aria-labelledby="historyHeading"><h3 id="historyHeading">Riwayat pengelolaan</h3><ol id="eventsList" class="events-list"></ol></section>
+            <section class="detail-section archive-controls" aria-labelledby="archiveHeading"><h3 id="archiveHeading">Arsip pesanan</h3><p class="muted small">Arsip menyembunyikan pesanan dari daftar aktif tanpa menghapus data atau berkasnya. Perubahan hanya berlaku di Cloudflare.</p><button id="archiveOrderButton" class="button button-light button-block" type="button" hidden>Pindahkan pesanan ke arsip</button></section>
           </div>
         </aside>
       </div>

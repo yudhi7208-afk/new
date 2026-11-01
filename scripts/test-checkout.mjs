@@ -14,7 +14,7 @@ const settings = {
   } },
   payout: { bankName: 'BANK TEST', bankAccount: 'TEST-ACCOUNT', bankHolder: 'SYNTHETIC ONLY', whatsapp: '620000000000', maxUploadMb: 1 },
 };
-const schemas = await Promise.all(['0003_admin.sql','0005_checkout.sql'].map(name => readFile(new URL('../migrations/' + name, import.meta.url), 'utf8')));
+const schemas = await Promise.all(['0003_admin.sql','0005_checkout.sql','0008_receipt_access.sql'].map(name => readFile(new URL('../migrations/' + name, import.meta.url), 'utf8')));
 const sha = value => createHash('sha256').update(value).digest('hex');
 const adminToken = 'c'.repeat(64);
 const adminCookie = '__Host-posloker-admin=' + adminToken;
@@ -205,6 +205,25 @@ try {
     assert.equal(count(isolated, 'checkout_submissions'), 0);
   }
 
+  // Editing operational limits must not change the terms of an active quote.
+  const mediumPdf = () => new File([Buffer.from('%PDF-1.7\n'), new Uint8Array(2 * 1024 * 1024), Buffer.from('\n%%EOF')], 'synthetic-medium-proof.pdf', { type: 'application/pdf' });
+  const changedLimit = fixture(), limitUser = await session(changedLimit), oneMbQuote = await quote(changedLimit, limitUser);
+  changedLimit.CUSTOMER_DB.sqlite.prepare("UPDATE commerce_settings SET value_json=? WHERE key='payout_json'").run(JSON.stringify({ ...settings.payout, maxUploadMb: 3 }));
+  await rejected(() => api(changedLimit, '/api/checkout/submit', form(limitUser, oneMbQuote, {}, { proof: mediumPdf() }), limitUser), 400);
+  assert.equal(changedLimit.CUSTOMER_FILES.puts, 0, 'Increasing the current limit cannot broaden a previously issued quote');
+  const threeMbQuote = await quote(changedLimit, limitUser);
+  changedLimit.CUSTOMER_DB.sqlite.prepare("UPDATE commerce_settings SET value_json=? WHERE key='payout_json'").run(JSON.stringify({ ...settings.payout, maxUploadMb: 1 }));
+  const retainedTerms = await (await api(changedLimit, '/api/checkout/submit', form(limitUser, threeMbQuote, {}, { proof: mediumPdf() }), limitUser)).json();
+  assert.ok(retainedTerms.order.id, 'Reducing the current limit cannot invalidate the larger limit promised by an active quote');
+  assert.equal(changedLimit.CUSTOMER_FILES.puts, 1);
+  for (const payoutSnapshot of ['null', '{broken', JSON.stringify({ maxUploadMb: 0 }), JSON.stringify({ maxUploadMb: 11 }), JSON.stringify({ maxUploadMb: '3' })]) {
+    const invalidSnapshot = fixture(), snapshotUser = await session(invalidSnapshot), snapshotQuote = await quote(invalidSnapshot, snapshotUser);
+    invalidSnapshot.CUSTOMER_DB.sqlite.prepare('UPDATE checkout_quotes SET payout_json=? WHERE id=?').run(payoutSnapshot, snapshotQuote.id);
+    await rejected(() => api(invalidSnapshot, '/api/checkout/submit', form(snapshotUser, snapshotQuote), snapshotUser), 503);
+    assert.equal(invalidSnapshot.CUSTOMER_FILES.puts, 0, 'Invalid saved quote terms must fail before file storage');
+    assert.equal(count(invalidSnapshot, 'checkout_submissions'), 0);
+  }
+
   const good = fixture(), owner = await session(good), selected = await quote(good, owner, 'Kota Sintetis', 'komplit-plus');
   const idem = randomUUID();
   const goodResponse = await api(good, '/api/checkout/submit', form(owner, selected, { idempotencyKey: idem }, { materials: pdf(), video: mp4() }), owner);
@@ -223,17 +242,28 @@ try {
   const persisted = good.CUSTOMER_DB.sqlite.prepare('SELECT * FROM commerce_orders').get();
   assert.equal(persisted.whatsapp, '6281234567890'); assert.equal(persisted.customer_name, 'Synthetic Employer');
   assert.equal(persisted.revision, 0); assert.equal(persisted.status, 'pending');
+  assert.match(saved.receiptKey, /^[a-f0-9]{64}$/);
+  const rawOwnerToken = owner.cookie.split(';')[0].split('=')[1];
+  assert.equal(saved.receiptKey, sha('posloker:receipt:v1\u0000' + rawOwnerToken + '\u0000' + saved.order.id));
+  assert.equal(persisted.receipt_token_hash, sha(saved.receiptKey), 'Only a hash of the scoped receipt capability is stored');
+  assert.notEqual(saved.receiptKey, rawOwnerToken);
+  assert.notEqual(saved.receiptKey, persisted.receipt_token_hash);
   assert.ok(!JSON.stringify(saved).includes('synthetic@example.test'));
   assert.ok(!JSON.stringify(saved).includes('Synthetic Employer'));
   assert.ok(!JSON.stringify(saved).includes('private/commerce/'));
   assert.match(saved.whatsappUrl, /^https:\/\/wa\.me\/620000000000\?text=/);
   assert.ok(decodeURIComponent(saved.whatsappUrl).includes('SIMULASI'));
   assert.ok(!decodeURIComponent(saved.whatsappUrl).includes('synthetic@example.test'));
+  assert.ok(!saved.whatsappUrl.includes(saved.receiptKey), 'Receipt capabilities must never enter WhatsApp links');
   const repeat = await api(good, '/api/checkout/submit', form(owner, selected, { idempotencyKey: idem }), owner);
-  assert.equal((await repeat.json()).order.id, saved.order.id);
+  const repeatedReceipt = await repeat.json();
+  assert.equal(repeatedReceipt.order.id, saved.order.id);
+  assert.equal(repeatedReceipt.receiptKey, saved.receiptKey, 'A completed retry recovers the same durable capability');
   assert.equal(good.CUSTOMER_FILES.puts, 3, 'A completed same-key retry cannot upload a second copy');
   const receipt = await api(good, '/api/checkout/orders/' + saved.order.id, undefined, owner);
-  assert.equal((await receipt.json()).order.id, saved.order.id);
+  const sessionReceipt = await receipt.json();
+  assert.equal(sessionReceipt.order.id, saved.order.id);
+  assert.equal(sessionReceipt.receiptKey, saved.receiptKey);
   const foreign = await session(good, '203.0.113.70');
   await rejected(() => api(good, '/api/checkout/orders/' + saved.order.id, undefined, foreign), 404);
   await rejected(() => api(good, '/api/checkout/orders/' + saved.order.id), 401);
@@ -333,9 +363,95 @@ try {
   clock += 3600 * 1000 + 1000;
   await rejected(() => api(expired, '/api/checkout/submit', form(expiredUser, expiredQuote), expiredUser), 401);
   assert.equal(expired.CUSTOMER_FILES.puts, 0);
+
+  // A bookmark authorizes only its minimal receipt, independently of the
+  // one-hour checkout cookie/quote. A simulation still requires its owner.
+  const receiptPath = '/api/checkout/receipt';
+  const previewCapability = { orderId: saved.order.id, key: saved.receiptKey };
+  await rejected(() => api(good, receiptPath, previewCapability), 401);
+  const previewDurable = await (await api(good, receiptPath, previewCapability, { cookie: adminCookie })).json();
+  assert.equal(previewDurable.order.id, saved.order.id, 'An owner can reopen a simulation after its checkout session expires');
+  await rejected(() => api(good, '/api/checkout/orders/' + saved.order.id, undefined, owner), 401);
+  good.CUSTOMER_DB.sqlite.prepare("UPDATE commerce_settings SET value_json='\"live\"' WHERE key='mode'").run();
+  await rejected(() => api(good, receiptPath, previewCapability), 401, 'Going live cannot make simulation receipts public');
+  assert.equal((await (await api(good, receiptPath, previewCapability, { cookie: adminCookie })).json()).order.isTest, true);
+  good.CUSTOMER_DB.sqlite.prepare("UPDATE commerce_settings SET value_json='\"preview\"' WHERE key='mode'").run();
+
+  const durable = fixture('live'), durableUser = await session(durable, '203.0.113.110', false);
+  const durableQuote = await quote(durable, durableUser), durableSaved = await (await api(durable, '/api/checkout/submit', form(durableUser, durableQuote), durableUser)).json();
+  const durableSecondQuote = await quote(durable, durableUser, 'Gratis Sintetis');
+  const durableSecond = await (await api(durable, '/api/checkout/submit', form(durableUser, durableSecondQuote), durableUser)).json();
+  const capability = { orderId: durableSaved.order.id, key: durableSaved.receiptKey };
+  assert.notEqual(durableSaved.receiptKey, durableSecond.receiptKey, 'Each order gets its own scoped capability');
+  const crossSession = await session(durable, '203.0.113.111', false);
+  const wrongSessionKey = sha('posloker:receipt:v1\u0000' + crossSession.cookie.split(';')[0].split('=')[1] + '\u0000' + durableSaved.order.id);
+  await rejected(() => api(durable, receiptPath, { ...capability, key: wrongSessionKey }, crossSession), 404);
+  await rejected(() => api(durable, receiptPath, { ...capability, orderId: durableSecond.order.id }), 404);
+  const durableSnapshot = JSON.stringify(['commerce_orders','commerce_files','commerce_events','checkout_quotes','checkout_sessions'].map(table => durable.CUSTOMER_DB.sqlite.prepare('SELECT * FROM '+table).all()));
+  const firstDurableResponse = await api(durable, receiptPath, capability, { ip: '203.0.113.112' });
+  assert.equal(firstDurableResponse.headers.get('Set-Cookie'), null);
+  assert.equal(firstDurableResponse.headers.get('Cache-Control'), 'private, no-store, max-age=0');
+  assert.equal(firstDurableResponse.headers.get('Referrer-Policy'), 'no-referrer');
+  const minimal = await firstDurableResponse.json();
+  assert.deepEqual(Object.keys(minimal).sort(), ['order','whatsappUrl']);
+  assert.deepEqual(Object.keys(minimal.order).sort(), ['amount','city','id','isTest','orderNumber','packageName','status']);
+  const minimalJson = JSON.stringify(minimal);
+  for (const secret of [durableSaved.receiptKey, 'receipt_token_hash', 'customer_name', 'Synthetic Employer', 'synthetic@example.test', '6281234567890', 'private/commerce/', durableUser.csrf]) assert.ok(!minimalJson.includes(secret));
+  assert.equal(JSON.stringify(['commerce_orders','commerce_files','commerce_events','checkout_quotes','checkout_sessions'].map(table => durable.CUSTOMER_DB.sqlite.prepare('SELECT * FROM '+table).all())), durableSnapshot, 'Receipt reads cannot mutate orders, quotes, sessions, files or audits');
+  for (const [bodyChange, options, expected] of [
+    [capability, { method:'GET' }, 405], [capability, { headers:{Origin:'https://evil.example.test'} }, 403],
+    [capability, { headers:{'Sec-Fetch-Site':'cross-site'} }, 403], [capability, { urlOrigin:'http://checkout.example.test' }, 403],
+    [capability, { headers:{'Content-Type':'text/plain'} }, 415], [capability, { headers:{'Content-Length':'5000'} }, 413],
+    [{...capability,extra:true}, {}, 400], [{...capability,key:'A'.repeat(64)}, {}, 400],
+    [{...capability,orderId:'not-an-order'}, {}, 400], ['x'.repeat(4097), {}, 413],
+  ]) {
+    if (options.method === 'GET') await rejected(() => api(durable, receiptPath, undefined, options), expected);
+    else await rejected(() => api(durable, receiptPath, bodyChange, options), expected);
+  }
+  await rejected(() => api(durable, receiptPath+'?key='+durableSaved.receiptKey, capability), 400);
+  const wrongErrors = await Promise.allSettled([
+    api(durable, receiptPath, {...capability,key:'0'.repeat(64)}, {ip:'203.0.113.113'}),
+    api(durable, receiptPath, {...capability,orderId:'cf_'+'0'.repeat(32)}, {ip:'203.0.113.114'}),
+  ]);
+  assert.ok(wrongErrors.every(result => result.status === 'rejected' && result.reason.status === 404));
+  durable.CUSTOMER_DB.sqlite.prepare("UPDATE commerce_orders SET post_status='trash' WHERE id=?").run(durableSaved.order.id);
+  await assert.rejects(() => api(durable, receiptPath, capability, {ip:'203.0.113.115'}), error=>error.status===404 && error.message===wrongErrors[0].reason.message);
+  durable.CUSTOMER_DB.sqlite.prepare("UPDATE commerce_orders SET post_status='publish' WHERE id=?").run(durableSaved.order.id);
+  clock += 3600 * 1000 + 1000;
+  await rejected(() => api(durable, '/api/checkout/orders/'+durableSaved.order.id, undefined, durableUser), 401);
+  await rejected(() => api(durable, '/api/checkout/submit', form(durableUser, durableQuote), durableUser), 401);
+  const expiredDurable = await (await api(durable, receiptPath, capability, {ip:'203.0.113.116'})).json();
+  assert.equal(expiredDurable.order.id, durableSaved.order.id);
+  assert.equal(expiredDurable.order.isTest, false);
+  durable.CUSTOMER_DB.sqlite.prepare("DELETE FROM commerce_settings WHERE key='catalog_json'").run();
+  assert.equal((await (await api(durable, receiptPath, capability, {ip:'203.0.113.117'})).json()).order.id, durableSaved.order.id,
+    'A historical receipt does not depend on today’s catalog configuration');
+  durable.CUSTOMER_DB.sqlite.prepare("INSERT INTO commerce_settings(key,value_json) VALUES('catalog_json',?)").run(JSON.stringify(settings.catalog));
+
+  const oldReceipt = fixture(), oldUser = await session(oldReceipt), oldQuote = await quote(oldReceipt, oldUser, 'Gratis Sintetis');
+  const oldSaved = await (await api(oldReceipt, '/api/checkout/submit', form(oldUser, oldQuote), oldUser)).json();
+  oldReceipt.CUSTOMER_DB.sqlite.prepare('UPDATE commerce_orders SET receipt_token_hash=NULL WHERE id=?').run(oldSaved.order.id);
+  const oldSessionReceipt = await (await api(oldReceipt, '/api/checkout/orders/'+oldSaved.order.id, undefined, oldUser)).json();
+  assert.equal(oldSessionReceipt.order.id, oldSaved.order.id);
+  assert.ok(!Object.hasOwn(oldSessionReceipt, 'receiptKey'), 'Existing NULL-token orders keep their original session-only access');
+  await rejected(() => api(oldReceipt, receiptPath, {orderId:oldSaved.order.id,key:oldSaved.receiptKey}, {cookie:adminCookie}), 404);
+  assert.throws(()=>oldReceipt.CUSTOMER_DB.sqlite.prepare("UPDATE commerce_orders SET receipt_token_hash='invalid' WHERE id=?").run(oldSaved.order.id));
+
+  const receiptLimited = fixture('live'), receiptLimitedUser = await session(receiptLimited, '203.0.113.120', false), receiptLimitedQuote = await quote(receiptLimited, receiptLimitedUser, 'Gratis Sintetis');
+  const receiptLimitedSaved = await (await api(receiptLimited, '/api/checkout/submit', form(receiptLimitedUser, receiptLimitedQuote), receiptLimitedUser)).json();
+  const limitedCapability = {orderId:receiptLimitedSaved.order.id,key:receiptLimitedSaved.receiptKey};
+  for (let index=0;index<20;index++) await api(receiptLimited, receiptPath, limitedCapability, {ip:'203.0.113.121'});
+  const limitedBefore = JSON.stringify(receiptLimited.CUSTOMER_DB.sqlite.prepare('SELECT * FROM checkout_rate_limits ORDER BY bucket_hash').all());
+  for (let index=0;index<10;index++) await rejected(()=>api(receiptLimited, receiptPath, limitedCapability, {ip:'203.0.113.121'}),429);
+  assert.equal(JSON.stringify(receiptLimited.CUSTOMER_DB.sqlite.prepare('SELECT * FROM checkout_rate_limits ORDER BY bucket_hash').all()),limitedBefore,'Blocked receipt callers cannot keep writing or consume the global budget');
+  for (let index=20;index<200;index++) await api(receiptLimited,receiptPath,limitedCapability,{ip:'198.51.100.'+(Math.floor(index/20)+1)});
+  const globallyFullCount=count(receiptLimited,'checkout_rate_limits');
+  await rejected(()=>api(receiptLimited,receiptPath,limitedCapability,{ip:'198.51.100.250'}),429);
+  assert.equal(count(receiptLimited,'checkout_rate_limits'),globallyFullCount,'A globally blocked receipt request cannot allocate another address bucket');
+
   for (const fixtureDb of fixtures) {
     assert.equal(fixtureDb.sqlite.prepare('PRAGMA quick_check').get().quick_check, 'ok');
     assert.equal(fixtureDb.sqlite.prepare('PRAGMA foreign_key_check').all().length, 0);
   }
-  console.log('Synthetic checkout checks passed: server catalog/price/code reservations, preview isolation, hashed sessions/CSRF, upload magic/limits, private receipts, idempotent concurrent submission, owned cleanup, ambiguous-commit recovery, and D1 integrity.');
+  console.log('Synthetic checkout checks passed: server catalog/price/code reservations, preview isolation, hashed sessions/CSRF, upload magic/limits, durable scoped receipts after session expiry, no receipt-key sharing/leaks, bounded receipt access, idempotent concurrent submission, owned cleanup, ambiguous-commit recovery, and D1 integrity.');
 } finally { Date.now = originalNow; for (const db of fixtures) db.sqlite.close(); }

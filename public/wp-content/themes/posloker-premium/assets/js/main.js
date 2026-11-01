@@ -63,14 +63,7 @@
 		const cityCoachClose = calculator.querySelector('[data-city-coach-close]');
 		const formatRupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
 		const pricing = poslokerData.pricing || {};
-		Object.keys(pricing).forEach(function (cityRule) {
-			(pricing[cityRule] || []).forEach(function (item) {
-				if (!Array.isArray(item.features)) item.features = [];
-				if (!item.features.includes('Instagram Carousel hingga 10 slide')) {
-					item.features.push('Instagram Carousel hingga 10 slide');
-				}
-			});
-		});
+		// Package features follow the saved business catalogue.
 		const setCityCoach = function (open, remember) {
 			if (!cityCoach || !cityCoachOpen) return;
 			cityCoach.hidden = !open;

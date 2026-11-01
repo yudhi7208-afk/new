@@ -8,6 +8,8 @@
   let setupToken = (new URLSearchParams(location.hash.slice(1)).get('setup') || '').trim().toLowerCase();
   if (!/^[a-f0-9]{64}$/.test(setupToken)) setupToken = '';
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  let requestedOrder = new URLSearchParams(location.search).get('order') || '';
+  if (!/^(?:[1-9]\d{0,14}|cf_[a-f0-9]{32})$/.test(requestedOrder)) requestedOrder = '';
   let toastTimer, savingOrder = false;
 
   const text = (id, value, fallback = '—') => { $(id).textContent = value === undefined || value === null || value === '' ? fallback : String(value); };
@@ -60,6 +62,7 @@
     for (const id of ['detailHeading', 'detailDate', 'detailCustomer', 'detailWhatsapp', 'detailEmail', 'detailCity', 'detailPackage', 'detailBaseAmount', 'detailUniqueCode', 'detailAmount', 'sourceNotes']) text(id, '', '');
     $('detailStatus').textContent = ''; $('filesList').replaceChildren(); $('eventsList').replaceChildren();
     $('detailSource').textContent = ''; $('detailSource').hidden = true; $('detailTest').hidden = true;
+    $('archiveOrderButton').hidden = true;
     $('adText').value = ''; $('caption').value = ''; $('adminNote').value = ''; $('changeReason').value = '';
     $('conflictNotice').hidden = true; errorIn('detailError', ''); errorIn('confirmError', '');
     if ($('confirmDialog').open) $('confirmDialog').close();
@@ -116,6 +119,7 @@
     const snapshot = session.migration?.sourceSnapshotAt;
     text('snapshotDate', snapshot ? 'Snapshot sumber: ' + date(snapshot) : 'Salinan awal migrasi · belum tersinkron otomatis', '');
     await loadOrders();
+    if (requestedOrder && state.authenticated) { const id = requestedOrder; requestedOrder = ''; await loadDetail(id, true); }
   }
 
   async function authenticate(event, setup) {
@@ -213,7 +217,7 @@
     if (!events.length) { const empty = node('li', 'events-empty', 'Belum ada perubahan dari panel Cloudflare.'); $('eventsList').append(empty); return; }
     for (const event of events) {
       const item = node('li');
-      const title = event.action === 'status_changed' ? 'Status diubah menjadi ' + (labels[event.status] || 'status lain') : event.action === 'note_updated' ? 'Catatan internal diperbarui' : 'Pesanan diperbarui' + (labels[event.status] ? ' · ' + labels[event.status] : '');
+      const title = event.action === 'archive' ? 'Pesanan dipindahkan ke arsip' : event.action === 'restore' ? 'Pesanan dipulihkan dari arsip' : event.action === 'status_changed' ? 'Status diubah menjadi ' + (labels[event.status] || 'status lain') : event.action === 'note_updated' ? 'Catatan internal diperbarui' : 'Pesanan diperbarui' + (labels[event.status] ? ' · ' + labels[event.status] : '');
       item.append(node('span', 'event-title', title), node('span', 'event-time', [date(event.at), event.actor].filter(Boolean).join(' · ')));
       if (event.reason) item.append(node('p', 'event-note', 'Alasan: ' + event.reason));
       if (event.note) item.append(node('p', 'event-note', 'Catatan: ' + event.note));
@@ -241,6 +245,7 @@
       $('adText').value = order.adText || ''; $('caption').value = order.caption || ''; $('sourceNotes').textContent = order.notes || ''; $('sourceNotesSection').hidden = !order.notes;
       $('adminNote').value = order.adminNote || ''; $('orderStatus').value = Object.hasOwn(labels, order.status) ? order.status : 'pending';
       $('detailTrash').hidden = order.postStatus !== 'trash'; $('orderFieldset').disabled = order.postStatus === 'trash'; $('saveOrderButton').disabled = false;
+      $('archiveOrderButton').hidden = false; $('archiveOrderButton').disabled = false; $('archiveOrderButton').textContent = order.postStatus === 'trash' ? 'Pulihkan pesanan dari arsip' : 'Pindahkan pesanan ke arsip';
       renderFiles(Array.isArray(result.files) ? result.files : []); renderEvents(Array.isArray(result.events) ? result.events : []);
       if (focus) $('detailHeading').focus({ preventScroll: true });
     } catch (error) {
@@ -282,11 +287,21 @@
     if (!Object.hasOwn(labels, status)) return;
     const changed = status !== state.order.status;
     if (!changed && adminNote === (state.order.adminNote || '')) { toast('Tidak ada perubahan untuk disimpan.'); return; }
-    state.pendingSave = { status, adminNote, expectedRevision: state.order.revision, orderId: state.order.id };
+    state.pendingSave = { kind: 'update', status, adminNote, expectedRevision: state.order.revision, orderId: state.order.id };
+    text('confirmTitle', 'Simpan perubahan pesanan?');
     const simulatedApproval = state.order.isTest === true && changed && status === 'approved';
     text('confirmDescription', simulatedApproval ? 'Status pesanan SIMULASI akan menjadi “Lunas”. Ini hanya menguji alur admin dan tidak menyatakan adanya pembayaran nyata. Perubahan tercatat di riwayat.' : changed ? 'Status pembayaran akan menjadi “' + labels[status] + '”. Perubahan hanya berlaku di Cloudflare dan tercatat di riwayat.' : 'Catatan internal akan diperbarui pada salinan Cloudflare.');
     text('paidConfirmation', simulatedApproval ? 'SIMULASI: tidak ada pembayaran nyata yang diverifikasi. Simpan hanya untuk menguji perubahan status pesanan.' : 'Pastikan bukti sudah diperiksa dan pembayaran benar-benar sudah diterima sebelum menandai lunas.');
     $('reasonField').hidden = false; $('changeReason').required = true; $('changeReason').value = ''; $('paidConfirmation').hidden = !(changed && status === 'approved'); errorIn('confirmError', '');
+    $('confirmDialog').showModal(); $('changeReason').focus();
+  });
+  $('archiveOrderButton').addEventListener('click', () => {
+    if (!state.order || state.stale || savingOrder) return;
+    const archived = state.order.postStatus !== 'trash';
+    state.pendingSave = { kind: 'archive', archived, expectedRevision: state.order.revision, orderId: state.order.id };
+    text('confirmTitle', archived ? 'Arsipkan pesanan ini?' : 'Pulihkan pesanan ini?');
+    text('confirmDescription', archived ? 'Pesanan dipindahkan dari daftar aktif ke arsip Cloudflare. Seluruh bukti, materi, dan riwayat tetap disimpan dan pesanan dapat dipulihkan.' : 'Pesanan dikembalikan ke daftar aktif Cloudflare. Status pembayaran dan seluruh berkas tetap dipertahankan.');
+    $('paidConfirmation').hidden = true; $('reasonField').hidden = false; $('changeReason').required = true; $('changeReason').value = ''; errorIn('confirmError', '');
     $('confirmDialog').showModal(); $('changeReason').focus();
   });
   $('cancelConfirmButton').addEventListener('click', () => $('confirmDialog').close());
@@ -299,12 +314,14 @@
     if (reason.length < 3 || reason.length > 500) { errorIn('confirmError', 'Tuliskan alasan perubahan sepanjang 3–500 karakter.'); $('changeReason').focus(); return; }
     const epoch = state.authEpoch; savingOrder = true; busy($('confirmSaveButton'), true, 'Ya, simpan'); $('cancelConfirmButton').disabled = true; errorIn('confirmError', '');
     try {
-      await api('/api/admin/orders/' + encodeURIComponent(save.orderId), { method: 'POST', body: { status: save.status, adminNote: save.adminNote, expectedRevision: save.expectedRevision, reason } });
+      await api('/api/admin/orders/' + encodeURIComponent(save.orderId) + (save.kind === 'archive' ? '/archive' : ''), { method: 'POST', body: save.kind === 'archive' ? { archived: save.archived, expectedRevision: save.expectedRevision, reason } : { status: save.status, adminNote: save.adminNote, expectedRevision: save.expectedRevision, reason } });
       if (epoch !== state.authEpoch || !state.authenticated) return;
-      $('confirmDialog').close(); await Promise.all([loadDetail(save.orderId), loadOrders()]); toast('Perubahan pesanan berhasil disimpan.');
+      $('confirmDialog').close();
+      if (save.kind === 'archive') { state.trash = save.archived; state.page = 1; $('visibilityFilter').value = state.trash ? 'trash' : 'active'; }
+      await Promise.all([loadDetail(save.orderId), loadOrders()]); toast(save.kind === 'archive' ? save.archived ? 'Pesanan dipindahkan ke arsip.' : 'Pesanan dipulihkan dari arsip.' : 'Perubahan pesanan berhasil disimpan.');
     } catch (error) {
       if (epoch !== state.authEpoch || !state.authenticated) return;
-      if (error.status === 409) { $('confirmDialog').close(); state.stale = true; $('saveOrderButton').disabled = true; $('conflictNotice').hidden = false; }
+      if (error.status === 409) { $('confirmDialog').close(); state.stale = true; $('saveOrderButton').disabled = true; $('archiveOrderButton').disabled = true; $('conflictNotice').hidden = false; }
       else errorIn('confirmError', error.message);
     } finally { savingOrder = false; busy($('confirmSaveButton'), false, 'Ya, simpan'); $('cancelConfirmButton').disabled = false; }
   });
