@@ -20,19 +20,27 @@ langsung atau jaminan bahwa transaksi setelah snapshot sudah tersalin.
 
 | Bagian | Bukti yang sudah ada | Yang masih harus ditutup |
 | --- | --- | --- |
-| Halaman publik | 51 halaman sumber beserta konten/harganya tetap sesuai. Pengujian HTTP 51 halaman dan integrasi harga, kartu paket, data terstruktur, serta checkout pada Worker lokal lulus. | Penerbitan kode akhir dan pemeriksaan ulang Worker tujuan. |
+| Halaman publik | 51 halaman sumber beserta konten/harganya tetap sesuai. Pemeriksaan HTTP 51/51 halaman pada Worker Cloudflare yang diterbitkan lulus, termasuk harga, kartu paket, data terstruktur, serta perlindungan pratinjau. | Pemeriksaan ulang pada domain resmi saat pengalihan. |
 | Data historis | Snapshot terakhir: 16 pesanan, 15 profil kontak konservatif, 394 metadata, dan 32 referensi berkas. Pembacaan kembali seluruh kolom dan relasi cocok. Profil kontak bukan hitungan orang unik. | Cadangan serta pencocokan terakhir setelah penulisan sumber dihentikan pada waktu pengalihan. |
 | D1 dan pemulihan | Skema sampai `0008_receipt_access.sql`; pembacaan kembali 23 tabel cocok. Backup aktual dipulihkan ke SQLite terisolasi: seluruh nilai cocok, integritas lulus, dan 0 pelanggaran foreign key. | Ekspor ulang setelah perubahan berikutnya; verifikasi versi Worker cadangan dan prosedur pemulihan akses operator. |
 | R2 dan pemulihan | 29 objek privat (27 historis dan 2 contoh native), 14.055.050 byte. Unduhan terautentikasi, backup, dan salinan pemulihan cocok SHA-256 serta ukurannya. | Ambil delta berkas yang masuk sesudah snapshot; bucket tetap privat. |
-| Checkout pelanggan | Uji browser paket berbayar/gratis sebagai tamu pada lebar 390 piksel dalam mode nyata **lokal terisolasi** lulus, tanpa transfer atau pesan WhatsApp. Ringkasan berkunci fragment tetap terbuka setelah sesi checkout uji kedaluwarsa; kunci tidak masuk WhatsApp. | Uji versi akhir pada Worker pratinjau. Produksi tetap `preview`; pengujian lokal tidak mengalihkan pelanggan. |
-| Admin dan pengaturan | Uji browser 390 piksel untuk arsip/pulihkan serta unduhan privat yang cocok byte-nya lulus. Perubahan harga/konten melalui UI tampil pada halaman publik; pemulihan nilai bawaan lulus. Pengujian admin, bisnis, legacy, migrasi, dan backend checkout lulus. | Pemeriksaan sesudah penerbitan dengan akun pemilik pada Worker tujuan; mutasi hanya memakai data contoh. |
+| Checkout pelanggan | Uji browser paket berbayar/gratis sebagai tamu pada lebar 390 piksel dalam mode nyata **lokal terisolasi** lulus. Ringkasan tetap terbuka setelah sesi checkout uji kedaluwarsa. Simulasi gratis pada versi Cloudflare akhir juga lulus, termasuk kunci fragment, pemuatan ulang, serta ketiadaan kunci pada WhatsApp; tidak ada transfer/pesan yang dikirim. | Produksi tetap `preview` sampai pengalihan; verifikasi domain resmi dan penulisan tunggal pada waktu pengalihan. |
+| Admin dan pengaturan | Uji browser 390 piksel untuk arsip/pulihkan, unduhan byte-exact, penyimpanan harga/konten, dan pemulihan bawaan lulus. Di Worker Cloudflare akhir, akun pemilik berhasil memuat 49 kota, 16 kelompok harga, dan 51 halaman; arsip/pulihkan pada pesanan simulasi lulus. Pengujian admin, bisnis, legacy, migrasi, dan checkout lulus. | Pemilik masuk kembali serta memeriksa domain resmi ketika hostname dialihkan. |
 | Handover sumber | Artefak PHP pengalihan ber-lock lulus lint dan 120 pengujian runtime sintetis. | Belum dipasang/diaktifkan. Preflight WordPress/MySQL hosting, permintaan lama, dan satu sumber penulisan harus dibuktikan sebelum aktivasi. |
-| Domain dan email | NS, MX, TXT, dan A sudah diperiksa baca-saja. Tidak ada perubahan DNS atau nameserver. | Inventaris zona lengkap, DNSSEC/DS, email, rute domain/TLS, serta pemeriksaan domain saat pengalihan. |
+| Domain dan email | Inventaris 12 record valid tersimpan privat; 24/24 kelompok nama/jenis cocok pada dua nameserver otoritatif. Lookup DS berhasil dan tidak menemukan DS terpublikasi. Tidak ada perubahan DNS atau nameserver. MX, alias mail, dan satu alias layanan masih bergantung pada apex. | Terapkan rencana host layanan DNS-only yang tetap menuju hosting lama, tinjau SPF/klien email, DNSSEC/DS, rute domain/TLS, dan uji domain/email saat pengalihan. |
 
-Kode akhir masih menunggu validasi deploy, push, dan pemeriksaan sesudah
-penerbitan. Hasil lokal dan backup di atas tidak menandai seluruh gerbang
-produksi selesai. Pemilik sudah mempunyai akun; pengujian login berikutnya
-menggunakan akun itu, tanpa membuka aktivasi pemilik baru.
+Kode aplikasi [c4ff0cf](https://github.com/yudhi7208-afk/new/commit/c4ff0cf98ce6ed151d05d696d10b57ba93a2041f)
+sudah dipush dan build Cloudflare berhasil. Pemeriksaan target 51/51 halaman,
+akses anonim, pengalihan lama, serta ringkasan historis memakai kapabilitas
+sumber asli lulus. Ringkasan historis tidak menampilkan kontak atau kuncinya.
+Sesudah simulasi akhir, pesanan native berjumlah tiga dan semuanya berlabel
+uji; dua lampiran native dan seluruh snapshot sumber tetap terpisah.
+Cadangan akhir 23 tabel dipulihkan kembali dan cocok seluruh nilainya.
+
+Penerbitan aplikasi ini tidak menjalankan pengalihan. Hasil lokal dan
+pratinjau tidak menandai seluruh gerbang domain, hosting, dan penulisan
+tunggal selesai. Pemilik memakai akun yang sudah ada; aktivasi akun baru
+tidak dibuka kembali.
 
 Pemeriksaan PageSpeed seluler pada pratinjau tidak menggantikan uji formulir
 dan admin di ponsel. Skor SEO pratinjau terpengaruh pembatasan pengindeksan
