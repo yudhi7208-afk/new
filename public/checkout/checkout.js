@@ -41,6 +41,22 @@
     const limits = state.payment?.limits;
     return limits && ['proofMaxBytes', 'materialsMaxBytes', 'materialsMaxFiles', 'videoMaxBytes'].every(key => Number.isSafeInteger(limits[key]) && limits[key] > 0);
   }
+  function renderPaymentGuidance() {
+    const quote = state.quote;
+    const current = Boolean(quote && !state.quoteExpired && expiry(quote.expiresAt) > Date.now());
+    const paid = Boolean(current && quote.baseAmount > 0);
+    const showReminder = !state.preview && state.canSubmit && paid && state.step !== 3 && !state.submitting && !state.uncertain && !$('checkoutLayout').hidden;
+    $('paymentReminder').hidden = !showReminder;
+    text('paymentReminderAmount', showReminder ? money(quote.amount) : '—');
+    $('copyAmountButton').hidden = state.preview || !paid || state.step === 3 || state.submitting || state.uncertain;
+    $('copyBankButton').hidden = state.preview || !paid || state.step === 3 || state.submitting || state.uncertain;
+    if (state.preview) text('summaryAmountHint', 'Jangan melakukan transfer pada halaman simulasi.');
+    else if (!quote) text('summaryAmountHint', 'Periksa penawaran terbaru sebelum melakukan transfer.');
+    else if (!current) text('summaryAmountHint', 'Penawaran berakhir. Jangan transfer berdasarkan nominal lama. Jika sudah transfer, jangan membayar ulang; hubungi pengelola.');
+    else if (quote.baseAmount === 0) text('summaryAmountHint', 'Paket gratis: tidak perlu transfer atau kode unik.');
+    else text('summaryAmountHint', 'Nominal harus sama, termasuk kode unik untuk verifikasi.');
+    if (!state.preview) text('modeNotice', quote?.baseAmount === 0 ? 'Paket gratis tidak memerlukan transfer. Periksa kembali data dan materi sebelum dikirim.' : 'Periksa kembali data dan materi sebelum dikirim. Konfirmasi pembayaran akan diperiksa secara manual.');
+  }
   function renderMode() {
     $('previewBanner').hidden = !state.preview; $('previewTag').hidden = !state.preview; $('summaryTestBadge').hidden = !state.preview; $('receiptTestBadge').hidden = !state.preview;
     $('bankWarning').hidden = !state.preview; $('receiptWarning').hidden = !state.preview; $('accessNotice').hidden = !state.preview || state.canSubmit;
@@ -75,6 +91,11 @@
       if (n === step) item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
     }
     $('checkoutLayout').hidden = step === 3; $('packageStep').hidden = step !== 1; $('confirmationStep').hidden = step !== 2; $('receiptStep').hidden = step !== 3;
+    // Keep one notice beside the active content, so entering confirmation
+    // cannot scroll past the payment instructions on desktop or mobile.
+    if (step === 2) $('modeNotice').before($('paymentReminder'));
+    else $('checkoutLayout').before($('paymentReminder'));
+    renderPaymentGuidance();
   }
   function clearAttempt() { state.attempt = null; state.uncertain = false; state.idempotencyKey = crypto.randomUUID(); $('uncertainNotice').hidden = true; $('expiredNotice').hidden = true; }
   function updateButtons() {
@@ -86,6 +107,7 @@
     $('retrySubmitButton').disabled = !state.canSubmit || state.submitting; $('renewSessionButton').disabled = state.submitting;
     $('refreshQuoteButton').disabled = !state.canSubmit || state.submitting; $('checkAccessButton').disabled = state.submitting;
     text('submitButton', state.submitting ? (state.preview ? 'Mengirim simulasi…' : 'Mengirim pesanan…') : (state.preview ? 'Simulasikan pesanan →' : 'Kirim konfirmasi & materi →'));
+    renderPaymentGuidance();
   }
   function updateExpiry() {
     if (!state.quote) { text('quoteExpiry', '', ''); return; }
@@ -148,6 +170,11 @@
   }
 
   async function loadSession({ retainSelection = false } = {}) {
+    // A session/catalog refresh must not leave an earlier amount inviting a
+    // transfer while its replacement request is pending or has failed.
+    ++state.quoteTicket; state.quote = null; state.quoteExpired = false; clearInterval(quoteTimer);
+    for (const id of ['summaryBase', 'summaryCode', 'summaryAmount']) text(id, '—');
+    text('quoteExpiry', '', ''); $('quoteLoading').hidden = true; $('bankSection').hidden = true; $('freeSection').hidden = true; updateButtons();
     const previousCity = retainSelection ? $('citySelect').value : initial.get('city') || '', previousPackage = retainSelection ? $('packageSelect').value : initial.get('package') || '';
     const result = await api('/api/checkout/session');
     if (typeof result.preview !== 'boolean' || typeof result.canSubmit !== 'boolean') throw new Error('Status akses pemesanan belum tersedia. Silakan coba kembali.');
@@ -164,6 +191,7 @@
   }
   async function boot() {
     message('pageError', ''); $('bootStatus').hidden = false; $('retryBootButton').hidden = true; $('checkoutLayout').hidden = true; $('receiptStep').hidden = true;
+    renderPaymentGuidance();
     try {
       const requestedOrder = initial.get('order');
       const fragment = new URLSearchParams(location.hash.slice(1));
@@ -273,8 +301,8 @@
   $('citySelect').addEventListener('change', () => { fillPackages(); requestQuote(); });
   $('packageSelect').addEventListener('change', () => { renderPackageFeatures(); requestQuote(); });
   $('refreshQuoteButton').addEventListener('click', async () => { try { await loadSession({ retainSelection: true }); await requestQuote(); } catch (error) { message('quoteError', error.message); } });
-  $('continueButton').addEventListener('click', () => { updateExpiry(); if (!state.quote || state.quoteExpired) return; setStep(2); $('confirmationTitle').focus({ preventScroll: true }); if (matchMedia('(max-width: 760px)').matches) $('confirmationStep').scrollIntoView({ behavior: 'auto', block: 'start' }); });
-  $('backToPackageButton').addEventListener('click', () => { if (!state.submitting && !state.uncertain) setStep(1); });
+  $('continueButton').addEventListener('click', () => { updateExpiry(); if (!state.quote || state.quoteExpired) return; setStep(2); $('confirmationTitle').focus({ preventScroll: true }); $('confirmationStep').scrollIntoView({ behavior: 'auto', block: 'start' }); });
+  $('backToPackageButton').addEventListener('click', () => { if (!state.submitting && !state.uncertain) { setStep(1); ($('paymentReminder').hidden ? $('packageStep') : $('paymentReminder')).scrollIntoView({ behavior: 'auto', block: 'start' }); } });
   $('orderForm').addEventListener('submit', event => { event.preventDefault(); submitOrder(); });
   $('retrySubmitButton').addEventListener('click', () => submitOrder(true));
   $('renewSessionButton').addEventListener('click', renewSession);
