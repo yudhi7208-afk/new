@@ -11,3 +11,29 @@
 html.payment-dialog-open,html.payment-dialog-open body{overflow:hidden}.payment-instructions-button{display:block;min-height:44px;margin:0 0 16px;padding:8px 0}.payment-dialog{width:min(680px,calc(100vw - 32px));max-width:none;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);margin:auto;padding:20px;border:1px solid #d5e0ee;border-radius:16px;background:#fff;color:var(--ink);box-shadow:0 20px 80px #102b4f50;overflow:auto;overscroll-behavior:contain}.payment-dialog::backdrop{background:#102b4faa}.payment-dialog-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}.payment-dialog-header h2{padding-top:8px;font-size:20px;line-height:1.5;letter-spacing:-.02em}.payment-dialog-close{display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;border:1px solid #d5e0ee;border-radius:9px;background:#f3f7fc;color:#395979;font-size:28px;line-height:1}.payment-dialog-close:hover{background:#e7f0fb}.payment-dialog .payment-reminder{margin:0}.payment-dialog-actions{padding-top:16px}.payment-dialog-actions .button{min-height:44px}
 @media(max-width:480px){.payment-dialog{padding:14px}.payment-dialog-header{gap:8px;margin-bottom:12px}.payment-dialog-header h2{font-size:17px;padding-top:7px}.payment-dialog .payment-required,.payment-dialog .payment-confirmation-reminder{padding:13px}.payment-dialog .payment-reminder-amount{font-size:20px}}
 .checkout-layout.is-unselected{grid-template-columns:1fr}#packageStep .bank-section{border-top:0;padding-top:0;margin-top:0}
+
+/* Keep the form and completed order readable from confirmation through WhatsApp. */
+body.order-form-stage{min-height:100vh;background:#dceeff;color:#000;--ink:#000;--muted:#000;--line:#adcde6}
+body.order-form-stage .panel{background:#edf7ff;border-color:#adcde6}
+body.order-form-stage :is(.page-heading p,.eyebrow,.steps li,.steps small,.steps .is-done>span,.section-heading p,.section-number,.field>label,.field label small,h3 small,.field>small,.field-hint,.upload-box>strong,.upload-box>span,.chosen-file,.chosen-file>span,.consent,.privacy-note,.message-info,.message-warning,.simulation-badge,.summary-fields dt,.summary-fields dd,.summary-total>span,.summary-total>strong,.summary-total>small,.quote-expiry,.summary-safety,.summary-safety>span,.receipt-panel>p,.receipt-number span,.receipt-number strong,.receipt-fields dt,.receipt-fields dd,.receipt-icon,.text-button,.button-secondary,footer,footer a,.toast){color:#000}
+body.order-form-stage :is(input,textarea,select){background:#fff;color:#000;-webkit-text-fill-color:#000;font-size:16px}
+body.order-form-stage :is(input,textarea)::placeholder{color:#000;opacity:1}
+body.order-form-stage :is(.field>label,.field>small,.field-hint,.upload-box>strong,.upload-box>span:last-of-type,.chosen-file,.consent,.privacy-note,.message,.summary-fields>div,.summary-total>span,.summary-total>small,.quote-expiry,.summary-safety,.receipt-panel>p,.receipt-number span,.receipt-fields>div,.button,.text-button,.receipt-actions .text-button){font-size:14px}
+body.order-form-stage :is(.field label small,h3 small){font-size:13px;font-weight:600}
+body.order-form-stage :is(.page-heading p,.section-heading p){font-size:14px}
+body.order-form-stage .form-section>h3{font-size:16px}
+body.order-form-stage .steps li{font-size:13px}
+body.order-form-stage .steps small{font-size:12px;line-height:1.5}
+body.order-form-stage :is(footer,footer a){font-size:13px}
+body.order-form-stage :is(.upload-box,.chosen-file,.receipt-number){background:#fff;border-color:#91b9d8}
+body.order-form-stage .upload-box:hover{background:#f4faff}
+body.order-form-stage .chosen-file{border:1px solid #91b9d8}
+body.order-form-stage .message-info{background:#d1e9ff;border-color:#91b9d8}
+body.order-form-stage .receipt-icon{background:#cde6ff}
+body.order-form-stage .button{min-height:46px}
+body.order-form-stage :is(.button-primary,.button-whatsapp){color:#fff}
+body.order-form-stage .button-whatsapp{background:#117252}
+body.order-form-stage .button-whatsapp:hover{background:#0d6b4b}
+body.order-form-stage fieldset:disabled{opacity:1}
+body.order-form-stage button:disabled{opacity:1}
+body.order-form-stage .button-primary:disabled{border:2px dashed #fff;box-shadow:0 0 0 1px var(--blue)}

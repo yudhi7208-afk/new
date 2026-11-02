@@ -123,6 +123,7 @@
   }
   function setStep(step) {
     state.step = step;
+    document.body.classList.toggle('order-form-stage', step === 2 || step === 3);
     for (let n = 1; n <= 3; n++) {
       const item = $('stepItem' + n); item.classList.toggle('is-current', n === step); item.classList.toggle('is-done', n < step);
       if (n === step) item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
