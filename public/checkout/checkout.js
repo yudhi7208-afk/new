@@ -45,7 +45,7 @@
     const quote = state.quote;
     const current = Boolean(quote && !state.quoteExpired && expiry(quote.expiresAt) > Date.now());
     const paid = Boolean(current && quote.baseAmount > 0);
-    const showReminder = !state.preview && state.canSubmit && paid && state.step !== 3 && !state.submitting && !state.uncertain && !$('checkoutLayout').hidden;
+    const showReminder = !state.preview && state.canSubmit && paid && state.step === 1 && !state.submitting && !state.uncertain && !$('checkoutLayout').hidden;
     $('paymentReminder').hidden = !showReminder;
     text('paymentReminderAmount', showReminder ? money(quote.amount) : '—');
     $('copyAmountButton').hidden = state.preview || !paid || state.step === 3 || state.submitting || state.uncertain;
@@ -91,10 +91,6 @@
       if (n === step) item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
     }
     $('checkoutLayout').hidden = step === 3; $('packageStep').hidden = step !== 1; $('confirmationStep').hidden = step !== 2; $('receiptStep').hidden = step !== 3;
-    // Keep one notice beside the active content, so entering confirmation
-    // cannot scroll past the payment instructions on desktop or mobile.
-    if (step === 2) $('modeNotice').before($('paymentReminder'));
-    else $('checkoutLayout').before($('paymentReminder'));
     renderPaymentGuidance();
   }
   function clearAttempt() { state.attempt = null; state.uncertain = false; state.idempotencyKey = crypto.randomUUID(); $('uncertainNotice').hidden = true; $('expiredNotice').hidden = true; }
