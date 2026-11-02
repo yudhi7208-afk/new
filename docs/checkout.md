@@ -47,8 +47,11 @@ email domain tetap memerlukan penerimaan pemilik.
    dapat dibuka kembali setelah sesi checkout berakhir. Nomor/ID saja tidak
    memberikan akses. Ringkasan simulasi selalu memerlukan pemilik, termasuk
    setelah mode layanan berubah menjadi live.
-6. Tombol WhatsApp membuka pesan siap isi. Pengguna sendiri memilih untuk
-   membuka dan mengirimnya. Aplikasi maupun agen tidak otomatis mengirim
+6. Tombol WhatsApp membuka pesan siap isi, termasuk tautan langsung ke detail
+   pesanan di `https://new.yudhi7208.workers.dev/admin/?order=…`. Tautan memakai
+   ID pesanan tanpa kunci ringkasan; rincian tetap memerlukan login admin.
+   Pengguna sendiri memilih untuk membuka dan mengirimnya. Aplikasi maupun
+   agen tidak otomatis mengirim
    pesan, email, notifikasi, atau memublikasikan lowongan.
 
 Sesi checkout berlaku paling lama satu jam. Penawaran berakhir paling lambat

@@ -2,6 +2,8 @@ import { HttpError, requireAdmin } from './admin-auth.mjs';
 
 // Public checkout contains no source customer data or runtime settings.
 const COOKIE = '__Host-posloker-checkout';
+// Keep owner order links reachable while primary-domain DNS caches update.
+const ADMIN_ORIGIN = 'https://new.yudhi7208.workers.dev';
 const HOUR = 3600;
 const MIB = 1024 * 1024;
 const MATERIAL_BYTES = 10 * MIB;
@@ -269,9 +271,12 @@ function receiptOrder(order) {
   return { id: order.id, orderNumber: order.order_number, status: order.status, city: order.city, packageName: order.package_name, amount: order.amount, isTest: Boolean(order.is_test) };
 }
 function whatsappUrl(order, payout) {
+  const adminLink = new URL('/admin/', ADMIN_ORIGIN);
+  adminLink.searchParams.set('order', order.id);
   const message = [order.is_test ? 'SIMULASI POSLOKER — jangan transfer.' : 'Konfirmasi pesanan PosLoker.',
     'Pesanan: ' + order.order_number, 'Kota: ' + order.city, 'Paket: ' + order.package_name,
-    'Total: Rp' + order.amount.toLocaleString('id-ID'), 'Mohon periksa melalui panel admin.'].join('\n');
+    'Total: Rp' + order.amount.toLocaleString('id-ID'), 'Detail pesanan (khusus admin): ' + adminLink.href,
+    'Mohon periksa melalui panel admin.'].join('\n');
   return 'https://wa.me/' + payout.whatsapp + '?text=' + encodeURIComponent(message);
 }
 async function receipt(request, env, db, session, id) {

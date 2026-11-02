@@ -127,6 +127,17 @@ function form(user, selected, extras = {}, files = {}) {
   return data;
 }
 const count = (env, table) => env.CUSTOMER_DB.sqlite.prepare('SELECT count(*) n FROM ' + table).get().n;
+function assertAdminOrderLink(result) {
+  const message = new URL(result.whatsappUrl).searchParams.get('text');
+  const links = message.match(/https:\/\/[^\s]+/g) || [];
+  assert.equal(links.length, 1, 'WhatsApp includes one owner order link');
+  const link = new URL(links[0]);
+  assert.equal(link.origin, 'https://new.yudhi7208.workers.dev');
+  assert.equal(link.pathname, '/admin/');
+  assert.deepEqual([...link.searchParams], [['order', result.order.id]]);
+  assert.equal(link.hash, '', 'Owner links do not carry receipt capabilities');
+  if (result.receiptKey) assert.ok(!message.includes(result.receiptKey));
+}
 
 try {
   assert.equal(await handleCheckout(req('/api/other'), {}), null);
@@ -255,15 +266,18 @@ try {
   assert.ok(decodeURIComponent(saved.whatsappUrl).includes('SIMULASI'));
   assert.ok(!decodeURIComponent(saved.whatsappUrl).includes('synthetic@example.test'));
   assert.ok(!saved.whatsappUrl.includes(saved.receiptKey), 'Receipt capabilities must never enter WhatsApp links');
+  assertAdminOrderLink(saved);
   const repeat = await api(good, '/api/checkout/submit', form(owner, selected, { idempotencyKey: idem }), owner);
   const repeatedReceipt = await repeat.json();
   assert.equal(repeatedReceipt.order.id, saved.order.id);
   assert.equal(repeatedReceipt.receiptKey, saved.receiptKey, 'A completed retry recovers the same durable capability');
+  assert.equal(repeatedReceipt.whatsappUrl, saved.whatsappUrl);
   assert.equal(good.CUSTOMER_FILES.puts, 3, 'A completed same-key retry cannot upload a second copy');
   const receipt = await api(good, '/api/checkout/orders/' + saved.order.id, undefined, owner);
   const sessionReceipt = await receipt.json();
   assert.equal(sessionReceipt.order.id, saved.order.id);
   assert.equal(sessionReceipt.receiptKey, saved.receiptKey);
+  assert.equal(sessionReceipt.whatsappUrl, saved.whatsappUrl);
   const foreign = await session(good, '203.0.113.70');
   await rejected(() => api(good, '/api/checkout/orders/' + saved.order.id, undefined, foreign), 404);
   await rejected(() => api(good, '/api/checkout/orders/' + saved.order.id), 401);
@@ -274,11 +288,13 @@ try {
   const gratis = fixture(), gratisUser = await session(gratis), gratisQuote = await quote(gratis, gratisUser, 'Gratis Sintetis');
   const gratisSaved = await (await api(gratis, '/api/checkout/submit', form(gratisUser, gratisQuote), gratisUser)).json();
   assert.equal(gratisSaved.order.amount, 0); assert.equal(gratis.CUSTOMER_FILES.puts, 0);
+  assertAdminOrderLink(gratisSaved);
   const live = fixture('live'), liveUser = await session(live, '203.0.113.91', false), liveQuote = await quote(live, liveUser, 'Gratis Sintetis');
   assert.equal(liveUser.body.preview, false); assert.equal(liveUser.body.canSubmit, true);
   const liveSaved = await (await api(live, '/api/checkout/submit', form(liveUser, liveQuote), liveUser)).json();
   assert.equal(liveSaved.order.isTest, false); assert.match(liveSaved.order.orderNumber, /^CF-\d{6}-/);
   assert.ok(!decodeURIComponent(liveSaved.whatsappUrl).includes('SIMULASI'));
+  assertAdminOrderLink(liveSaved);
 
   const sessionLimited = fixture('live');
   for (let index = 0; index < 20; index++) await session(sessionLimited, '203.0.113.100', false);
@@ -393,6 +409,8 @@ try {
   assert.equal(firstDurableResponse.headers.get('Cache-Control'), 'private, no-store, max-age=0');
   assert.equal(firstDurableResponse.headers.get('Referrer-Policy'), 'no-referrer');
   const minimal = await firstDurableResponse.json();
+  assertAdminOrderLink(minimal);
+  assert.equal(minimal.whatsappUrl, durableSaved.whatsappUrl);
   assert.deepEqual(Object.keys(minimal).sort(), ['order','whatsappUrl']);
   assert.deepEqual(Object.keys(minimal.order).sort(), ['amount','city','id','isTest','orderNumber','packageName','status']);
   const minimalJson = JSON.stringify(minimal);
