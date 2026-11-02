@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PosLoker Cloudflare Handover
  * Description: Guard pengalihan pesanan satu arah. Tidak aktif sampai diaktifkan operator pada waktu pengalihan.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Requires PHP: 7.4
  *
  * Prepared only: do not install or enable as part of preview deployment.
@@ -226,30 +226,38 @@ final class PosLoker_Cloudflare_Handover {
 		return $check;
 	}
 
-	/** Manage the prepared handover. No command runs automatically. */
-	public static function command( $args, $assoc ) {
-		$operation = isset( $args[0] ) ? $args[0] : 'status';
-		if ( count( $args ) > 1 || ! in_array( $operation, array( 'status', 'enable', 'disable' ), true ) || array_diff( array_keys( $assoc ), array( 'yes', 'verify-lock' ) ) ) { WP_CLI::error( 'Gunakan: wp posloker handover status [--verify-lock] | enable --yes | disable --yes' ); }
-		if ( 'status' === $operation ) {
-			if ( isset( $assoc['verify-lock'] ) ) { self::acquire_lock(); }
-			$state = self::configuration();
-			self::release_lock();
-			if ( ! in_array( $state, array( 'disabled', 'enabled' ), true ) ) { WP_CLI::error( 'Status pengalihan tidak valid atau database tidak dapat dibaca.' ); }
-			WP_CLI::log( 'PosLoker handover: ' . $state . ( isset( $assoc['verify-lock'] ) ? '; write-lock verified' : '' ) );
-			return;
-		}
-		WP_CLI::confirm( 'enable' === $operation ? 'Aktifkan hanya setelah checkout Cloudflare siap menerima pesanan nyata. Ini menutup penulisan pesanan WordPress. Lanjutkan?' : 'Nonaktifkan hanya setelah Cloudflare tidak lagi menerima pesanan dan rekonsiliasi balik selesai. Ini membuka penulisan WordPress kembali. Lanjutkan?', $assoc );
+	/** Shared operator operation. Caller must enforce its own owner authorization. */
+	public static function operate( $operation, $verify_lock = true ) {
+		if ( ! in_array( $operation, array( 'status', 'enable', 'disable' ), true ) || ! is_bool( $verify_lock ) ) { throw new UnexpectedValueException( 'Operasi pengalihan tidak valid.' ); }
 		try {
-			self::acquire_lock();
+			if ( 'status' !== $operation || $verify_lock ) { self::acquire_lock(); }
+			$state = self::configuration();
+			if ( ! in_array( $state, array( 'disabled', 'enabled' ), true ) ) { throw new UnexpectedValueException( 'Status pengalihan tidak valid atau database tidak dapat dibaca.' ); }
+			if ( 'status' === $operation ) { return $state; }
 			// Read inside the shared lock, then commit and verify uncached state.
-			if ( in_array( self::configuration(), array( 'invalid', 'unavailable' ), true ) ) { WP_CLI::error( 'Status pengalihan sebelumnya tidak dapat dipastikan.' ); }
 			$value = wp_json_encode( array( 'enabled' => 'enable' === $operation, 'target' => self::TARGET ) );
 			wp_cache_delete( self::OPTION, 'options' );
 			wp_cache_delete( 'alloptions', 'options' );
 			update_option( self::OPTION, $value, false );
 			$expected = 'enable' === $operation ? 'enabled' : 'disabled';
-			if ( $expected !== self::configuration() ) { WP_CLI::error( 'Penyimpanan pengalihan belum dapat diverifikasi.' ); }
+			if ( $expected !== self::configuration() ) { throw new UnexpectedValueException( 'Penyimpanan pengalihan belum dapat diverifikasi.' ); }
+			return $expected;
 		} finally { self::release_lock(); }
+	}
+
+	/** Manage the prepared handover. No command runs automatically. */
+	public static function command( $args, $assoc ) {
+		$operation = isset( $args[0] ) ? $args[0] : 'status';
+		if ( count( $args ) > 1 || ! in_array( $operation, array( 'status', 'enable', 'disable' ), true ) || array_diff( array_keys( $assoc ), array( 'yes', 'verify-lock' ) ) ) { WP_CLI::error( 'Gunakan: wp posloker handover status [--verify-lock] | enable --yes | disable --yes' ); }
+		if ( 'status' === $operation ) {
+			try { $state = self::operate( 'status', isset( $assoc['verify-lock'] ) ); }
+			catch ( UnexpectedValueException $error ) { WP_CLI::error( $error->getMessage() ); }
+			WP_CLI::log( 'PosLoker handover: ' . $state . ( isset( $assoc['verify-lock'] ) ? '; write-lock verified' : '' ) );
+			return;
+		}
+		WP_CLI::confirm( 'enable' === $operation ? 'Aktifkan hanya setelah checkout Cloudflare siap menerima pesanan nyata. Ini menutup penulisan pesanan WordPress. Lanjutkan?' : 'Nonaktifkan hanya setelah Cloudflare tidak lagi menerima pesanan dan rekonsiliasi balik selesai. Ini membuka penulisan WordPress kembali. Lanjutkan?', $assoc );
+		try { $expected = self::operate( $operation ); }
+		catch ( UnexpectedValueException $error ) { WP_CLI::error( $error->getMessage() ); }
 		WP_CLI::success( 'PosLoker handover: ' . $expected . '. Periksa hasil dan lanjutkan rekonsiliasi sesuai runbook.' );
 	}
 }

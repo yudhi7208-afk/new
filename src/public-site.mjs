@@ -1,5 +1,6 @@
 import { PAGE_DEFAULTS, DATA_DEFAULTS, PAYMENT_DEFAULTS, SITE_DEFAULTS } from './public-content-defaults.mjs';
 import { readBusinessSettings } from './admin-business.mjs';
+import { PRIMARY_ORIGIN, siteMode, canIndex } from './site-policy.mjs';
 
 const pages = new Map(PAGE_DEFAULTS.map(page => [page.path, page]));
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -56,11 +57,14 @@ export function publicStructuredData(page, content, settings) {
   visit(data);
   return data;
 }
-export function rewritePublicHtml(asset, page, content, settings) {
+export function rewritePublicHtml(asset, page, content, settings, { index = false, live = false } = {}) {
   const site = { ...SITE_DEFAULTS, ...settings.site };
   const data = { ...DATA_DEFAULTS, pricing: settings.catalog.pricing, whatsapp: settings.payout.whatsapp, paymentUrl: '/pembayaran/' };
   const payment = { ...PAYMENT_DEFAULTS, pricing: paymentPricing(settings.catalog), currentCity: page.path.startsWith('/area/') && page.path !== '/area/' ? page.label : '', checkoutUrl: '/pembayaran/', confirmationUrl: '/pembayaran/', autoWhatsapp: false };
   const rewriter = new HTMLRewriter()
+    .on('meta[name="robots"]', { element: el => el.setAttribute('content', index ? 'index, follow' : 'noindex, nofollow') })
+    .on('link[rel="canonical"]', { element: el => el.setAttribute('href', PRIMARY_ORIGIN + page.path) })
+    .on('meta[property="og:url"]', { element: el => el.setAttribute('content', PRIMARY_ORIGIN + page.path) })
     .on('title', { element: el => el.setInnerContent(content.title) })
     .on('meta[name="description"],meta[property="og:description"],meta[name="twitter:description"]', { element: el => el.setAttribute('content', content.description) })
     .on('meta[property="og:title"],meta[name="twitter:title"]', { element: el => el.setAttribute('content', content.title) })
@@ -78,6 +82,9 @@ export function rewritePublicHtml(asset, page, content, settings) {
       if (previous.searchParams.has('text')) target.searchParams.set('text', previous.searchParams.get('text'));
       el.setAttribute('href', target.href);
     } });
+  // The service mode is shared by both origins; live receipts remain usable
+  // on workers.dev without falsely describing real transactions as simulation.
+  if (live) rewriter.on('.migration-preview', { element: el => el.remove() });
   // Preserve source emphasis while fields have their original values.
   if (content.heading !== page.heading) rewriter.on(page.selectors.heading, { element: el => el.setInnerContent(content.heading) });
   if (content.intro !== page.intro) rewriter.on(page.selectors.intro, { element: el => el.setInnerContent(content.intro) });
@@ -93,14 +100,18 @@ export async function handlePublicSite(request, env, url) {
   const asset = await env.ASSETS.fetch(new Request(request.url, { method: 'GET', headers: assetHeaders }));
   if (asset.status !== 200 || !asset.headers.get('content-type')?.includes('text/html')) return asset;
   try {
+    const mode = await siteMode(env), index = canIndex(url, mode);
     const settings = await readBusinessSettings(env.CUSTOMER_DB);
     const saved = await env.CUSTOMER_DB.prepare('SELECT data_json FROM page_content WHERE path=?').bind(page.path).first();
     const content = effectivePublicContent(page, saved ? JSON.parse(saved.data_json) : {});
-    const response = rewritePublicHtml(asset, page, content, settings);
+    const response = rewritePublicHtml(asset, page, content, settings, { index, live: mode === 'live' });
     const headers = new Headers(response.headers);
     headers.delete('Content-Length'); headers.delete('ETag'); headers.delete('Last-Modified');
     headers.set('Cache-Control', 'no-store');
     headers.set('X-Content-Type-Options', 'nosniff');
+    // Override the static asset's fail-closed preview header only for known
+    // public pages on the HTTPS primary origin after live mode is enabled.
+    headers.set('X-Robots-Tag', index ? 'index, follow' : 'noindex, nofollow');
     return new Response(request.method === 'HEAD' ? null : response.body, { status: response.status, headers });
   } catch {
     // Never silently display stale prices when operational settings cannot load.

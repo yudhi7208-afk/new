@@ -4,6 +4,7 @@ import { handleCheckout } from './checkout.mjs';
 import { handleBusiness } from './admin-business.mjs';
 import { handlePublicSite } from './public-site.mjs';
 import { handleLegacyReceipt } from './legacy-receipt.mjs';
+import { PRIMARY_ORIGIN, WWW_HOST, handleSiteMetadata } from './site-policy.mjs';
 
 export function protect(response) {
   const headers = new Headers(response.headers);
@@ -24,6 +25,18 @@ function oldFormResponse() {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.hostname === WWW_HOST || (url.hostname === new URL(PRIMARY_ORIGIN).hostname && url.protocol !== 'https:')) {
+      // Do not forward in-flight multipart uploads, CSRF tokens or credentials
+      // to another origin. A fresh GET starts checkout on the primary host.
+      if (!['GET', 'HEAD'].includes(request.method)) return protect(json({ error: 'Muat ulang halaman pada https://posloker.my.id sebelum mengirim formulir.' }, 405));
+      const target = new URL(PRIMARY_ORIGIN);
+      target.pathname = url.pathname; target.search = url.search;
+      // A missing fragment in Location deliberately preserves the browser's
+      // existing receipt capability fragment across this same-site redirect.
+      return protect(Response.redirect(target.href, 301));
+    }
+    const metadata = await handleSiteMetadata(request, env, url);
+    if (metadata) return metadata;
     const oldAdminPath = /^\/wp-admin(?:\/|$)/.test(url.pathname) || url.pathname === '/wp-login.php';
     const oldAdminQuery = ['posloker_manage', 'posloker_proof', 'posloker_material', 'posloker_caption'].find(key => url.searchParams.has(key));
     if (oldAdminPath || (url.pathname === '/' && oldAdminQuery)) {

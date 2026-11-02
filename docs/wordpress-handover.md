@@ -90,6 +90,32 @@ pesanan, tetapi tidak menolak penulisan normal. Periksa latensi dan satu
 alur sumber setelah pemasangan; jangan menganggap uji PHP lokal sebagai
 pengganti preflight pada server MySQL/WordPress hosting yang sebenarnya.
 
+## Alternatif kontrol pemilik jika WP-CLI tidak tersedia
+
+Wrapper pada `migration/wordpress-handover-admin/posloker-cloudflare-handover.php`
+dapat dikemas sebagai plugin WordPress biasa bersama inti yang identik di
+`includes/wordpress-handover.php`. Paket tidak menyertakan kredensial, akses
+publik, atau aktivasi flag otomatis. MU-plugin dan WP-CLI tetap menjadi jalur
+utama bila tersedia; jangan memasang salinan inti lama dan baru bersamaan.
+
+Setelah plugin biasa dipasang dan diaktifkan, buka **Tools → PosLoker Handover**
+dengan akun yang mempunyai `manage_options`. Halaman membaca status terbaru
+tanpa mengubah flag. Jalankan **Verifikasi lock**; hasil disimpan khusus
+pengguna tersebut selama sepuluh menit. Setelah checkout nyata Cloudflare
+siap, centang konfirmasi lalu **Aktifkan handover**. Perubahan memakai metode
+inti yang sama dengan CLI: lock, baca flag langsung, simpan, verifikasi,
+lepas lock. Preflight dikonsumsi oleh percobaan perubahan dan harus diulang
+setelah kegagalan. Kontrol memerlukan POST asal yang sama, nonce per operasi,
+dan hak administrator; tidak ada handler `nopriv`.
+
+Jangan menonaktifkan atau menghapus plugin biasa selama handover enabled:
+WordPress memerlukan guard tersebut pada setiap permintaan. Batas permintaan
+PHP sebelum pemasangan dan SQL langsung tetap sama. Rollback hanya boleh
+melalui tombol konfirmasi setelah Cloudflare berhenti menulis dan data
+balik selesai dicocokkan. Uji PHP nyata lokal mencakup 120 pemeriksaan inti
+dan 71 pemeriksaan tambahan kontrol pemilik; ini belum membuktikan preflight
+hosting atau mengaktifkan apa pun.
+
 ## Eksekusi hanya pada waktu pengalihan yang disetujui
 
 1. Pastikan endpoint checkout Workers sudah siap untuk pelanggan dan bisa

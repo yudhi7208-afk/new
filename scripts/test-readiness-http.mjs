@@ -14,11 +14,12 @@ let target;
 try { target = new URL(options.get('--origin') || 'http://127.0.0.1:8788/'); }
 catch { throw new Error('The readiness origin is invalid.'); }
 const local = target.protocol === 'http:' && ['127.0.0.1', 'localhost'].includes(target.hostname) && /^\d+$/.test(target.port);
-const remote = target.protocol === 'https:' && target.hostname === 'new.yudhi7208.workers.dev' && !target.port;
+const remote = target.protocol === 'https:' && ['new.yudhi7208.workers.dev', 'posloker.my.id'].includes(target.hostname) && !target.port;
 assert.ok((local || remote) && target.pathname === '/' && !target.username && !target.password && !target.search && !target.hash,
-  'This smoke test only permits a local HTTP origin or https://new.yudhi7208.workers.dev.');
+  'This smoke test only permits a local HTTP origin, https://new.yudhi7208.workers.dev or https://posloker.my.id.');
 const expectedMode = options.get('--expect-mode') || 'preview';
-assert.ok(['preview', 'live'].includes(expectedMode) && (!remote || expectedMode === 'preview'), 'The remote Worker must remain in preview; live mode can be tested only locally.');
+assert.ok(['preview', 'live'].includes(expectedMode), 'Expected mode must be explicitly preview or live.');
+const expectedIndex = target.origin === 'https://posloker.my.id' && expectedMode === 'live';
 const origin = target.origin;
 const manifest = JSON.parse(await readFile(new URL('../docs/migration-manifest.json', import.meta.url), 'utf8'));
 assert.ok(manifest.pages.length === 51 && new Set(manifest.pages).size === 51 &&
@@ -83,10 +84,13 @@ async function withConcurrency(items, limit, operation) {
   }));
   if (results.some(result => result.status === 'rejected')) throw failure;
 }
-function checkNoIndex(response, html) {
-  check(/(?:^|[,\s])noindex(?:$|[,\s])/i.test(response.headers.get('X-Robots-Tag') || ''), 'The preview response must retain its noindex header.');
+function checkIndexPolicy(response, html) {
+  const directive = expectedIndex ? 'index' : 'noindex';
+  const pattern = new RegExp('(?:^|[,\\s])' + directive + '(?:$|[,\\s])', 'i');
+  check(pattern.test(response.headers.get('X-Robots-Tag') || ''), 'The public response has an unexpected indexing header.');
   const robots = [...html.matchAll(/<meta\b([^>]*)>/gi)].find(match => attribute(match[1], 'name').toLowerCase() === 'robots');
-  check(robots && /(?:^|[,\s])noindex(?:$|[,\s])/i.test(attribute(robots[1], 'content')), 'The preview HTML must retain its noindex directive.');
+  check(robots && pattern.test(attribute(robots[1], 'content')), 'The public HTML has an unexpected indexing directive.');
+  check(expectedIndex || !/(?:^|[,\s])index(?:$|[,\s])/i.test(attribute(robots[1], 'content')), 'A preview page must not also declare index.');
 }
 async function redirect(path, expectedPath, expectedQuery = {}, expectedFragment = {}) {
   const response = await request(path);
@@ -107,9 +111,9 @@ async function run() {
   if (expectedMode === 'preview') {
     check(session.canSubmit === false && session.csrfToken === '' && !sessionResponse.headers.has('Set-Cookie'), 'An anonymous preview visitor must not receive submission access, a CSRF token, or a new cookie.');
   } else {
-    // This explicit local-only branch behaves like one ordinary anonymous visit;
+    // Explicit live mode behaves like one ordinary anonymous visit;
     // it creates no quote/order and does not reuse or print the ephemeral cookie.
-    check(local && session.canSubmit === true && /^[a-f0-9]{64}$/.test(session.csrfToken) && sessionResponse.headers.has('Set-Cookie'), 'An anonymous local live session must be ready for checkout.');
+    check(session.canSubmit === true && /^[a-f0-9]{64}$/.test(session.csrfToken) && sessionResponse.headers.has('Set-Cookie'), 'An anonymous live session must be ready for checkout.');
   }
 
   phase = 'public pages';
@@ -118,7 +122,10 @@ async function run() {
     check(response.status === 200 && response.headers.get('Content-Type')?.includes('text/html'), 'A manifest page did not return HTML 200.');
     check(response.headers.get('Cache-Control')?.includes('no-store') && !response.headers.has('ETag'), 'A public page did not use the current dynamic renderer.');
     const html = await response.text();
-    checkNoIndex(response, html);
+    checkIndexPolicy(response, html);
+    const canonicalLink = [...html.matchAll(/<link\b([^>]*)>/gi)].find(match => attribute(match[1], 'rel') === 'canonical');
+    check(canonicalLink && attribute(canonicalLink[1], 'href') === 'https://posloker.my.id' + path, 'A public page has an unexpected canonical URL.');
+    check(expectedMode === 'preview' ? html.includes('<aside class="migration-preview"') : !html.includes('<aside class="migration-preview"'), 'The simulation banner does not match the service mode.');
     check(plain(html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || ''), 'A public page has no title.');
     const description = [...html.matchAll(/<meta\b([^>]*)>/gi)].find(match => attribute(match[1], 'name').toLowerCase() === 'description');
     check(description && normalize(attribute(description[1], 'content')), 'A public page has no meta description.');
@@ -168,6 +175,20 @@ async function run() {
     checkedPages++;
   });
 
+  phase = 'robots and sitemap publication';
+  const robotsResponse = await request('/robots.txt');
+  check(robotsResponse.status === 200 && robotsResponse.headers.get('Cache-Control')?.includes('no-store'), 'Robots policy must be served dynamically without cache.');
+  const robotsText = await robotsResponse.text();
+  if (expectedIndex) {
+    check(/^User-agent: \*\nAllow: \/\n/.test(robotsText) && robotsText.includes('Sitemap: https://posloker.my.id/sitemap.xml\n'), 'The live primary robots policy must publish the canonical sitemap.');
+  } else check(robotsText === 'User-agent: *\nDisallow: /\n', 'A preview origin must disallow indexing.');
+  const sitemapResponse = await request('/sitemap.xml');
+  check(sitemapResponse.status === (expectedIndex ? 200 : 404), 'The sitemap must be published only on the live primary origin.');
+  if (expectedIndex) {
+    const locations = [...(await sitemapResponse.text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+    check(equal([...locations].sort(), manifest.pages.map(path => 'https://posloker.my.id' + path).sort()), 'The canonical sitemap must contain exactly the known public pages.');
+  }
+
   phase = 'anonymous administration and private-file guards';
   for (const path of ['/api/admin/orders', '/api/admin/business', '/api/admin/content', '/api/admin/files/file_' + 'f'.repeat(64)]) {
     const response = await request(path);
@@ -203,7 +224,7 @@ async function run() {
 
 try {
   await run();
-  console.log('Readiness HTTP checks passed: ' + checkedPages + '/51 public pages, current pricing/configuration/cards/structured data, noindex, anonymous access guards, safe legacy redirects and rejected legacy mutations. Mode: ' + expectedMode + '.');
+  console.log('Readiness HTTP checks passed: ' + checkedPages + '/51 public pages, current pricing/configuration/cards/structured data, canonical/indexing/robots/sitemap, anonymous access guards, safe legacy redirects and rejected legacy mutations. Mode: ' + expectedMode + '.');
 } catch (error) {
   const detail = error instanceof SmokeCheckError ? error.message : 'Unexpected transport or runtime failure.';
   console.error('Readiness HTTP checks failed during: ' + phase + (failedPage ? ' (' + failedPage + ')' : '') + '. Check: ' + detail + ' No settings, payout details, capability values or response bodies were printed.');

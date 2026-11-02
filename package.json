@@ -8,6 +8,7 @@
     "test:checkout": "node scripts/test-checkout.mjs",
     "test:business": "node scripts/test-admin-business.mjs",
     "test:legacy": "node scripts/test-legacy-receipt.mjs",
+    "test:production": "node scripts/test-production-site.mjs",
     "export:posloker": "node scripts/export-posloker.mjs",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
