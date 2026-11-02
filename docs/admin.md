@@ -1,5 +1,9 @@
 # Panel admin PosLoker di Cloudflare
 
+Pemulihan akun pemilik yang kehilangan kata sandi mengikuti
+[prosedur operator offline](owner-recovery.md). Helper telah diuji pada
+data sintetis; akun produksi tidak direset sebagai bagian pengalihan.
+
 Alamat panel adalah `/admin/` pada Worker proyek `new`. Panel menggabungkan
 snapshot pesanan WordPress dan pesanan native Cloudflare, beserta berkas
 privat R2. Halaman masuk dapat dibuka tanpa sesi; daftar pelanggan, pesanan,

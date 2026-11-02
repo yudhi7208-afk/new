@@ -11,7 +11,10 @@ ringkasan yang sudah ada. POST/PUT dan mutasi lain ditolak 405 tanpa redirect;
 jangan meneruskan unggahan atau token dari origin lama ke origin baru.
 `run_worker_first=true` memastikan kebijakan ini berlaku juga pada aset,
 robots, dan sitemap. Rute Custom Domain apex dan www harus diverifikasi
-operator sebelum nameserver dipindahkan.
+operator sebelum nameserver dipindahkan. Kedua binding dan endpoint
+`workers.dev` dicatat eksplisit di `wrangler.jsonc`. Delegasi zona dan
+sertifikat HTTPS tetap diperiksa sesudah zona diaktifkan; DNS zona pending
+belum membuktikan domain dapat melayani pelanggan.
 
 Publikasi mengikuti nilai `commerce_settings.mode` yang sama dengan checkout:
 
