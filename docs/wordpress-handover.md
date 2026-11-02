@@ -1,10 +1,17 @@
 # Pengalihan penerimaan pesanan WordPress
 
-Kode pada `migration/wordpress-handover.php` adalah artefak persiapan, bukan
-bagian Worker atau aset publik. Kode ini **belum dipasang atau diaktifkan di
-hosting lama**. Website lama tetap menerima pesanan selama persiapan.
-Nameserver, DNS, database sumber, dan berkas sumber tidak diubah oleh
-persiapan ini. Pengguna tetap menentukan kapan pengalihan dijalankan.
+Kode pada `migration/wordpress-handover.php` bukan bagian Worker atau aset
+publik. Pada pengalihan yang disetujui 2 November 2026, inti v1.1.0 telah
+dipasang sebagai `wp-content/mu-plugins/posloker-cloudflare-handover.php`
+di WordPress PosLoker dan diaktifkan melalui WP-CLI. Checksum cocok;
+status akhir `enabled; write-lock verified`. Wrapper plugin admin tidak
+dipasang. Guard tetap aktif sesudah maintenance publik pukul 08.00 WIB
+berakhir; jangan menonaktifkannya selama Cloudflare menerima pesanan.
+
+Prosedur di bawah disimpan sebagai runbook pemasangan, pengalihan dan
+pemulihan; bukan instruksi untuk mengulang aktivasi atau impor. Nameserver
+registrar sudah disimpan; penerimaan domain/HTTPS mengikuti bukti terkini
+pada [catatan pengalihan](cutover-readiness.md).
 
 ## Tujuan dan batas
 

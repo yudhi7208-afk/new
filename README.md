@@ -1,23 +1,28 @@
-# Pratinjau PosLoker di Cloudflare Workers
+# PosLoker di Cloudflare Workers
 
-Salinan halaman publik `https://posloker.my.id` untuk meninjau perpindahan ke
-Cloudflare Workers Static Assets. Target pratinjau adalah
-`https://new.yudhi7208.workers.dev`; domain dan hosting asal tidak diubah.
+Website PosLoker menggunakan Cloudflare Workers Static Assets, D1, dan R2
+privat. Endpoint Workers adalah `https://new.yudhi7208.workers.dev`.
+Pengalihan yang disetujui pengguna sedang berlangsung pada 2 November 2026:
+checkout Cloudflare sudah `live`; nameserver registrar tersimpan sekitar
+07.24–07.25 WIB. Delegasi induk dan zona Cloudflare sudah aktif; HTTPS
+apex/`www` serta pemeriksaan 51/51 halaman domain resmi lulus. Maintenance
+sumber berakhir pukul 08.00 WIB dan pluginnya sudah dinonaktifkan.
+Masuk pemilik pada hostname resmi serta uji kirim/terima email tetap
+memerlukan penerimaan pemilik. Cache resolver lama dapat belum seragam.
 
 Beranda, direktori area, 49 halaman kota, gambar, CSS, JavaScript, dan font
 berasal dari `public/`. Worker menampilkan harga, kontak, dan perubahan
 konten yang didukung dari D1. Halaman publik, kalkulator, kartu paket,
 data terstruktur, dan checkout memakai katalog harga yang sama.
 
-Kode pratinjau memuat checkout `/pembayaran/`: pilihan kota/paket, harga dan
+Checkout `/pembayaran/` memuat pilihan kota/paket, harga dan
 kode unik dari server, formulir pelanggan, unggahan privat, serta ringkasan
 pesanan dan tombol WhatsApp manual. Katalog D1 memuat 49 kota dan 16 kelompok
-harga. **Checkout masih mode simulasi: jangan melakukan transfer.** Pengunjung
-dapat melihat katalog; hanya pemilik yang masuk ke admin dapat membuat
-penawaran, mengirim simulasi, dan membuka ringkasannya. Pesanan baru
-pratinjau diberi `is_test=1` dan label **SIMULASI**. Pesanan baru dapat
+harga. Mode `live` menerima penawaran dan pesanan pelanggan tanpa sesi
+admin. Pesanan percobaan sebelumnya tetap `is_test=1` dan berlabel
+**SIMULASI**; ringkasannya tetap memerlukan pemilik. Pesanan baru dapat
 dibuka kembali melalui tautan pribadi berkunci fragment setelah sesi
-checkout berakhir; selama simulasi tetap memerlukan pemilik. Kunci tidak
+checkout berakhir. Kunci tidak
 ditaruh di query atau pesan WhatsApp.
 
 Salinan pelanggan dan riwayat WordPress disimpan privat di D1
@@ -32,22 +37,25 @@ judul/deskripsi/teks pembuka halaman yang tersedia. Snapshot dan ID historis
 dipertahankan; perubahan admin memakai revisi serta audit. Tautan ringkasan
 WordPress lama juga didukung tanpa membuka berkas pelanggan ke publik.
 
-**WordPress lama tetap melayani pelanggan.** Domain, DNS, dan hosting lama
-belum diubah. Pesanan WordPress yang masuk berikutnya tidak otomatis
-direplikasi ke Cloudflare. Mode layanan nyata baru diaktifkan setelah
-pengujian lengkap, pembaruan backup/delta terakhir, rekonsiliasi, dan
-permintaan pengalihan eksplisit dari pengguna. Aturan `noindex` pratinjau
-tetap berlaku sampai tahap tersebut.
+**Penulisan pesanan/status WordPress sudah dihentikan oleh guard handover.**
+Maintenance publik terjadwal 07.00–08.00 WIB berakhir otomatis; guard
+penulisan tetap aktif setelahnya agar propagasi DNS tidak membuka dua
+penerima pesanan. Ekspor SQL/WXR setelah freeze cocok dengan 16 pesanan,
+15 profil kontak, 394 metadata, dan 32 referensi berkas di D1. Seluruh
+32 jalur sumber cocok SHA-256/ukurannya dengan 27 objek historis R2;
+tidak diperlukan impor data tambahan. Hosting lama beserta email dan
+backup dipertahankan. `workers.dev` tetap `noindex`; penerimaan domain
+resmi belum dinyatakan selesai hanya karena nameserver sudah disimpan.
 Lihat [catatan migrasi](docs/migration.md) dan [manifest ekspor](docs/migration-manifest.json).
 Alur persiapan dan validasi data ada di [panduan data pelanggan](docs/customer-data-migration.md).
 Aktivasi pemilik dan pengoperasian panel ada di [panduan admin](docs/admin.md).
-Alur simulasi, konfigurasi privat, dan pemulihan checkout ada di
+Alur checkout, konfigurasi privat, dan pemulihannya ada di
 [panduan checkout](docs/checkout.md).
 Status bukti pengujian, gerbang penerbitan, dan persiapan domain/email ada
 di [daftar kesiapan pengalihan](docs/cutover-readiness.md). Artefak pengalihan
 penulisan WordPress beserta prosedur preflight ada di
-[panduan handover](docs/wordpress-handover.md); artefak itu belum dipasang
-atau diaktifkan pada hosting lama.
+[panduan handover](docs/wordpress-handover.md); guard tersebut sudah
+dipasang, diaktifkan, dan diverifikasi pada hosting lama saat pengalihan.
 
 ## Pedoman pengelolaan proyek
 
@@ -75,7 +83,7 @@ Panel admin berada di `/admin/`. Sebelum digunakan, terapkan migrasi skema
 admin dan siapkan aktivasi pemilik sekali pakai sesuai panduan admin.
 Terapkan skema secara berurutan sampai `0008_receipt_access.sql`; checkout
 juga memerlukan konfigurasi bisnis privat pada D1. Lihat panduan checkout
-dan admin. Pertahankan mode `preview` pada Worker tujuan selama persiapan.
+dan admin. Gunakan mode `preview` pada lingkungan uji terisolasi.
 Jangan memakai data pelanggan produksi untuk pengujian lokal.
 
 ## Validasi konfigurasi
@@ -99,7 +107,8 @@ environment variable. Jangan simpan kredensial di repository.
 Nama Worker adalah `new`, tanggal kompatibilitas `2026-10-30`, dan direktori
 aset `./public`. Database D1 memakai akses akun/binding Cloudflare; data
 pelanggan tidak disajikan oleh halaman statis. Bucket R2 tetap privat tanpa
-domain publik atau akses `r2.dev`. Domain khusus belum diubah.
+domain publik atau akses `r2.dev`. Rute apex/`www` sudah aktif dan TLS
+telah diverifikasi pada edge Cloudflare; cache resolver lama dapat belum seragam.
 
 ## Memperbarui salinan publik
 

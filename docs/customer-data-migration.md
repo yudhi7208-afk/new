@@ -16,6 +16,15 @@ dibandingkan ukuran byte serta SHA-256-nya dengan manifest sumber.
 Katalog D1 sudah dicocokkan seluruh kolom, checksum baris, dan relasinya
 dengan pesanan serta snapshot.
 
+Checkpoint final pengalihan 2 November 2026: SQL/WXR setelah source freeze
+cocok dengan target berisi 16 pesanan, 15 profil kontak konservatif,
+394 metadata, dan 32 referensi berkas. Tidak ada tambahan/perubahan sehingga
+tidak ada impor ulang. Pemeriksaan baca-saja pada hosting mencocokkan
+SHA-256/ukuran seluruh 32 jalur sumber dengan 27 objek historis R2. Backup
+target v8 memuat 23 tabel; pemulihan SQLite terisolasi cocok seluruh nilai,
+integritas lulus, dan 0 pelanggaran foreign key. Berkas/akun/native/auth/
+pengaturan/audit Cloudflare dipertahankan.
+
 ## Cakupan snapshot
 
 Sumber WordPress menyimpan pesanan sebagai post type `posloker_order` dan
@@ -30,10 +39,11 @@ Profil kontak diturunkan secara konservatif dari kombinasi nama, WhatsApp,
 dan email. Jumlah profil kontak bukan klaim jumlah orang unik.
 
 WordPress/PHP, sesi staf, PIN, dan kredensial sumber tidak dijadikan
-kredensial backend baru. Website lama tetap melayani pesanan pelanggan
-sampai cutover terpisah. Checkout Cloudflare yang sudah diimplementasikan
-masih simulasi khusus pemilik; salinan WordPress ini bukan replikasi
-database langsung.
+kredensial backend baru. Saat pengalihan yang disetujui, guard handover
+WordPress sudah aktif dan Cloudflare sudah `live`. Maintenance publik
+07.00–08.00 WIB berakhir otomatis; guard penulisan pesanan/status tetap
+aktif sesudahnya. Salinan ini bukan replikasi database langsung atau
+sinkronisasi dua arah. Hosting/email sumber serta backup dipertahankan.
 
 ## Status kerja admin
 
@@ -72,8 +82,10 @@ pemilik yang masuk. Migrasi `0008` menambahkan hash kapabilitas ringkasan
 pesanan baru; tautan fragment pribadinya tetap bekerja setelah sesi checkout
 berakhir. Ringkasan simulasi tetap memerlukan pemilik bahkan pada mode live.
 Ringkasan hanya menampilkan DTO minimal, tanpa kontak atau berkas pelanggan.
-Gunakan data/berkas contoh dan jangan melakukan transfer. Berkas tetap
-diunduh melalui API admin terautentikasi.
+Gunakan lingkungan `preview` terisolasi untuk data/berkas contoh tanpa
+transfer. Mode produksi `live` menerima pesanan tamu; simulasi sebelumnya
+tidak diubah menjadi transaksi nyata. Berkas tetap diunduh melalui API
+admin terautentikasi.
 
 Konfigurasi rekening/kontak operasional disimpan pada D1, bukan dalam Git
 atau HTML statis. Jangan memasukkan nilai aktualnya, identitas pelanggan,
@@ -158,7 +170,9 @@ Cloudflare juga tidak ditulis kembali ke sumber. Perbarui backup sumber dan
 rekonsiliasi delta terakhir menjelang cutover tanpa menimpa riwayat kerja
 admin atau mencampurkan pesanan simulasi dengan transaksi nyata.
 
-Implementasi checkout baru tidak dengan sendirinya mengalihkan pelanggan.
-WordPress tetap berjalan; mode `live`, domain/DNS, dan SEO/`noindex` hanya
-diubah setelah pengujian lengkap, rekonsiliasi, dan permintaan pengalihan
-eksplisit pengguna. Cadangan sumber dan artefak verifikasi tetap privat.
+Nameserver registrar telah disimpan pada 2 November 2026 dan tetap di
+Cloudflare. Zona, HTTPS apex/`www` serta pemeriksaan domain resmi 51/51
+halaman lulus. Masuk pemilik dan uji kirim/terima email domain tetap
+memerlukan penerimaan pemilik. Pertahankan satu penerima pesanan: jangan membuka lagi
+penulisan WordPress ketika propagasi belum seragam. Cadangan sumber dan
+artefak verifikasi tetap privat.

@@ -9,17 +9,20 @@ snapshot pesanan WordPress dan pesanan native Cloudflare, beserta berkas
 privat R2. Halaman masuk dapat dibuka tanpa sesi; daftar pelanggan, pesanan,
 dan unduhan memerlukan sesi admin valid.
 
-**WordPress asal tetap melayani transaksi pelanggan.** Checkout
-`/pembayaran/` di Cloudflare masih mode `preview`: pengunjung dapat melihat
-katalog, tetapi hanya pemilik yang masuk dapat membuat penawaran, mengirim
-pesanan simulasi, dan membaca ringkasan. Tautan ringkasan baru mempunyai
-kapabilitas pribadi; ringkasan simulasi tetap memerlukan sesi pemilik.
-Semua pesanan baru pratinjau ditandai `is_test=1` dan **SIMULASI**;
-**jangan melakukan transfer**.
+Per 2 November 2026, checkout Cloudflare sudah `live` setelah persetujuan
+pengalihan. Tamu dapat membuat penawaran dan pesanan; pesanan simulasi lama
+tetap berlabel **SIMULASI** dan ringkasannya tetap memerlukan sesi pemilik.
+Penulisan pesanan/status WordPress telah dibekukan oleh guard handover.
+Maintenance publik 07.00–08.00 WIB berakhir otomatis, sedangkan guard
+tetap aktif. Salinan sumber terakhir cocok: 16 pesanan, 15 profil kontak,
+394 metadata, serta 32 referensi berkas; tidak ada impor tambahan.
 
-Pesanan WordPress baru belum otomatis masuk ke Cloudflare. Perubahan status
-atau catatan pada panel Cloudflare juga tidak dikirim kembali ke WordPress.
-Domain, DNS, dan hosting lama belum dialihkan atau dihentikan.
+Perubahan status atau catatan Cloudflare tidak dikirim kembali ke WordPress.
+Nameserver tetap Cloudflare; zona dan HTTPS apex/`www` sudah aktif.
+Pemeriksaan domain resmi 51/51 halaman lulus. Masuk pemilik pada hostname
+resmi tetap memerlukan penerimaan pemilik. Cookie sesi
+tidak berpindah antar hostname: gunakan akun pemilik yang sama untuk
+masuk kembali, tanpa aktivasi ulang. Hosting/email lama tetap dipertahankan.
 
 Dokumen ini menjelaskan implementasi dan pengoperasian panel. Status
 penerapan skema, aktivasi pemilik, dan deploy harus diperiksa oleh operator
@@ -94,8 +97,9 @@ detail sebelum mencoba kembali agar perubahan terbaru tidak tertimpa.
 
 ## Mencoba checkout
 
-Masuk sebagai pemilik, lalu buka `/pembayaran/` pada browser dan origin yang
-sama. Gunakan data serta berkas contoh. Server memeriksa harga dan kode unik;
+Untuk simulasi, gunakan lingkungan `preview` terisolasi. Masuk sebagai
+pemilik, lalu buka `/pembayaran/` pada browser dan origin yang sama.
+Gunakan data serta berkas contoh. Server memeriksa harga dan kode unik;
 setelah pengiriman berhasil, periksa ringkasan, badge **SIMULASI**, detail,
 unduhan privat, serta riwayat pada panel.
 
@@ -137,7 +141,9 @@ berulang kali untuk menangani kesalahan kata sandi biasa.
 Jika pemilik sudah terbentuk, tautan bootstrap tidak dapat mendaftarkan
 pemilik pengganti. Jangan menghapus pengguna, sesi, snapshot, atau audit
 untuk membuka pendaftaran kembali. Belum ada reset kata sandi mandiri;
-pemulihan akses memerlukan prosedur operator yang terkontrol dan teruji.
+pemulihan akses mengikuti [prosedur operator offline](owner-recovery.md).
+Helper tersebut telah diuji memakai data sintetis; akun produksi tidak
+direset sebagai bagian pengalihan.
 
 Jika pengiriman checkout belum dapat dipastikan atau record
 `checkout_submissions` tertahan pada `processing`, jangan membuka kunci,
@@ -146,9 +152,8 @@ commit D1 dan manifest objek privat R2 sebelum tindakan pemulihan. Ikuti
 [rekonsiliasi checkout](checkout.md#rekonsiliasi-pengiriman-yang-belum-pasti);
 jangan membuat pesanan baru untuk melewati penguncian.
 
-Menjelang cutover, rekonsiliasi perubahan WordPress dan status kerja
-Cloudflare berdasarkan ID sumber serta perbarui backup sumber terakhir.
-Uji penerimaan pesanan, nominal/kode unik, unggahan, ringkasan, WhatsApp
-manual, dan akses admin. Mode layanan nyata, domain/DNS, serta perubahan
-SEO/`noindex` baru dilakukan setelah pengujian dan permintaan pengalihan
-eksplisit pengguna; sampai itu WordPress tetap berjalan.
+Rekonsiliasi final setelah source freeze telah lulus, termasuk hash/ukuran
+seluruh 32 jalur berkas. Pertahankan guard sumber dan backup. Setelah zona
+aktif, uji masuk pemilik, pesanan, unggahan, ringkasan, serta akses privat
+pada domain resmi. Penyimpanan nameserver belum membuktikan pengujian
+domain/TLS dan email tersebut selesai.

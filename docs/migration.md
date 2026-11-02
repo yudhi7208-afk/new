@@ -1,9 +1,16 @@
-# Pratinjau perpindahan PosLoker
+# Perpindahan PosLoker ke Cloudflare
 
-Target pratinjau adalah `new.yudhi7208.workers.dev`. Website WordPress lama
-tetap beroperasi dan melayani pelanggan. Domain, DNS, dan hosting asal belum
-diubah. Implementasi checkout Cloudflare masih untuk simulasi pemilik,
-bukan pengalihan transaksi pelanggan.
+Endpoint Workers adalah `new.yudhi7208.workers.dev`. Pengalihan yang
+disetujui pengguna sedang berlangsung pada 2 November 2026. Checkout
+Cloudflare sudah `live`; guard sumber telah menghentikan penulisan
+pesanan/status WordPress. Maintenance publik terjadwal 07.00–08.00 WIB
+berakhir otomatis, tetapi guard handover tetap aktif setelahnya.
+Nameserver registrar tersimpan sekitar 07.24–07.25 WIB dan tetap Cloudflare.
+Zona dan HTTPS apex/`www` sudah aktif; pemeriksaan domain resmi 51/51
+halaman lulus. Maintenance sumber berakhir pukul 08.00 WIB dan plugin
+sudah dinonaktifkan. Masuk pemilik pada hostname resmi serta uji email
+tetap memerlukan penerimaan pemilik. Hosting/email lama dan backup
+tetap dipertahankan.
 
 ## Halaman publik dan checkout
 
@@ -11,24 +18,23 @@ bukan pengalihan transaksi pelanggan.
   dan font tersedia sebagai aset statis.
 - Navigasi, pencarian kota, filter wilayah, pilihan paket, dan kalkulator
   harga mempertahankan data katalog sumber saat ekspor.
-- Tautan pemesanan pratinjau membuka `/pembayaran/` pada Worker yang sama.
+- Tautan pemesanan membuka `/pembayaran/` pada Worker yang sama.
   Checkout memakai katalog D1 berisi 49 kota dan 16 kelompok harga; server
   memeriksa kota/paket dan menetapkan nominal serta kode unik.
 - Alur baru mencakup penawaran, formulir pelanggan, unggahan bukti/materi
   ke R2 privat, penyimpanan pesanan D1, ringkasan dengan tautan pribadi, dan
   tombol WhatsApp yang dibuka serta dikirim sendiri oleh pengguna.
 
-Mode yang disiapkan adalah `preview`. Pengunjung dapat melihat katalog,
-tetapi penawaran, pengiriman, dan ringkasan memerlukan pemilik yang sudah
-masuk ke admin. Penawaran/pengiriman memakai sesi checkout; ringkasan baru
-memakai kapabilitas fragment dan tetap memerlukan pemilik untuk simulasi.
-Pesanan pratinjau selalu
-ditandai `is_test=1` dan **SIMULASI**. Gunakan data dan berkas contoh;
-**jangan melakukan transfer**. Tidak ada pesan WhatsApp, notifikasi, atau
-publikasi otomatis dari simulasi ini.
+Mode `live` menerima penawaran dan pesanan tamu. Mode `preview` tetap
+tersedia untuk lingkungan uji terisolasi dan memerlukan pemilik. Pesanan
+simulasi lama tetap `is_test=1` dan **SIMULASI**; ringkasannya tetap
+memerlukan pemilik. Penawaran/pengiriman memakai sesi checkout; ringkasan
+baru memakai kapabilitas fragment. Aplikasi tidak mengirim WhatsApp,
+notifikasi, atau publikasi secara otomatis.
 
-Banner, robots, dan `X-Robots-Tag` tetap menandai pratinjau serta mencegah
-pengindeksan. Jangan menghapus `noindex` pada tahap simulasi.
+Host `workers.dev` tetap `noindex`. Kebijakan domain resmi dibedakan dari
+endpoint tersebut; admin, API, checkout, dan ringkasan privat tetap tidak
+untuk pengindeksan. Verifikasi responsnya setelah zona aktif.
 Daftar halaman dan checksum aset ada di `migration-manifest.json`.
 Rincian alur, konfigurasi, dan pemulihan ada di [panduan checkout](checkout.md).
 
@@ -44,6 +50,13 @@ Bukti dan materi sumber sudah disalin ke R2 privat
 kembali melalui akses privat; ukuran byte dan SHA-256-nya cocok dengan
 staging sumber. Katalog `order_files` di D1 juga dicocokkan seluruh kolom,
 checksum baris, dan hubungan pesanan/snapshot-nya.
+
+Ekspor SQL/WXR final setelah freeze cocok dengan 16 pesanan, 15 profil
+kontak konservatif, 394 metadata, dan 32 referensi berkas di tujuan. Tidak
+ada perubahan atau tambahan sehingga tidak ada impor ulang. Pemeriksaan
+langsung pada hosting mencocokkan SHA-256/ukuran seluruh 32 jalur sumber
+dengan 27 objek historis R2. Tujuh opsi bisnis/tema dan tiga baris konten
+publik tetap sama; satu opsi baru adalah guard handover yang disengaja.
 
 Bucket tidak memiliki domain publik atau akses `r2.dev`. Unduhan berkas
 memerlukan sesi admin. Pesanan Cloudflare baru memakai tabel
@@ -90,8 +103,12 @@ Pengaturan bisnis dan isi dasar halaman tersedia di `/admin/business.html`.
 Harga, kontak, konfigurasi kalkulator, kartu paket, dan data terstruktur
 halaman kota menggunakan D1. Arsip/pulihkan pesanan tidak mengubah snapshot.
 Tautan admin dan ringkasan WordPress lama ditangani melalui rute kompatibel.
-Guard pengalihan sumber tersedia sebagai [artefak terpisah](wordpress-handover.md),
-belum dipasang atau diaktifkan pada hosting lama.
+Guard pengalihan sumber pada [panduan handover](wordpress-handover.md)
+sudah dipasang dan aktif pada hosting lama; write lock diverifikasi.
+Sampel processlist database sebelum ekspor menunjukkan nol koneksi lain
+dan nol koneksi aktif milik pengguna database sumber. Sampel ini tidak
+membuktikan status seluruh request PHP yang sudah berjalan atau direct SQL
+di luar hook WordPress; lihat batas bukti pada daftar kesiapan.
 
 Ekspor memakai cache lokal `.cache/posloker-source`. Untuk snapshot publik
 baru, gunakan direktori cache baru melalui `POSLOKER_EXPORT_CACHE`, lalu
@@ -102,20 +119,18 @@ Statistik PosLoker / PosLoker Insights dihapus dari WordPress sesuai
 keputusan pengguna. Pelacak pengunjung tidak dipasang atau dimigrasikan ke
 Cloudflare; ekspor ulang tetap membuang skrip tersebut.
 
-## Sebelum pengalihan domain
+## Penyelesaian pengalihan domain
 
-Selesaikan pemeriksaan browser dan pengujian alur gratis/berbayar,
-unggahan, ringkasan, WhatsApp manual, dan pengelolaan admin. Periksa pula
-penolakan akses anonim, pesanan ganda, serta kegagalan database/penyimpanan.
-Pengujian kode tidak berarti transaksi pelanggan sudah dialihkan.
+Rekonsiliasi final sumber dan berkas telah lulus. Pemeriksaan 51/51 halaman
+Workers dalam mode `live` lulus. Setelah Cloudflare menyatakan zona aktif,
+periksa HTTPS dan rute apex/`www`, canonical/robots, masuk pemilik dengan
+akun yang sama, checkout/ringkasan, dan kirim/terima email. Pemulihan pemilik
+tersedia melalui [helper operator offline yang diuji](owner-recovery.md);
+akun produksi tidak direset saat pengalihan.
 
-Menjelang pengalihan, ambil backup sumber terbaru dan rekonsiliasi delta
-pesanan, status, metadata, serta berkas yang masuk ke WordPress setelah
-snapshot. Pertahankan perubahan kerja admin Cloudflare dan pisahkan data
-simulasi dari riwayat transaksi nyata.
-
-Mode `live`, pengalihan domain/DNS, penyesuaian tautan/canonical, dan perubahan
-SEO/`noindex` hanya dilakukan setelah pengujian, rekonsiliasi terakhir, dan
-permintaan pengalihan eksplisit pengguna. Hosting lama tetap berjalan
-selama proses tersebut. Jangan menganggap snapshot yang sudah diverifikasi
-sebagai replikasi langsung atau seluruh migrasi telah selesai melayani pelanggan.
+Zona tujuan mempertahankan nilai 18/18 record non-web yang diperiksa;
+record ACME tambahan Cloudflare dan TTL 300 merupakan perubahan platform
+yang diharapkan. Host email dan alias layanan tetap DNS-only menuju
+hosting lama. Jangan menonaktifkan guard atau hosting/email sumber hanya
+karena nameserver sudah disimpan. Propagasi, TLS, dan penerimaan domain
+resmi masih perlu bukti terpisah.

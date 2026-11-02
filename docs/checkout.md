@@ -2,27 +2,35 @@
 
 Halaman `/pembayaran/` menyalin alur pemilihan paket, informasi pembayaran,
 formulir pelanggan, unggahan, dan ringkasan pesanan ke Worker proyek `new`.
-Penyimpanan baru memakai D1 dan R2 privat. Ini masih **mode simulasi
-(`preview`): jangan melakukan transfer**. WordPress lama tetap melayani
-pelanggan; domain, DNS, dan hosting lama belum diubah.
+Penyimpanan memakai D1 dan R2 privat. Pada pengalihan yang disetujui
+2 November 2026, mode Cloudflare sudah `live` dan guard pesanan/status
+WordPress sudah aktif. Maintenance publik lama terjadwal 07.00–08.00 WIB
+berakhir otomatis; guard penulisan tetap aktif setelahnya.
 
-Pengunjung dapat melihat katalog kota/paket. Dalam preview, hanya pemilik
+Dalam `live`, pengunjung dapat melihat katalog serta membuat penawaran
+dan pesanan tanpa sesi admin. Dalam `preview`, hanya pemilik
 yang sudah masuk ke `/admin/` pada origin yang sama dapat meminta penawaran,
 mengirim simulasi, dan membaca ringkasan. Server memeriksa akses ini;
 mengaktifkan tombol lewat browser tidak melewati pembatasan.
 Seluruh pesanan baru preview ditandai `is_test=1` dan **SIMULASI**.
+Pesanan simulasi yang sudah ada tetap uji setelah perubahan mode.
+Nameserver tetap Cloudflare; zona, HTTPS apex/`www`, serta pemeriksaan
+domain resmi 51/51 halaman sudah lulus. Masuk pemilik dan uji kirim/terima
+email domain tetap memerlukan penerimaan pemilik.
 
 ## Alur yang tersedia
 
 1. Buka `/pembayaran/`, pilih kota dan paket. Katalog saat disiapkan berisi
    49 kota dan 16 kelompok harga. Harga pada tampilan publik adalah salinan
    katalog; server D1 menjadi acuan penawaran saat checkout.
-2. Pemilik yang masuk menerima penawaran dari server. Harga dasar, paket,
+2. Pelanggan menerima penawaran dari server; pada `preview` pemilik harus
+   masuk terlebih dahulu. Harga dasar, paket,
    fitur, dan pengaturan pembayaran disimpan pada penawaran. Paket berbayar
    mendapat kode 1–99 dan total harga dasar ditambah kode tersebut. Paket
    gratis tetap memiliki harga dasar, kode, dan total nol.
 3. Isi nama/kontak, teks lowongan, caption, catatan, persetujuan, serta berkas
-   contoh. Paket berbayar memerlukan contoh bukti transfer. Server
+   yang sesuai. Paket berbayar memerlukan bukti transfer; pada pengujian
+   terisolasi gunakan berkas contoh dan jangan melakukan transfer. Server
    memvalidasi isian, jenis/isi berkas, ukuran, dan sesi; nilai harga atau
    kode dari formulir tidak dipercaya.
 4. Pengiriman menyimpan pesanan, referensi berkas, dan kejadian pembuatan.
@@ -107,8 +115,9 @@ Penerapan SQL dilakukan operator melalui akses D1 yang sah.
 
 SQL konfigurasi merupakan impor awal, bukan perintah pembaruan berulang.
 Entri mode memakai `INSERT OR IGNORE`; menjalankan alat tidak menjamin
-mode database yang sudah terisi berubah. Periksa bahwa nilai mode D1 tetap
-`preview` sebelum pengujian. Jangan mengaktifkan `live` saat persiapan.
+mode database yang sudah terisi berubah. Gunakan mode D1 `preview` pada
+lingkungan pengujian terisolasi. Produksi telah beralih ke `live` melalui
+prosedur pengalihan yang disetujui, bukan dengan menjalankan ulang impor.
 Jika katalog sumber berubah, siapkan dan tinjau konfigurasi baru secara
 terpisah; ekspor HTML tidak otomatis memperbarui D1.
 
@@ -158,10 +167,10 @@ tertunda sebelum/sesudah pembatalan klaim. Lakukan juga pemeriksaan browser
 gratis/berbayar, tampilan seluler, akses pemilik/anonim, unduhan, dan WhatsApp
 manual pada lingkungan tujuan.
 
-WordPress yang tetap berjalan belum otomatis direplikasi. Menjelang
-pengalihan, perbarui backup sumber dan rekonsiliasi pesanan/status/berkas
-terakhir serta perubahan kerja admin Cloudflare. Pisahkan simulasi dari
-transaksi nyata. Mode `live`, domain/DNS, penyesuaian tautan/canonical, dan
-SEO/`noindex` hanya diubah setelah pengujian lengkap, rekonsiliasi terakhir,
-dan permintaan pengalihan eksplisit pengguna. Jangan menghentikan hosting
-lama pada tahap simulasi ini.
+Ekspor final SQL/WXR setelah guard sumber aktif cocok dengan target:
+16 pesanan, 15 profil kontak, 394 metadata, dan 32 referensi berkas. Seluruh
+32 jalur sumber cocok SHA-256/ukuran dengan 27 objek historis; tidak ada
+impor tambahan. Cloudflare menerima penulisan baru secara terpisah dari
+snapshot dan simulasi lama. Tetap pertahankan guard, hosting/email lama,
+dan backup. Setelah zona aktif, verifikasi checkout serta ringkasan pada
+domain resmi; hasil Workers tidak menggantikan bukti domain/TLS tersebut.

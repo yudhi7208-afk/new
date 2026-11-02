@@ -4,43 +4,72 @@ Keputusan pengguna: **sistem, database, berkas, dan pengelolaan Cloudflare
 harus siap dipakai sebelum nameserver dipindahkan**. Website WordPress lama
 tetap beroperasi selama persiapan. Proyek `new` hanya untuk PosLoker.
 
-Dokumen ini adalah daftar penerimaan dan prosedur pengalihan, bukan
-pernyataan bahwa semua tahap sudah lulus. Perubahan nameserver memindahkan
-pengelolaan DNS; aplikasi, data, rute Worker, dan email tetap memerlukan
-konfigurasi yang benar. Domain, DNS, mode transaksi nyata, serta penghentian
-penulisan di WordPress hanya diubah pada tahap pengalihan setelah permintaan
-eksplisit pengguna.
+Pengalihan yang diminta pengguna sedang dijalankan pada 2 November 2026.
+Cloudflare sudah `live`, guard penulisan WordPress aktif, dan nameserver
+registrar telah disimpan sekitar 07.24–07.25 WIB. Delegasi induk dan zona
+Cloudflare sudah aktif. HTTPS apex/`www` lulus pada kedua IP edge aktual;
+domain resmi lulus 51/51 pemeriksaan HTTP. Maintenance sumber berakhir
+pukul 08.00 WIB dan plugin dijadikan inactive melalui WP-CLI.
+Masuk pemilik pada hostname resmi serta uji kirim/terima email tetap
+memerlukan penerimaan pemilik. Penyimpanan nameserver memindahkan delegasi
+DNS setelah propagasi; cache resolver dapat belum seragam. Nameserver dan
+binding tetap di Cloudflare sesuai klarifikasi terakhir pengguna; rencana
+fallback DNS sementara tidak diterapkan. Pesanan tetap hanya di Cloudflare.
+
+Pada 08.00–08.01 WIB, pemeriksaan HTTPS langsung ke hosting lama juga lulus:
+beranda 200, `www` 301, tanpa maintenance. GET checkout lama memberikan 302
+ke Workers dan probe POST kosong handler lama ditolak 409. Tidak ada data
+pelanggan, unggahan, transfer, atau pesan yang dikirim oleh pemeriksaan itu.
 
 ## Bukti persiapan per 2 November 2026
 
 Bukti berikut berasal dari snapshot dan pengujian yang sudah diverifikasi.
 Jurnal rinci, waktu pengambilan, serta hasil yang memuat data privat disimpan
-di luar repository. WordPress tetap menerima pesanan; ini bukan replikasi
-langsung atau jaminan bahwa transaksi setelah snapshot sudah tersalin.
+di luar repository. Guard handover sudah menghentikan penulisan pesanan/
+status WordPress melalui jalur yang didukung; write lock diverifikasi.
+Sampel processlist sebelum ekspor menunjukkan nol koneksi lain dan nol
+koneksi aktif milik pengguna database sumber. Ini belum membuktikan status
+semua request PHP yang sudah berjalan atau direct SQL di luar hook
+WordPress. Site Health sumber kemudian menunjukkan PHP web 8.4.27,
+SAPI LiteSpeed, batas waktu PHP 30 detik dan input 60 detik. Sampel proses
+akun menunjukkan satu proses LiteSpeed PHP, nol dengan path PosLoker.
+Ini bukti pendamping; tidak membuktikan riwayat setiap request lama atau
+menjadikan batas CPU PHP sebagai batas seluruh waktu I/O.
+Maintenance publik 07.00–08.00 WIB berakhir
+otomatis, sedangkan guard tetap aktif sesudahnya. Ini bukan sinkronisasi
+dua arah; Cloudflare menjadi penerima penulisan baru.
 
 | Bagian | Bukti yang sudah ada | Yang masih harus ditutup |
 | --- | --- | --- |
-| Halaman publik | 51 halaman sumber beserta konten/harganya tetap sesuai. Pemeriksaan HTTP 51/51 halaman pada Worker Cloudflare yang diterbitkan lulus, termasuk harga, kartu paket, data terstruktur, serta perlindungan pratinjau. | Pemeriksaan ulang pada domain resmi saat pengalihan. |
-| Data historis | Snapshot terakhir: 16 pesanan, 15 profil kontak konservatif, 394 metadata, dan 32 referensi berkas. Pembacaan kembali seluruh kolom dan relasi cocok. Profil kontak bukan hitungan orang unik. | Cadangan serta pencocokan terakhir setelah penulisan sumber dihentikan pada waktu pengalihan. |
-| D1 dan pemulihan | Skema sampai `0008_receipt_access.sql`; pembacaan kembali 23 tabel cocok. Backup aktual dipulihkan ke SQLite terisolasi: seluruh nilai cocok, integritas lulus, dan 0 pelanggaran foreign key. | Ekspor ulang setelah perubahan berikutnya; verifikasi versi Worker cadangan dan prosedur pemulihan akses operator. |
-| R2 dan pemulihan | 29 objek privat (27 historis dan 2 contoh native), 14.055.050 byte. Unduhan terautentikasi, backup, dan salinan pemulihan cocok SHA-256 serta ukurannya. | Ambil delta berkas yang masuk sesudah snapshot; bucket tetap privat. |
-| Checkout pelanggan | Uji browser paket berbayar/gratis sebagai tamu pada lebar 390 piksel dalam mode nyata **lokal terisolasi** lulus. Ringkasan tetap terbuka setelah sesi checkout uji kedaluwarsa. Simulasi gratis pada versi Cloudflare akhir juga lulus, termasuk kunci fragment, pemuatan ulang, serta ketiadaan kunci pada WhatsApp; tidak ada transfer/pesan yang dikirim. | Produksi tetap `preview` sampai pengalihan; verifikasi domain resmi dan penulisan tunggal pada waktu pengalihan. |
+| Halaman publik | Pemeriksaan HTTP 51/51 halaman pada Workers dan domain resmi lulus, termasuk harga, kartu paket, data terstruktur, canonical, robots/sitemap, serta kebijakan indeks tiap hostname. Domain resmi diuji langsung ke edge Cloudflare dengan TLS/SNI valid karena cache lokal masih lama. | Penerimaan pemilik dan pengamatan selama propagasi. |
+| Data historis | SQL/WXR final setelah source freeze cocok dengan 16 pesanan, 15 profil kontak konservatif, 394 metadata, dan 32 referensi berkas di tujuan. Tambahan/perubahan/penghapusan nol; tidak perlu impor ulang. Profil kontak bukan hitungan orang unik. | Pertahankan checkpoint dan guard; ekspor kembali target setelah perubahan operasional. |
+| D1 dan pemulihan | Skema sampai `0008_receipt_access.sql`; pembacaan kembali 23 tabel cocok. Backup aktual dipulihkan ke SQLite terisolasi: seluruh nilai cocok, integritas lulus, dan 0 pelanggaran foreign key. | Ekspor ulang setelah perubahan berikutnya dan verifikasi versi Worker cadangan yang kompatibel. |
+| R2 dan pemulihan | 29 objek privat (27 historis dan 2 contoh native), 14.055.050 byte. Backup dan salinan pemulihan cocok. Pada checkpoint frozen, SHA-256/ukuran seluruh 32 jalur sumber cocok dengan 27 objek historis yang sudah tersimpan; tidak ada delta berkas. | Bucket tetap privat; pertahankan backup dan objek setelah penulisan baru. |
+| Checkout pelanggan | Uji browser paket berbayar/gratis sebagai tamu pada lebar 390 piksel dalam mode nyata **lokal terisolasi** lulus. Ringkasan tetap terbuka setelah sesi checkout uji kedaluwarsa. Simulasi gratis Cloudflare juga lulus, termasuk fragment dan pemuatan ulang. Cloudflare kini `live`; guard WordPress aktif. Tidak ada transfer/pesan yang dikirim dalam pengujian. | Verifikasi checkout/ringkasan pada domain resmi setelah aktivasi. |
 | Admin dan pengaturan | Uji browser 390 piksel untuk arsip/pulihkan, unduhan byte-exact, penyimpanan harga/konten, dan pemulihan bawaan lulus. Di Worker Cloudflare akhir, akun pemilik berhasil memuat 49 kota, 16 kelompok harga, dan 51 halaman; arsip/pulihkan pada pesanan simulasi lulus. Pengujian admin, bisnis, legacy, migrasi, dan checkout lulus. | Pemilik masuk kembali serta memeriksa domain resmi ketika hostname dialihkan. |
-| Handover sumber | Artefak PHP pengalihan ber-lock lulus lint dan 120 pengujian runtime sintetis. | Belum dipasang/diaktifkan. Preflight WordPress/MySQL hosting, permintaan lama, dan satu sumber penulisan harus dibuktikan sebelum aktivasi. |
-| Domain dan email | Inventaris 12 record valid tersimpan privat; 24/24 kelompok nama/jenis cocok pada dua nameserver otoritatif. Lookup DS berhasil dan tidak menemukan DS terpublikasi. Tidak ada perubahan DNS atau nameserver. MX, alias mail, dan satu alias layanan masih bergantung pada apex. | Terapkan rencana host layanan DNS-only yang tetap menuju hosting lama, tinjau SPF/klien email, DNSSEC/DS, rute domain/TLS, dan uji domain/email saat pengalihan. |
+| Handover sumber | MU-plugin sudah dipasang dan aktif. Preflight WP-CLI/PHP dan write lock lulus; sampel processlist database menunjukkan nol koneksi lain/aktif sebelum ekspor terakhir. Opsi guard aktif juga terverifikasi dalam SQL final. | Guard tetap aktif setelah maintenance publik berakhir; sampel database tidak menggantikan inspeksi request PHP lama/direct SQL di luar hook. |
+| Domain dan email | Nameserver, delegasi induk dan zona aktif di Cloudflare. Nilai sembilan record nonweb cocok pada kedua nameserver (18/18 pemeriksaan). MX/SPF serta host mail/alias layanan tetap DNS-only ke hosting lama; TLS SMTP/IMAP lulus 4/4. HTTPS apex/`www` lulus 12/12 pemeriksaan pada kedua edge, termasuk home/robots/sitemap. | Masuk pemilik, pemeriksaan cache jaringan pengguna, serta kirim/terima dan autentikasi email bersama pemilik. |
 
-Kode aplikasi [c4ff0cf](https://github.com/yudhi7208-afk/new/commit/c4ff0cf98ce6ed151d05d696d10b57ba93a2041f)
-sudah dipush dan build Cloudflare berhasil. Pemeriksaan target 51/51 halaman,
+Kode aplikasi `6d94253` sudah dipush dan build Cloudflare berhasil; target
+Workers `live` lulus 51/51 halaman. Konfigurasi rute apex/`www`, retensi
+`workers.dev`, dan panduan pemulihan operator pada `a1eeea2` telah dipush;
+build Cloudflare berhasil. Pemeriksaan
 akses anonim, pengalihan lama, serta ringkasan historis memakai kapabilitas
 sumber asli lulus. Ringkasan historis tidak menampilkan kontak atau kuncinya.
 Sesudah simulasi akhir, pesanan native berjumlah tiga dan semuanya berlabel
 uji; dua lampiran native dan seluruh snapshot sumber tetap terpisah.
 Cadangan akhir 23 tabel dipulihkan kembali dan cocok seluruh nilainya.
+Pembacaan pasca-`live` juga dipulihkan dan diperiksa: snapshot sumber,
+pesanan/berkas/audit native, autentikasi admin, pengaturan bisnis, dan
+overlay tetap sama. Perubahan hanya mode serta sesi/counter sementara
+yang sesuai aktivitas pemeriksaan HTTP; katalog 29 objek tetap utuh.
 
-Penerbitan aplikasi ini tidak menjalankan pengalihan. Hasil lokal dan
-pratinjau tidak menandai seluruh gerbang domain, hosting, dan penulisan
-tunggal selesai. Pemilik memakai akun yang sudah ada; aktivasi akun baru
-tidak dibuka kembali.
+Rekonsiliasi final sumber lulus dan guard jalur penulisan WordPress aktif.
+Bukti proses sumber memiliki batas yang dijelaskan di atas. Domain/TLS
+sudah diperiksa terpisah; hasil tersebut tidak menggantikan uji email. Pemilik
+memakai akun yang sudah ada; aktivasi akun baru tidak dibuka kembali.
+Helper [pemulihan operator offline](owner-recovery.md) telah diuji pada
+data sintetis; akun produksi tidak direset saat pengalihan.
 
 Pemeriksaan PageSpeed seluler pada pratinjau tidak menggantikan uji formulir
 dan admin di ponsel. Skor SEO pratinjau terpengaruh pembatasan pengindeksan
@@ -60,55 +89,58 @@ yang sengaja dipasang.
   maupun email secara otomatis. Pembayaran diperiksa oleh pengelola;
   persetujuan status bukan integrasi verifikasi bank.
 - Akun admin adalah akun pemilik Cloudflare tersendiri. Belum ada reset
-  kata sandi mandiri. Jalur pemulihan operator yang aman harus disepakati
-  dan diuji sebelum siap operasi; jangan menghapus pemilik, sesi, atau
+  kata sandi mandiri. Jalur pemulihan operator offline sudah tersedia dan
+  diuji; akun produksi tidak direset. Jangan menghapus pemilik, sesi, atau
   audit untuk membuka aktivasi ulang. Cookie sesi tidak dipindahkan antar
   hostname: pemilik masuk kembali pada domain resmi dengan akun yang sama,
   bukan mengaktifkan akun baru.
-- WordPress dan Cloudflare belum melakukan sinkronisasi dua arah. Selama
-  persiapan, WordPress menjadi acuan pesanan nyata; Cloudflare dipakai
-  untuk pemeriksaan salinan dan simulasi. Bila status kerja historis sudah
+- WordPress dan Cloudflare tidak melakukan sinkronisasi dua arah. Sumber
+  final WordPress sudah dibekukan dan cocok dengan tujuan; Cloudflare
+  menerima penulisan baru. Bila status kerja historis sudah
   diubah di Cloudflare, rekonsiliasi harus mempertahankan perubahan itu dan
   meninjau konflik dengan sumber.
 
-## Penerimaan sistem sebelum nameserver
+## Bukti penerimaan dan pemeriksaan lanjutan
 
 Semua butir berikut perlu bukti lulus pada versi yang akan dipakai. Catat
 commit/deploy, lingkungan, waktu, hasil, dan penguji pada jurnal privat.
 Jangan menaruh data pelanggan, rekening, token, kata sandi, dump, atau bukti
 transfer asli di Git maupun tangkapan layar yang dibagikan.
 
-- [ ] Seluruh halaman dan rute penting merespons benar; tidak ada gambar,
-  font, tombol, tautan pemesanan, atau konten yang hilang. Perubahan konten,
-  harga, kelompok kota, dan kontak tampil konsisten pada halaman publik,
-  kalkulator, data terstruktur, serta penawaran server.
-- [ ] Uji ponsel dan desktop: paket gratis/berbayar, pengubahan kota/paket,
-  isian wajib, teks/caption, bukti, gambar/PDF, dan MP4 untuk paket yang
-  mendukungnya. Uji batas ukuran/jumlah/jenis berkas dan pesan penolakannya.
+- [x] Pemeriksaan HTTP Workers 51/51 halaman serta katalog/harga/konten
+  publik lulus. Perubahan pengaturan diuji pada lingkungan terisolasi.
 - [x] Uji pelanggan tanpa sesi admin pada mode nyata lokal terisolasi:
   paket berbayar/gratis, berkas contoh, ringkasan, dan tampilan 390 piksel
   lulus. Ringkasan berkunci juga diuji setelah sesi checkout lokal berakhir.
-  Tidak ada transfer atau pesan otomatis; mode produksi tetap `preview`.
-- [ ] Uji admin: masuk/keluar, sesi kedaluwarsa, pencarian/filter/halaman,
-  unduhan privat, status/catatan/alasan, arsip/pulihkan, pengaturan bisnis,
-  isi halaman, dan riwayat. Dua tab yang mengubah revisi sama harus menolak
-  penimpaan; draf tidak boleh diam-diam memakai revisi baru.
+  Tidak ada transfer atau pesan otomatis; produksi kini `live` setelah
+  pengalihan yang disetujui, sedangkan data simulasi tetap berlabel uji.
+- [x] Uji admin/bisnis lokal dan browser 390 piksel lulus, termasuk unduhan,
+  arsip/pulihkan, perubahan harga/konten dan pemulihan bawaan. Backend
+  menolak konflik revisi; akun pemilik pada Workers memuat katalog serta
+  halaman dan berhasil mengarsipkan/memulihkan pesanan simulasi.
 - [x] Pengujian backend sintetis dan HTTP lokal untuk akses anonim,
   asal permintaan lain, sesi/CSRF, dan kerahasiaan ringkasan lulus. Nomor
   atau ID pesanan saja tidak memberikan akses; kunci tautan bersifat privat.
 - [x] Pengujian backend sintetis untuk pengiriman ulang/bersamaan dan
   gangguan D1/R2 lulus, termasuk hasil commit yang belum pasti dan
   kepemilikan berkas. Pemulihan mengikuti [panduan checkout](checkout.md).
-- [ ] Seluruh pemeriksaan kode yang relevan dan deploy uji lulus. Pisahkan
-  hasil pemeriksaan otomatis dari uji browser dan penerimaan pemilik.
-- [ ] Kebutuhan operasional pada batas sistem di atas telah diterima atau
-  dilengkapi. Jangan menyebut seluruh WordPress CMS sudah dipindahkan.
+- [x] Pengujian admin, bisnis, legacy, migrasi, dan checkout serta build
+  aplikasi `6d94253` lulus. Hasil otomatis tetap dibedakan dari penerimaan
+  pemilik pada domain resmi.
+- [x] Apex/`www` dan TLS lulus pada kedua IP edge aktual; domain resmi
+  51/51 halaman lulus, termasuk canonical/robots/sitemap dan perlindungan
+  API anonim. Pengujian memakai SNI/validasi sertifikat, tanpa mengubah DNS OS.
+- [ ] Masuk pemilik dan penerimaan browser checkout/ringkasan pada hostname
+  resmi bersama pemilik setelah cache jaringan pengguna beralih.
+- [ ] Verifikasi kirim/terima dan autentikasi email domain bersama pemilik.
+  TLS port email yang lulus tidak menggantikan uji pesan tersebut.
 
 ## Cadangan, ekspor, dan latihan pemulihan
 
-- [ ] Ambil cadangan WordPress terbaru: database, kode/konfigurasi yang
-  diperlukan, unggahan pesanan, serta berkas sumber lain yang dipertahankan.
-  Simpan privat beserta checksum, waktu pengambilan, dan identitas sumber.
+- [x] SQL/WXR sumber terakhir diambil setelah guard aktif; sampel koneksi
+  database menunjukkan nol koneksi lain/aktif. Sumber inti dan 32 jalur
+  unggahan cocok dengan tujuan. Backup, checksum, waktu, dan identitas
+  sumber tersimpan privat.
 - [x] Backup aktual D1 sampai skema v8 memuat 23 tabel dan sudah dibaca
   kembali seluruh kolomnya. Hash autentikasi, sesi, konfigurasi, pelanggan,
   serta audit tetap privat. Cadangan WordPress tidak menggantikan backup D1.
@@ -119,15 +151,17 @@ transfer asli di Git maupun tangkapan layar yang dibagikan.
   nilai, dengan integritas lulus serta 0 pelanggaran foreign key. Backup
   R2 disalin ke lokasi pemulihan terpisah dan cocok 29/29 objek. Latihan
   ini tidak menimpa sumber atau database/bucket produksi.
-- [ ] Uji pemulihan akses pemilik dan konfigurasi layanan. Pemilik sendiri
-  memasukkan kredensial baru bila diperlukan. Jangan membuka pendaftaran
-  publik atau menyimpan rahasia di repository.
+- [x] Helper pemulihan akses pemilik offline dan prosedurnya tersedia serta
+  diuji pada data sintetis. Akun produksi tidak direset. Jika pemulihan
+  diperlukan, pemilik memasukkan kredensial baru sendiri; pendaftaran
+  publik tetap tertutup dan rahasia tidak disimpan di repository.
 - [ ] Uji kembali versi Worker yang akan menjadi cadangan, dengan skema D1
   terkini. Mengembalikan kode tidak otomatis mengembalikan database/R2.
 
 Tanda selesai pada bagian backup berlaku untuk checkpoint yang tercatat.
-Ambil ulang ekspor dan delta berkas setelah ada perubahan serta tepat
-sebelum pengalihan, kemudian ulangi pencocokannya.
+SQL/WXR final setelah freeze dan pencocokan seluruh jalur berkas sudah
+lulus. Ambil ulang backup target setelah perubahan berikutnya; jangan
+mengulang INSERT sumber yang sudah cocok.
 
 ## Persiapan DNS dan email
 
@@ -160,11 +194,14 @@ DMARC, dan layanan email telah terinventarisasi.
 
 ## Saat pengalihan: satu sistem penerima pesanan
 
-Artefak MU-plugin dan command ber-lock sudah disiapkan serta diuji secara
-lokal pada [panduan handover WordPress](wordpress-handover.md). Artefak ini
-**belum dipasang atau diaktifkan pada hosting sumber**. Preflight hosting,
-pengurasan permintaan, dan pencocokan terakhir tetap harus dibuktikan saat
-pengalihan. Saat ini WordPress tetap menerima pesanan seperti biasa.
+MU-plugin dan command ber-lock pada [panduan handover WordPress](wordpress-handover.md)
+sudah dipasang dan diaktifkan pada hosting sumber. Preflight hosting,
+write lock, ekspor final, dan pencocokan sumber serta seluruh jalur berkas
+lulus; sampel processlist database menunjukkan nol koneksi lain/aktif.
+Sampel itu tidak membuktikan status setiap request PHP lama atau direct SQL
+di luar hook. Guard tidak berakhir bersama maintenance publik 07.00–08.00
+WIB. Langkah berikut adalah prosedur untuk
+menjaga penerima pesanan tunggal dan menyelesaikan penerimaan domain.
 
 1. Tetapkan waktu, penanggung jawab, batas penerimaan, alamat Cloudflare
    yang sudah diuji, dan jalur kembali. Selesaikan penerimaan sistem dan
