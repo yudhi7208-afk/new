@@ -275,8 +275,8 @@ function whatsappUrl(order, payout) {
   adminLink.searchParams.set('order', order.id);
   const message = [order.is_test ? 'SIMULASI POSLOKER — jangan transfer.' : 'Konfirmasi pesanan PosLoker.',
     'Pesanan: ' + order.order_number, 'Kota: ' + order.city, 'Paket: ' + order.package_name,
-    'Total: Rp' + order.amount.toLocaleString('id-ID'), 'Detail pesanan (khusus admin): ' + adminLink.href,
-    'Mohon periksa melalui panel admin.'].join('\n');
+    'Total: Rp' + order.amount.toLocaleString('id-ID'), 'Detil pesanan di link berikut : ' + adminLink.href,
+    'Mohon di Cek. Terima kasih.'].join('\n');
   return 'https://wa.me/' + payout.whatsapp + '?text=' + encodeURIComponent(message);
 }
 async function receipt(request, env, db, session, id) {
