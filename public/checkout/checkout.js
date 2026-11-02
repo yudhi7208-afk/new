@@ -98,7 +98,7 @@
     if (!state.preview) text('modeNotice', quote?.baseAmount === 0 ? 'Paket gratis tidak memerlukan transfer. Periksa kembali data dan materi sebelum dikirim.' : 'Periksa kembali data dan materi sebelum dikirim. Konfirmasi pembayaran akan diperiksa secara manual.');
   }
   function renderMode() {
-    $('previewBanner').hidden = !state.preview; $('previewTag').hidden = !state.preview; $('summaryTestBadge').hidden = !state.preview; $('receiptTestBadge').hidden = !state.preview;
+    $('summaryTestBadge').hidden = !state.preview; $('receiptTestBadge').hidden = !state.preview;
     $('bankWarning').hidden = !state.preview; $('receiptWarning').hidden = !state.preview; $('accessNotice').hidden = !state.preview || state.canSubmit;
     $('copyBankButton').hidden = state.preview; $('copyAmountButton').hidden = state.preview;
     document.title = state.preview ? 'Simulasi Pemesanan — PosLoker' : 'Pemesanan — PosLoker';
