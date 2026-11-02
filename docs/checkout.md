@@ -20,7 +20,12 @@ email domain tetap memerlukan penerimaan pemilik.
 
 ## Alur yang tersedia
 
-1. Buka `/pembayaran/`, pilih kota dan paket. Katalog saat disiapkan berisi
+1. Pilih kota dan paket di halaman utama, lalu tekan Checkout. Halaman
+   `/pembayaran/?city=…&package=…` dimulai dengan **Cek order**: ringkasan dan
+   informasi pembayaran, tanpa memilih ulang. Pilihan URL divalidasi terhadap
+   katalog; tautan yang tidak lengkap/tidak valid meminta pengguna kembali ke
+   `/#pilih-paket` dan tidak membuat penawaran. Peringatan transfer dan instruksi
+   konfirmasi hanya ada dalam popup tahap ini. Katalog saat disiapkan berisi
    49 kota dan 16 kelompok harga. Harga pada tampilan publik adalah salinan
    katalog; server D1 menjadi acuan penawaran saat checkout.
 2. Pelanggan menerima penawaran dari server; pada `preview` pemilik harus

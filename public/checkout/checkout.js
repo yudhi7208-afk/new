@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const state = { catalog: null, payment: null, csrfToken: '', preview: true, canSubmit: false, quote: null, quoteTicket: 0, quoteExpired: false, submitting: false, uncertain: false, attempt: null, idempotencyKey: crypto.randomUUID(), receiptId: null, receiptKey: '', step: 1 };
+  const state = { catalog: null, selection: null, payment: null, csrfToken: '', preview: true, canSubmit: false, quote: null, quoteTicket: 0, quoteExpired: false, submitting: false, uncertain: false, attempt: null, idempotencyKey: crypto.randomUUID(), receiptId: null, receiptKey: '', step: 1 };
   const initial = new URLSearchParams(location.search);
   let quoteTimer;
   let paymentDialogShown = false, paymentDialogReturnFocus = null;
@@ -35,9 +35,22 @@
     } finally { clearTimeout(timer); }
   }
 
-  function selectedCity() { return state.catalog?.cities.find(city => city.name === $('citySelect').value); }
-  function packagesForCity() { const city = selectedCity(); return city ? state.catalog.pricing[city.pricingKey] || state.catalog.pricing.default || [] : []; }
-  function selectedPackage() { return packagesForCity().find(item => item.id === $('packageSelect').value); }
+  function selectedCity() { return state.selection?.city; }
+  function selectedPackage() { return state.selection?.item; }
+  function resolveSelection() {
+    const requestedCity = (initial.get('city') || '').trim(), requestedPackage = (initial.get('package') || '').trim();
+    if (!requestedCity || !requestedPackage) return null;
+    const city = state.catalog.cities.find(candidate => candidate.name === requestedCity || slug(candidate.name) === slug(requestedCity));
+    if (!city) return null;
+    const packages = state.catalog.pricing[city.pricingKey] || state.catalog.pricing.default;
+    const item = Array.isArray(packages) ? packages.find(candidate => candidate.id === requestedPackage) : null;
+    return item ? { city, item } : null;
+  }
+  function renderSelection() {
+    $('orderSelectionNotice').hidden = Boolean(state.selection);
+    text('summaryCity', selectedCity()?.name); text('summaryPackage', selectedPackage()?.name);
+    updateButtons();
+  }
   function validLimits() {
     const limits = state.payment?.limits;
     return limits && ['proofMaxBytes', 'materialsMaxBytes', 'materialsMaxFiles', 'videoMaxBytes'].every(key => Number.isSafeInteger(limits[key]) && limits[key] > 0);
@@ -48,21 +61,18 @@
     const target = paymentDialogReturnFocus;
     paymentDialogReturnFocus = null;
     dialog.close();
-    $('paymentReminderSlot').prepend($('paymentReminder'));
     document.documentElement.classList.remove('payment-dialog-open');
     if (restoreFocus && target?.isConnected && !target.disabled && !target.closest('[hidden]')) target.focus({ preventScroll: true });
   }
   function openPaymentDialog() {
     const dialog = $('paymentDialog');
     if ($('showPaymentInstructionsButton').hidden || dialog.open || typeof dialog.showModal !== 'function') return;
-    paymentDialogReturnFocus = document.activeElement !== document.body ? document.activeElement : $('citySelect');
-    $('paymentDialogContent').append($('paymentReminder'));
+    paymentDialogReturnFocus = document.activeElement !== document.body ? document.activeElement : $('packageTitle');
     document.documentElement.classList.add('payment-dialog-open');
     try {
       dialog.showModal(); paymentDialogShown = true; dialog.scrollTop = 0;
       $('paymentDialogTitle').focus({ preventScroll: true });
     } catch {
-      $('paymentReminderSlot').prepend($('paymentReminder'));
       document.documentElement.classList.remove('payment-dialog-open');
       paymentDialogReturnFocus = null;
     }
@@ -94,9 +104,6 @@
     document.title = state.preview ? 'Simulasi Pemesanan — PosLoker' : 'Pemesanan — PosLoker';
     text('bankDescription', state.preview ? 'Referensi alur pembayaran pada website utama.' : 'Transfer tepat sesuai nominal dan kode unik yang tertera.');
     text('bankReferenceLabel', state.preview ? 'REFERENSI REKENING' : 'REKENING TUJUAN');
-    text('instruction1', state.preview ? 'Di website utama, periksa kota, paket, dan nominal sebelum membayar.' : 'Pastikan kota dan paket sudah benar sebelum melakukan transfer.');
-    text('instruction2', state.preview ? 'Pada simulasi ini, lewati transfer dan siapkan contoh bukti pembayaran.' : 'Transfer tepat sesuai total pembayaran, termasuk kode unik, ke rekening yang tertera.');
-    text('instruction3', state.preview ? 'Lanjutkan untuk menguji pengiriman data dan materi ke Cloudflare.' : 'Lanjutkan untuk mengirim bukti transfer dan materi lowongan.');
     text('freeDescription', state.preview ? 'Materi tetap akan diperiksa oleh pengelola. Di halaman ini, semua pesanan merupakan simulasi.' : 'Materi akan diperiksa oleh tim PosLoker sebelum dipublikasikan.');
     text('confirmationDescription', state.preview ? 'Gunakan data dan berkas contoh untuk simulasi.' : 'Lengkapi data pemesan dan unggah materi lowongan Anda.');
     text('modeNotice', state.preview ? 'Pesanan dari halaman ini diberi label Simulasi dan hanya tersimpan di Cloudflare. Tidak ada publikasi atau pesan WhatsApp otomatis.' : 'Periksa kembali data dan materi sebelum dikirim. Konfirmasi pembayaran akan diperiksa secara manual.');
@@ -125,9 +132,10 @@
   }
   function clearAttempt() { state.attempt = null; state.uncertain = false; state.idempotencyKey = crypto.randomUUID(); $('uncertainNotice').hidden = true; $('expiredNotice').hidden = true; }
   function updateButtons() {
-    const valid = Boolean(state.canSubmit && state.quote && !state.quoteExpired && !state.submitting && !state.uncertain);
+    const valid = Boolean(state.selection && state.canSubmit && state.quote && !state.quoteExpired && !state.submitting && !state.uncertain);
     $('continueButton').disabled = !valid; $('submitButton').disabled = !valid;
-    $('citySelect').disabled = state.submitting || state.uncertain; $('packageSelect').disabled = state.submitting || state.uncertain;
+    $('continueButton').hidden = !state.selection; $('orderSummary').hidden = !state.selection;
+    $('checkoutLayout').classList.toggle('is-unselected', !state.selection);
     $('orderFields').disabled = !state.canSubmit || state.submitting || state.uncertain;
     $('backToPackageButton').disabled = state.submitting || state.uncertain;
     $('retrySubmitButton').disabled = !state.canSubmit || state.submitting; $('renewSessionButton').disabled = state.submitting;
@@ -144,19 +152,6 @@
       if (!state.uncertain && !state.submitting) { $('refreshQuoteButton').hidden = false; if (state.step === 2) $('expiredNotice').hidden = false; }
     } else text('quoteExpiry', 'Berlaku hingga ' + new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }).format(new Date(expiry(state.quote.expiresAt))) + ' WIB');
     updateButtons();
-  }
-  function renderPackageFeatures() {
-    $('packageFeatures').replaceChildren();
-    const item = selectedPackage();
-    const features = Array.isArray(item?.features) ? item.features.filter(value => typeof value === 'string') : [];
-    for (const feature of features) $('packageFeatures').append(element('li', '', feature));
-    if (!features.length) $('packageFeatures').append(element('li', '', 'Layanan mengikuti paket yang dipilih.'));
-  }
-  function fillPackages(preferred = '') {
-    $('packageSelect').replaceChildren();
-    for (const item of packagesForCity()) { const option = element('option', '', item.name + ' · ' + money(item.price)); option.value = item.id; $('packageSelect').append(option); }
-    if (packagesForCity().some(item => item.id === preferred)) $('packageSelect').value = preferred;
-    renderPackageFeatures();
   }
   function configureUploads() {
     const limits = state.payment.limits, plus = state.quote.packageId === 'komplit-plus', free = state.quote.baseAmount === 0;
@@ -176,7 +171,9 @@
     configureUploads(); updateExpiry(); clearInterval(quoteTimer); quoteTimer = setInterval(updateExpiry, 1000);
   }
   async function requestQuote({ resetAttempt = true } = {}) {
-    const city = selectedCity(), item = selectedPackage(); if (!city || !item || state.submitting || state.uncertain) return;
+    const city = selectedCity(), item = selectedPackage();
+    if (!city || !item) { renderSelection(); return; }
+    if (state.submitting || state.uncertain) return;
     if (!state.canSubmit) { state.quote = null; text('summaryCity', city.name); text('summaryPackage', item.name); for (const id of ['summaryBase', 'summaryCode', 'summaryAmount']) text(id, '—'); updateButtons(); return; }
     const ticket = ++state.quoteTicket;
     state.quote = null; state.quoteExpired = false; clearInterval(quoteTimer); if (resetAttempt) clearAttempt();
@@ -195,23 +192,21 @@
     } finally { if (ticket === state.quoteTicket) { $('quoteLoading').hidden = true; updateButtons(); } }
   }
 
-  async function loadSession({ retainSelection = false } = {}) {
+  async function loadSession() {
     // A session/catalog refresh must not leave an earlier amount inviting a
     // transfer while its replacement request is pending or has failed.
-    ++state.quoteTicket; state.quote = null; state.quoteExpired = false; clearInterval(quoteTimer);
+    ++state.quoteTicket; state.quote = null; state.quoteExpired = false; state.selection = null; clearInterval(quoteTimer);
+    $('orderSelectionNotice').hidden = true; text('summaryCity', '—'); text('summaryPackage', '—');
     for (const id of ['summaryBase', 'summaryCode', 'summaryAmount']) text(id, '—');
     text('quoteExpiry', '', ''); $('quoteLoading').hidden = true; $('bankSection').hidden = true; $('freeSection').hidden = true; updateButtons();
-    const previousCity = retainSelection ? $('citySelect').value : initial.get('city') || '', previousPackage = retainSelection ? $('packageSelect').value : initial.get('package') || '';
     const result = await api('/api/checkout/session');
     if (typeof result.preview !== 'boolean' || typeof result.canSubmit !== 'boolean') throw new Error('Status akses pemesanan belum tersedia. Silakan coba kembali.');
     if ((result.canSubmit && (typeof result.csrfToken !== 'string' || !/^[a-f0-9]{64}$/.test(result.csrfToken))) || !Array.isArray(result.catalog?.cities) || !result.catalog.cities.length || !result.catalog.pricing || !result.payment) throw new Error('Daftar kota dan paket belum tersedia. Silakan coba kembali.');
     state.csrfToken = result.canSubmit ? result.csrfToken : ''; state.catalog = result.catalog; state.payment = result.payment; state.preview = result.preview; state.canSubmit = result.canSubmit;
     if (!validLimits()) throw new Error('Aturan unggah belum tersedia. Silakan coba kembali setelah pengaturan selesai.');
-    $('citySelect').replaceChildren();
-    for (const city of state.catalog.cities) { const option = element('option', '', city.name); option.value = city.name; $('citySelect').append(option); }
-    const match = state.catalog.cities.find(city => city.name === previousCity || slug(city.name) === slug(previousCity));
-    if (match) $('citySelect').value = match.name;
-    fillPackages(previousPackage);
+    // Revalidate the original Checkout selection after every catalog/session
+    // refresh; never substitute another city or package when it is unavailable.
+    state.selection = resolveSelection(); renderSelection();
     text('bankName', state.payment.bankName, 'Referensi bank'); text('bankAccount', state.payment.bankAccount, 'Belum diatur'); text('bankHolder', state.payment.bankHolder, 'Belum diatur');
     renderMode();
   }
@@ -319,7 +314,7 @@
   }
   async function renewSession() {
     if (state.submitting || state.uncertain) return; $('renewSessionButton').disabled = true;
-    try { await loadSession({ retainSelection: true }); clearAttempt(); setStep(1); await requestQuote(); if (state.quote) notice('Sesi diperbarui. Periksa kota, paket, dan nominal sebelum melanjutkan.'); }
+    try { await loadSession(); clearAttempt(); setStep(1); await requestQuote(); if (state.quote) notice('Sesi diperbarui. Periksa ringkasan order dan nominal sebelum melanjutkan.'); }
     catch (error) { message('submissionError', error.message); }
     finally { $('renewSessionButton').disabled = false; updateButtons(); }
   }
@@ -328,15 +323,13 @@
   $('closePaymentDialogButton').addEventListener('click', () => closePaymentDialog());
   $('acknowledgePaymentButton').addEventListener('click', () => closePaymentDialog());
   $('paymentDialog').addEventListener('cancel', event => { event.preventDefault(); closePaymentDialog(); });
-  $('citySelect').addEventListener('change', () => { fillPackages(); requestQuote(); });
-  $('packageSelect').addEventListener('change', () => { renderPackageFeatures(); requestQuote(); });
-  $('refreshQuoteButton').addEventListener('click', async () => { try { await loadSession({ retainSelection: true }); await requestQuote(); } catch (error) { message('quoteError', error.message); } });
+  $('refreshQuoteButton').addEventListener('click', async () => { try { await loadSession(); await requestQuote(); } catch (error) { message('quoteError', error.message); } });
   $('continueButton').addEventListener('click', () => { updateExpiry(); if (!state.quote || state.quoteExpired) return; setStep(2); $('confirmationTitle').focus({ preventScroll: true }); $('confirmationStep').scrollIntoView({ behavior: 'auto', block: 'start' }); });
-  $('backToPackageButton').addEventListener('click', () => { if (!state.submitting && !state.uncertain) { setStep(1); ($('paymentReminder').hidden ? $('packageStep') : $('paymentReminder')).scrollIntoView({ behavior: 'auto', block: 'start' }); } });
+  $('backToPackageButton').addEventListener('click', () => { if (!state.submitting && !state.uncertain) { setStep(1); $('packageTitle').focus({ preventScroll: true }); $('packageStep').scrollIntoView({ behavior: 'auto', block: 'start' }); } });
   $('orderForm').addEventListener('submit', event => { event.preventDefault(); submitOrder(); });
   $('retrySubmitButton').addEventListener('click', () => submitOrder(true));
   $('renewSessionButton').addEventListener('click', renewSession);
-  $('checkAccessButton').addEventListener('click', async () => { $('checkAccessButton').disabled = true; try { const receiptId = state.receiptId || initial.get('order'); if (state.receiptKey && receiptId) await loadReceipt(receiptId); else { await loadSession({ retainSelection: true }); if (state.canSubmit && !state.uncertain) { if (receiptId) await loadReceipt(receiptId); else await requestQuote(); } } } catch (error) { message('pageError', error.message); } finally { $('checkAccessButton').disabled = false; } });
+  $('checkAccessButton').addEventListener('click', async () => { $('checkAccessButton').disabled = true; try { const receiptId = state.receiptId || initial.get('order'); if (state.receiptKey && receiptId) await loadReceipt(receiptId); else { await loadSession(); if (state.canSubmit && !state.uncertain) { if (receiptId) await loadReceipt(receiptId); else await requestQuote(); } } } catch (error) { message('pageError', error.message); } finally { $('checkAccessButton').disabled = false; } });
   $('retryBootButton').addEventListener('click', boot);
   $('caption').addEventListener('input', () => text('captionCount', $('caption').value.length + ' / 500 karakter'));
   for (const [input, list, clear] of [['proofInput', 'proofFiles', 'clearProofButton'], ['materialsInput', 'materialFiles', 'clearMaterialsButton'], ['videoInput', 'videoFiles', 'clearVideoButton']]) {
@@ -344,10 +337,7 @@
     $(clear).addEventListener('click', () => { $(input).value = ''; renderChosen(input, list, clear); });
   }
   $('refreshReceiptButton').addEventListener('click', async () => { if (!state.receiptId) return; $('refreshReceiptButton').disabled = true; try { await loadReceipt(state.receiptId); notice('Status pesanan diperbarui.'); } catch (error) { message('pageError', error.message); } finally { $('refreshReceiptButton').disabled = false; } });
-  $('newOrderButton').addEventListener('click', async () => {
-    clearAttempt(); state.receiptId = null; state.receiptKey = ''; $('orderForm').reset(); history.replaceState(null, '', '/pembayaran/'); initial.delete('order');
-    message('pageError', ''); setStep(1); try { await loadSession({ retainSelection: true }); await requestQuote(); } catch (error) { message('pageError', error.message); }
-  });
+  $('newOrderButton').addEventListener('click', () => { location.assign('/#pilih-paket'); });
   $('copyBankButton').addEventListener('click', async () => { if (state.preview || !state.payment?.bankAccount) return; try { await navigator.clipboard.writeText(String(state.payment.bankAccount)); notice('Nomor rekening disalin.'); } catch { notice('Pilih nomor rekening lalu salin secara manual.'); } });
   $('copyAmountButton').addEventListener('click', async () => { if (state.preview || !state.quote) return; try { await navigator.clipboard.writeText(String(state.quote.amount)); notice('Total pembayaran disalin.'); } catch { notice('Pilih total pembayaran lalu salin secara manual.'); } });
   addEventListener('pagehide', () => { clearInterval(quoteTimer); state.attempt = null; state.csrfToken = ''; state.receiptKey = ''; $('orderForm').reset(); });
