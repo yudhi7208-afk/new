@@ -274,7 +274,8 @@ function whatsappUrl(order, payout) {
   const adminLink = new URL('/admin/', ADMIN_ORIGIN);
   adminLink.searchParams.set('order', order.id);
   const message = [order.is_test ? 'SIMULASI POSLOKER — jangan transfer.' : 'Konfirmasi pesanan PosLoker.',
-    'Pesanan: ' + order.order_number, 'Kota: ' + order.city, 'Paket: ' + order.package_name,
+    'Pesanan: ' + order.order_number, 'Nama: ' + order.customer_name,
+    'Kota: ' + order.city, 'Paket: ' + order.package_name,
     'Total: Rp' + order.amount.toLocaleString('id-ID'), 'Detil pesanan di link berikut : ' + adminLink.href,
     'Mohon di Cek. Terima kasih.'].join('\n');
   return 'https://wa.me/' + payout.whatsapp + '?text=' + encodeURIComponent(message);
@@ -297,7 +298,7 @@ async function durableReceipt(request, env, db, settings) {
   if (Object.keys(input).some(key => !['orderId','key'].includes(key)) || typeof input.orderId !== 'string' ||
       !ORDER_ID.test(input.orderId) || typeof input.key !== 'string' || !TOKEN.test(input.key)) throw new HttpError(400, 'Tautan pesanan tidak valid.');
   await rate(request, db, 'receipt', 20, 200);
-  const order = await db.prepare(`SELECT o.id,o.order_number,o.city,o.package_name,o.amount,o.status,o.is_test,o.post_status,o.receipt_token_hash,q.payout_json
+  const order = await db.prepare(`SELECT o.id,o.order_number,o.customer_name,o.city,o.package_name,o.amount,o.status,o.is_test,o.post_status,o.receipt_token_hash,q.payout_json
     FROM commerce_orders o JOIN checkout_quotes q ON q.id=o.quote_id WHERE o.id=?`).bind(input.orderId).first();
   const submittedHash = await sha(input.key);
   const matched = sameTokenHash(submittedHash, order?.receipt_token_hash || '0'.repeat(64));

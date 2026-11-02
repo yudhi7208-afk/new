@@ -47,7 +47,8 @@ email domain tetap memerlukan penerimaan pemilik.
    dapat dibuka kembali setelah sesi checkout berakhir. Nomor/ID saja tidak
    memberikan akses. Ringkasan simulasi selalu memerlukan pemilik, termasuk
    setelah mode layanan berubah menjadi live.
-6. Tombol WhatsApp membuka pesan siap isi, termasuk tautan langsung ke detail
+6. Tombol WhatsApp membuka pesan siap isi dengan nama pemesan, nomor pesanan,
+   kota, paket, total, serta tautan langsung ke detail
    pesanan di `https://posloker.my.id/admin/?order=…`. Tautan memakai
    ID pesanan tanpa kunci ringkasan; rincian tetap memerlukan login admin.
    Pengguna sendiri memilih untuk membuka dan mengirimnya. Aplikasi maupun
@@ -65,8 +66,9 @@ menyimpan hanya hash kunci. Pengiriman ulang idempoten menghasilkan kunci
 yang sama. Browser mengirim kunci melalui body JSON ke
 `POST /api/checkout/receipt`, tanpa menaruhnya di query, WhatsApp, atau
 penyimpanan browser. Respons hanya berisi ringkasan dan tombol WhatsApp;
-kontak pelanggan, catatan, bukti, serta materi tetap tidak tersedia melalui
-tautan ini. Simpan tautannya secara privat. Pesanan arsip menolak akses.
+nama pemesan disertakan dalam teks WhatsApp, tanpa menambah kolom pada DTO
+ringkasan. Nomor kontak, email, catatan, bukti, serta materi tetap tidak
+tersedia melalui tautan ini. Simpan tautannya secara privat. Pesanan arsip menolak akses.
 Pesanan uji lama dengan hash NULL tetap memakai jalur sesi asal selama sesi
 itu berlaku. Tautan WordPress lama ditangani terpisah di
 `/konfirmasi-pembayaran/` dengan validasi kapabilitas sumber dan DTO minimal.

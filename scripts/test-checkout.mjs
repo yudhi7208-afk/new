@@ -127,8 +127,11 @@ function form(user, selected, extras = {}, files = {}) {
   return data;
 }
 const count = (env, table) => env.CUSTOMER_DB.sqlite.prepare('SELECT count(*) n FROM ' + table).get().n;
-function assertAdminOrderLink(result) {
+function assertAdminOrderLink(result, expectedName = 'Synthetic Employer') {
   const message = new URL(result.whatsappUrl).searchParams.get('text');
+  assert.ok(message.split('\n').includes('Nama: ' + expectedName), 'WhatsApp includes this order customer name');
+  assert.ok(!Object.hasOwn(result.order, 'customerName') && !Object.hasOwn(result.order, 'customer_name'));
+  for (const value of ['synthetic@example.test', '6281234567890', 'private/commerce/']) assert.ok(!message.includes(value));
   const links = message.match(/https:\/\/[^\s]+/g) || [];
   assert.equal(links.length, 1, 'WhatsApp includes one owner order link');
   const link = new URL(links[0]);
@@ -260,7 +263,7 @@ try {
   assert.notEqual(saved.receiptKey, rawOwnerToken);
   assert.notEqual(saved.receiptKey, persisted.receipt_token_hash);
   assert.ok(!JSON.stringify(saved).includes('synthetic@example.test'));
-  assert.ok(!JSON.stringify(saved).includes('Synthetic Employer'));
+  assert.ok(!JSON.stringify(saved.order).includes('Synthetic Employer'));
   assert.ok(!JSON.stringify(saved).includes('private/commerce/'));
   assert.match(saved.whatsappUrl, /^https:\/\/wa\.me\/620000000000\?text=/);
   assert.ok(decodeURIComponent(saved.whatsappUrl).includes('SIMULASI'));
@@ -291,10 +294,11 @@ try {
   assertAdminOrderLink(gratisSaved);
   const live = fixture('live'), liveUser = await session(live, '203.0.113.91', false), liveQuote = await quote(live, liveUser, 'Gratis Sintetis');
   assert.equal(liveUser.body.preview, false); assert.equal(liveUser.body.canSubmit, true);
-  const liveSaved = await (await api(live, '/api/checkout/submit', form(liveUser, liveQuote), liveUser)).json();
+  const liveCustomerName = 'Rani & Budi + Surabaya — Uji';
+  const liveSaved = await (await api(live, '/api/checkout/submit', form(liveUser, liveQuote, { customerName: liveCustomerName }), liveUser)).json();
   assert.equal(liveSaved.order.isTest, false); assert.match(liveSaved.order.orderNumber, /^CF-\d{6}-/);
   assert.ok(!decodeURIComponent(liveSaved.whatsappUrl).includes('SIMULASI'));
-  assertAdminOrderLink(liveSaved);
+  assertAdminOrderLink(liveSaved, liveCustomerName);
 
   const sessionLimited = fixture('live');
   for (let index = 0; index < 20; index++) await session(sessionLimited, '203.0.113.100', false);
@@ -414,7 +418,9 @@ try {
   assert.deepEqual(Object.keys(minimal).sort(), ['order','whatsappUrl']);
   assert.deepEqual(Object.keys(minimal.order).sort(), ['amount','city','id','isTest','orderNumber','packageName','status']);
   const minimalJson = JSON.stringify(minimal);
-  for (const secret of [durableSaved.receiptKey, 'receipt_token_hash', 'customer_name', 'Synthetic Employer', 'synthetic@example.test', '6281234567890', 'private/commerce/', durableUser.csrf]) assert.ok(!minimalJson.includes(secret));
+  for (const secret of [durableSaved.receiptKey, 'receipt_token_hash', 'customer_name', 'synthetic@example.test', '6281234567890', 'private/commerce/', durableUser.csrf]) assert.ok(!minimalJson.includes(secret));
+  const durableMessage = new URL(minimal.whatsappUrl).searchParams.get('text');
+  for (const secret of [durableSaved.receiptKey, durableUser.csrf, durableUser.cookie.split(';')[0].split('=')[1]]) assert.ok(!durableMessage.includes(secret));
   assert.equal(JSON.stringify(['commerce_orders','commerce_files','commerce_events','checkout_quotes','checkout_sessions'].map(table => durable.CUSTOMER_DB.sqlite.prepare('SELECT * FROM '+table).all())), durableSnapshot, 'Receipt reads cannot mutate orders, quotes, sessions, files or audits');
   for (const [bodyChange, options, expected] of [
     [capability, { method:'GET' }, 405], [capability, { headers:{Origin:'https://evil.example.test'} }, 403],
