@@ -4,6 +4,7 @@
   const state = { catalog: null, payment: null, csrfToken: '', preview: true, canSubmit: false, quote: null, quoteTicket: 0, quoteExpired: false, submitting: false, uncertain: false, attempt: null, idempotencyKey: crypto.randomUUID(), receiptId: null, receiptKey: '', step: 1 };
   const initial = new URLSearchParams(location.search);
   let quoteTimer;
+  let paymentDialogShown = false, paymentDialogReturnFocus = null;
   const money = value => Number.isSafeInteger(Number(value)) ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value)) : '—';
   const text = (id, value, fallback = '—') => { $(id).textContent = value === undefined || value === null || value === '' ? fallback : String(value); };
   function message(id, value) { $(id).textContent = value || ''; $(id).hidden = !value; }
@@ -41,6 +42,31 @@
     const limits = state.payment?.limits;
     return limits && ['proofMaxBytes', 'materialsMaxBytes', 'materialsMaxFiles', 'videoMaxBytes'].every(key => Number.isSafeInteger(limits[key]) && limits[key] > 0);
   }
+  function closePaymentDialog({ restoreFocus = true } = {}) {
+    const dialog = $('paymentDialog');
+    if (!dialog.open) return;
+    const target = paymentDialogReturnFocus;
+    paymentDialogReturnFocus = null;
+    dialog.close();
+    $('paymentReminderSlot').prepend($('paymentReminder'));
+    document.documentElement.classList.remove('payment-dialog-open');
+    if (restoreFocus && target?.isConnected && !target.disabled && !target.closest('[hidden]')) target.focus({ preventScroll: true });
+  }
+  function openPaymentDialog() {
+    const dialog = $('paymentDialog');
+    if ($('showPaymentInstructionsButton').hidden || dialog.open || typeof dialog.showModal !== 'function') return;
+    paymentDialogReturnFocus = document.activeElement !== document.body ? document.activeElement : $('citySelect');
+    $('paymentDialogContent').append($('paymentReminder'));
+    document.documentElement.classList.add('payment-dialog-open');
+    try {
+      dialog.showModal(); paymentDialogShown = true; dialog.scrollTop = 0;
+      $('paymentDialogTitle').focus({ preventScroll: true });
+    } catch {
+      $('paymentReminderSlot').prepend($('paymentReminder'));
+      document.documentElement.classList.remove('payment-dialog-open');
+      paymentDialogReturnFocus = null;
+    }
+  }
   function renderPaymentGuidance() {
     const quote = state.quote;
     const current = Boolean(quote && !state.quoteExpired && expiry(quote.expiresAt) > Date.now());
@@ -48,6 +74,10 @@
     const showReminder = !state.preview && state.canSubmit && paid && state.step === 1 && !state.submitting && !state.uncertain && !$('checkoutLayout').hidden;
     $('paymentReminder').hidden = !showReminder;
     text('paymentReminderAmount', showReminder ? money(quote.amount) : '—');
+    const dialogEligible = showReminder && $('quoteLoading').hidden && $('bootStatus').hidden && $('pageError').hidden && $('quoteError').hidden;
+    $('showPaymentInstructionsButton').hidden = !dialogEligible || typeof $('paymentDialog').showModal !== 'function';
+    if (!dialogEligible) closePaymentDialog({ restoreFocus: false });
+    else if (!paymentDialogShown) openPaymentDialog();
     $('copyAmountButton').hidden = state.preview || !paid || state.step === 3 || state.submitting || state.uncertain;
     $('copyBankButton').hidden = state.preview || !paid || state.step === 3 || state.submitting || state.uncertain;
     if (state.preview) text('summaryAmountHint', 'Jangan melakukan transfer pada halaman simulasi.');
@@ -204,7 +234,7 @@
         else { setStep(1); await requestQuote(); }
       }
     } catch (error) { message('pageError', error.message); $('retryBootButton').hidden = false; if (state.receiptKey && error.status === 401) $('accessNotice').hidden = false; }
-    finally { $('bootStatus').hidden = true; }
+    finally { $('bootStatus').hidden = true; renderPaymentGuidance(); }
   }
 
   function renderChosen(inputId, listId, clearId) {
@@ -294,6 +324,10 @@
     finally { $('renewSessionButton').disabled = false; updateButtons(); }
   }
 
+  $('showPaymentInstructionsButton').addEventListener('click', openPaymentDialog);
+  $('closePaymentDialogButton').addEventListener('click', () => closePaymentDialog());
+  $('acknowledgePaymentButton').addEventListener('click', () => closePaymentDialog());
+  $('paymentDialog').addEventListener('cancel', event => { event.preventDefault(); closePaymentDialog(); });
   $('citySelect').addEventListener('change', () => { fillPackages(); requestQuote(); });
   $('packageSelect').addEventListener('change', () => { renderPackageFeatures(); requestQuote(); });
   $('refreshQuoteButton').addEventListener('click', async () => { try { await loadSession({ retainSelection: true }); await requestQuote(); } catch (error) { message('quoteError', error.message); } });

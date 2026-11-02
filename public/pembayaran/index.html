@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow, noarchive"><meta name="referrer" content="no-referrer"><meta name="color-scheme" content="light">
   <title>Simulasi Pemesanan — PosLoker</title>
-  <link rel="stylesheet" href="/assets/fonts/manrope.css"><link rel="stylesheet" href="/checkout/checkout.css?v=20261102-payment-guidance1"><script src="/checkout/checkout.js?v=20261102-payment-guidance2" defer></script>
+  <link rel="stylesheet" href="/assets/fonts/manrope.css"><link rel="stylesheet" href="/checkout/checkout.css?v=20261102-payment-dialog1"><script src="/checkout/checkout.js?v=20261102-payment-dialog1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Lewati ke isi</a>
@@ -17,7 +17,7 @@
     <p id="pageError" class="message message-error" role="alert" hidden></p>
     <div id="accessNotice" class="message message-info" hidden><strong>Masuk ke admin untuk mencoba simulasi.</strong><p>Katalog dapat dilihat, tetapi simulasi pesanan hanya tersedia untuk pengelola selama website utama masih berjalan.</p><div class="access-actions"><a class="button button-secondary" href="/admin/" target="_blank" rel="noreferrer noopener">Masuk ke admin ↗</a><button class="button button-secondary" id="checkAccessButton" type="button">Periksa akses kembali</button></div></div>
 
-    <section id="paymentReminder" class="payment-reminder" role="note" aria-labelledby="paymentReminderTitle" hidden>
+    <div id="paymentReminderSlot"><section id="paymentReminder" class="payment-reminder" role="note" aria-labelledby="paymentReminderTitle" hidden>
       <div class="payment-required">
         <h2 id="paymentReminderTitle">Wajib transfer sesuai total pembayaran, termasuk kode unik.</h2>
         <p>Transfer tepat sebesar <strong id="paymentReminderAmount" class="payment-reminder-amount">—</strong> ke rekening tujuan yang tertera.</p>
@@ -28,7 +28,8 @@
         <ol><li>Lengkapi data pemesan, lalu unggah bukti transfer yang jelas dan materi lowongan.</li><li>Tekan <strong>Kirim konfirmasi &amp; materi</strong> hingga ringkasan pesanan berhasil muncul.</li></ol>
         <p>Jika sudah transfer, jangan membayar ulang. Pembayaran diperiksa secara manual oleh tim PosLoker.</p>
       </div>
-    </section>
+    </section></div>
+    <button id="showPaymentInstructionsButton" class="text-button payment-instructions-button" type="button" aria-haspopup="dialog" aria-controls="paymentDialog" hidden>Lihat instruksi pembayaran</button>
 
     <div id="checkoutLayout" class="checkout-layout" hidden>
       <div class="checkout-main">
@@ -83,5 +84,10 @@
     <noscript><p class="message message-error">Aktifkan JavaScript untuk menggunakan formulir simulasi pemesanan.</p></noscript>
   </main>
   <div id="toast" class="toast" role="status" hidden></div>
+  <dialog id="paymentDialog" class="payment-dialog" aria-labelledby="paymentDialogTitle">
+    <div class="payment-dialog-header"><h2 id="paymentDialogTitle" tabindex="-1">Perhatikan sebelum membayar</h2><button id="closePaymentDialogButton" class="payment-dialog-close" type="button" aria-label="Tutup instruksi pembayaran">×</button></div>
+    <div id="paymentDialogContent"></div>
+    <div class="payment-dialog-actions"><button id="acknowledgePaymentButton" class="button button-primary button-block" type="button">Saya mengerti, lanjutkan</button></div>
+  </dialog>
 </body>
 </html>
