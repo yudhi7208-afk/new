@@ -132,7 +132,7 @@ function assertAdminOrderLink(result) {
   const links = message.match(/https:\/\/[^\s]+/g) || [];
   assert.equal(links.length, 1, 'WhatsApp includes one owner order link');
   const link = new URL(links[0]);
-  assert.equal(link.origin, 'https://new.yudhi7208.workers.dev');
+  assert.equal(link.origin, 'https://posloker.my.id');
   assert.equal(link.pathname, '/admin/');
   assert.deepEqual([...link.searchParams], [['order', result.order.id]]);
   assert.equal(link.hash, '', 'Owner links do not carry receipt capabilities');

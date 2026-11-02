@@ -48,7 +48,7 @@ email domain tetap memerlukan penerimaan pemilik.
    memberikan akses. Ringkasan simulasi selalu memerlukan pemilik, termasuk
    setelah mode layanan berubah menjadi live.
 6. Tombol WhatsApp membuka pesan siap isi, termasuk tautan langsung ke detail
-   pesanan di `https://new.yudhi7208.workers.dev/admin/?order=…`. Tautan memakai
+   pesanan di `https://posloker.my.id/admin/?order=…`. Tautan memakai
    ID pesanan tanpa kunci ringkasan; rincian tetap memerlukan login admin.
    Pengguna sendiri memilih untuk membuka dan mengirimnya. Aplikasi maupun
    agen tidak otomatis mengirim

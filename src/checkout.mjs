@@ -2,8 +2,8 @@ import { HttpError, requireAdmin } from './admin-auth.mjs';
 
 // Public checkout contains no source customer data or runtime settings.
 const COOKIE = '__Host-posloker-checkout';
-// Keep owner order links reachable while primary-domain DNS caches update.
-const ADMIN_ORIGIN = 'https://new.yudhi7208.workers.dev';
+// Owner order links always use the PosLoker domain, never the request Host.
+const ADMIN_ORIGIN = 'https://posloker.my.id';
 const HOUR = 3600;
 const MIB = 1024 * 1024;
 const MATERIAL_BYTES = 10 * MIB;
