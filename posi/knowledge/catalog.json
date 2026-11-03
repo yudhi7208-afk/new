@@ -1,0 +1,894 @@
+{
+  "schemaVersion": 1,
+  "source": "repository-public-defaults",
+  "sourceRevision": "d8ed83858c602125d7ddd9189cc032ed191bff44",
+  "generatedAt": "2026-11-02T23:49:03.676Z",
+  "productionVerified": false,
+  "notice": "Referensi staging dari repository; harga aktif mengikuti ringkasan checkout, bukan snapshot ini.",
+  "catalog": {
+    "cities": [
+      {
+        "name": "Banda Aceh",
+        "pricingKey": "banda-aceh"
+      },
+      {
+        "name": "Medan",
+        "pricingKey": "medan"
+      },
+      {
+        "name": "Binjai",
+        "pricingKey": "binjai"
+      },
+      {
+        "name": "Deli Serdang",
+        "pricingKey": "deli-serdang"
+      },
+      {
+        "name": "Lubuk Pakam",
+        "pricingKey": "lubuk-pakam"
+      },
+      {
+        "name": "Tanjung Morawa",
+        "pricingKey": "tanjung-morawa"
+      },
+      {
+        "name": "Padang",
+        "pricingKey": "padang"
+      },
+      {
+        "name": "Pekanbaru",
+        "pricingKey": "pekanbaru"
+      },
+      {
+        "name": "Tanjungpinang",
+        "pricingKey": "tanjungpinang"
+      },
+      {
+        "name": "Batam",
+        "pricingKey": "batam"
+      },
+      {
+        "name": "Jambi",
+        "pricingKey": "jambi"
+      },
+      {
+        "name": "Palembang",
+        "pricingKey": "palembang"
+      },
+      {
+        "name": "Pangkalpinang",
+        "pricingKey": "pangkalpinang"
+      },
+      {
+        "name": "Bengkulu",
+        "pricingKey": "bengkulu"
+      },
+      {
+        "name": "Bandar Lampung",
+        "pricingKey": "bandar-lampung"
+      },
+      {
+        "name": "Serang",
+        "pricingKey": "serang"
+      },
+      {
+        "name": "Tangerang",
+        "pricingKey": "tangerang"
+      },
+      {
+        "name": "Tangerang Selatan",
+        "pricingKey": "tangerang-selatan"
+      },
+      {
+        "name": "Jakarta",
+        "pricingKey": "jakarta"
+      },
+      {
+        "name": "Bandung",
+        "pricingKey": "bandung"
+      },
+      {
+        "name": "Semarang",
+        "pricingKey": "semarang"
+      },
+      {
+        "name": "Yogyakarta",
+        "pricingKey": "yogyakarta"
+      },
+      {
+        "name": "Surabaya",
+        "pricingKey": "surabaya"
+      },
+      {
+        "name": "Gresik",
+        "pricingKey": "gresik"
+      },
+      {
+        "name": "Sidoarjo",
+        "pricingKey": "sidoarjo"
+      },
+      {
+        "name": "Malang",
+        "pricingKey": "malang"
+      },
+      {
+        "name": "Denpasar",
+        "pricingKey": "denpasar"
+      },
+      {
+        "name": "Mataram",
+        "pricingKey": "mataram"
+      },
+      {
+        "name": "Kupang",
+        "pricingKey": "kupang"
+      },
+      {
+        "name": "Pontianak",
+        "pricingKey": "pontianak"
+      },
+      {
+        "name": "Palangka Raya",
+        "pricingKey": "palangka-raya"
+      },
+      {
+        "name": "Banjarbaru",
+        "pricingKey": "banjarbaru"
+      },
+      {
+        "name": "Samarinda",
+        "pricingKey": "samarinda"
+      },
+      {
+        "name": "Balikpapan",
+        "pricingKey": "balikpapan"
+      },
+      {
+        "name": "Tanjung Selor",
+        "pricingKey": "tanjung-selor"
+      },
+      {
+        "name": "Manado",
+        "pricingKey": "manado"
+      },
+      {
+        "name": "Gorontalo",
+        "pricingKey": "gorontalo"
+      },
+      {
+        "name": "Palu",
+        "pricingKey": "palu"
+      },
+      {
+        "name": "Mamuju",
+        "pricingKey": "mamuju"
+      },
+      {
+        "name": "Makassar",
+        "pricingKey": "makassar"
+      },
+      {
+        "name": "Kendari",
+        "pricingKey": "kendari"
+      },
+      {
+        "name": "Ambon",
+        "pricingKey": "ambon"
+      },
+      {
+        "name": "Sofifi",
+        "pricingKey": "sofifi"
+      },
+      {
+        "name": "Manokwari",
+        "pricingKey": "manokwari"
+      },
+      {
+        "name": "Sorong",
+        "pricingKey": "sorong"
+      },
+      {
+        "name": "Jayapura",
+        "pricingKey": "jayapura"
+      },
+      {
+        "name": "Nabire",
+        "pricingKey": "nabire"
+      },
+      {
+        "name": "Wamena",
+        "pricingKey": "wamena"
+      },
+      {
+        "name": "Merauke",
+        "pricingKey": "merauke"
+      }
+    ],
+    "pricing": {
+      "default": [
+        {
+          "id": "promo-komplit",
+          "name": "Paket Komplit",
+          "price": 10000,
+          "badge": "Promo Perkenalan",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 35000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "medan": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 15000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-story",
+          "name": "Paket IG + Story",
+          "price": 17500,
+          "features": [
+            "Instagram Feed",
+            "Instagram Story 1x",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 20000,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb-story",
+          "name": "Paket IG + FB + Story",
+          "price": 25000,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Story 1x",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit",
+          "name": "Paket Komplit",
+          "price": 35000,
+          "badge": "Jangkauan Terlengkap",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 50000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "batam": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 10000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 15000,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit",
+          "name": "Paket Komplit",
+          "price": 20000,
+          "badge": "Paling Lengkap",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 3x — 1x sehari selama 3 hari",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 35000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 3x — 1x sehari selama 3 hari",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "palembang": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 10000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit",
+          "name": "Paket Komplit",
+          "price": 15000,
+          "badge": "Paling Hemat",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story 1x",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 35000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story 1x",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "balikpapan": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 12500,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 15000,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit",
+          "name": "Paket Komplit",
+          "price": 20000,
+          "badge": "Paling Lengkap",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story 1x",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 35000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story 1x",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "surabaya": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 10000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 12500,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "promo-komplit",
+          "name": "Paket Komplit",
+          "price": 17500,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 35000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "gresik": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 10000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 12500,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "promo-komplit",
+          "name": "Paket Komplit",
+          "price": 17500,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 35000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "sidoarjo": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 10000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 12500,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "promo-komplit",
+          "name": "Paket Komplit",
+          "price": 17500,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 35000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "binjai": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 15000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 20000,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit",
+          "name": "Paket Komplit",
+          "price": 35000,
+          "badge": "Jangkauan Terlengkap",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 50000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "deli-serdang": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 15000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 20000,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit",
+          "name": "Paket Komplit",
+          "price": 35000,
+          "badge": "Jangkauan Terlengkap",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 50000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "lubuk-pakam": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 15000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 20000,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit",
+          "name": "Paket Komplit",
+          "price": 35000,
+          "badge": "Jangkauan Terlengkap",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 50000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "tanjung-morawa": [
+        {
+          "id": "ig",
+          "name": "Paket IG",
+          "price": 15000,
+          "features": [
+            "Instagram Feed",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "ig-fb",
+          "name": "Paket IG + FB",
+          "price": 20000,
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit",
+          "name": "Paket Komplit",
+          "price": 35000,
+          "badge": "Jangkauan Terlengkap",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 50000,
+          "badge": "Komplit + Reel",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Story 5x — 1x sehari selama 5 hari",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "samarinda": [
+        {
+          "id": "promo-komplit",
+          "name": "Paket Komplit",
+          "price": 0,
+          "badge": "Gratis Sementara",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 0,
+          "badge": "Gratis Sementara",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "jakarta": [
+        {
+          "id": "promo-komplit",
+          "name": "Paket Komplit",
+          "price": 0,
+          "badge": "Gratis Sementara",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 0,
+          "badge": "Gratis Sementara",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "tangerang": [
+        {
+          "id": "promo-komplit",
+          "name": "Paket Komplit",
+          "price": 0,
+          "badge": "Gratis Sementara",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 0,
+          "badge": "Gratis Sementara",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ],
+      "tangerang-selatan": [
+        {
+          "id": "promo-komplit",
+          "name": "Paket Komplit",
+          "price": 0,
+          "badge": "Gratis Sementara",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        },
+        {
+          "id": "komplit-plus",
+          "name": "Komplit PLUS",
+          "price": 0,
+          "badge": "Gratis Sementara",
+          "features": [
+            "Instagram Feed",
+            "Facebook Page",
+            "Facebook Group lokal",
+            "Instagram Story",
+            "Instagram Reel",
+            "Instagram Carousel hingga 10 slide"
+          ]
+        }
+      ]
+    }
+  },
+  "contact": {
+    "url": "https://wa.me/6285785600586"
+  }
+}
