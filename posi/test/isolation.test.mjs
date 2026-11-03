@@ -43,7 +43,11 @@ test('staging Worker cannot route production or access order storage', async () 
   assert.deepEqual(config.routes, []);
   assert.equal(config.vars.POSI_ENABLED, 'false');
   assert.equal(config.vars.POSI_AI_ENABLED, 'false');
-  for (const key of ['d1_databases', 'r2_buckets', 'services', 'kv_namespaces', 'durable_objects', 'dispatch_namespaces', 'unsafe']) {
+  assert.deepEqual(config.ai, { binding: 'AI' });
+  assert.equal(config.vars.POSI_AI_DAILY_LIMIT, '100');
+  assert.deepEqual(config.durable_objects, { bindings: [{ name: 'POSI_AI_BUDGET', class_name: 'PosiAiBudget' }] });
+  assert.deepEqual(config.migrations, [{ tag: 'posi-ai-budget-v1', new_sqlite_classes: ['PosiAiBudget'] }]);
+  for (const key of ['d1_databases', 'r2_buckets', 'services', 'kv_namespaces', 'dispatch_namespaces', 'unsafe']) {
     assert.ok(!config[key] || (Array.isArray(config[key]) && config[key].length === 0), `unexpected binding: ${key}`);
   }
   const allowed = config.vars.POSI_ALLOWED_ORIGINS.split(',');

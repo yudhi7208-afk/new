@@ -41,6 +41,7 @@ export function mountPosi(options = {}) {
   const timers = new Set();
   const schedule = (fn, delay) => { const id = setTimeout(() => { timers.delete(id); if (!destroyed) fn(); }, delay); timers.add(id); return id; };
   const adapter = options.adapter || {};
+  if (options.config.aiEnabled === true) $('.heading-copy small').textContent = 'Asisten AI PosLoker';
   function snapshot() { try { return adapter.snapshot?.() || {}; } catch { return {}; } }
   function state(value) { host.dataset.state = value; }
   function restState() { const current = snapshot(); state(current.step === 3 || current.page === 'receipt' ? 'success' : 'idle'); }
@@ -148,7 +149,7 @@ export function mountPosi(options = {}) {
       if (destroyed) return;
       line(answer.reply); state('talking');
       if (answer.draft) offerDraft(answer.draft);
-      if (/admin|kontak|hubungi/i.test(text)) offerContact();
+      if (answer.contact?.whatsappUrl || /admin|kontak|hubungi/i.test(text)) offerContact();
       if (/pasang lowongan|harga dan paket/i.test(text)) offerNavigation();
     } catch {
       if (destroyed) return;
@@ -231,7 +232,7 @@ export function mountPosi(options = {}) {
     try { sessionStorage.setItem('posi-greeted-v1', '1'); } catch { /* No storage requirement. */ }
     if (!hidden && panel.hidden && !fieldFocused && !document.querySelector('dialog[open]')) { bubble.hidden = false; syncVisibility(); state('greeting'); schedule(() => { bubble.hidden = true; restState(); }, 8500); }
   }, Math.max(2000, options.greetingDelayMs || 4500));
-  return { enabled: true, open, close, hide, show() { hidden = false; syncVisibility(); }, destroy() {
+  return { enabled: true, aiEnabled: options.config.aiEnabled === true, open, close, hide, show() { hidden = false; syncVisibility(); }, destroy() {
     if (destroyed) return;
     destroyed = true; requestController?.abort(); for (const timer of timers) clearTimeout(timer); timers.clear(); observer.disconnect(); resizeObserver?.disconnect();
     document.removeEventListener('focusin', pageFocus); document.removeEventListener('focusout', pageBlur);

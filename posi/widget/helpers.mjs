@@ -35,7 +35,7 @@ export function localAnswer(message) {
   return 'Pilih kota dan paket di website terlebih dahulu. Sesudah Checkout, periksa ringkasan order. Anda tetap dapat melanjutkan formulir meski POSI sedang tidak terhubung. Mau dibantu memahami Teks Materi?';
 }
 
-export async function requestReply({ apiBase, message, context, fetcher = fetch, timeoutMs = 9000, signal }) {
+export async function requestReply({ apiBase, message, context, fetcher = fetch, timeoutMs = 10000, signal }) {
   const controller = new AbortController();
   const abort = () => controller.abort();
   if (signal?.aborted) controller.abort();
@@ -50,7 +50,8 @@ export async function requestReply({ apiBase, message, context, fetcher = fetch,
     if (!response.ok) throw new Error('Layanan bantuan tidak tersedia.');
     const value = await response.json();
     if (typeof value?.reply !== 'string' || value.reply.length > 4000 || !value.reply.trim()) throw new Error('Respons tidak valid.');
-    return { reply: value.reply, source: value.source, draft: validDraft(value.draft) };
+    const contactUrl = safeContactUrl(value.contact?.whatsappUrl);
+    return { reply: value.reply, source: value.source, draft: validDraft(value.draft), contact: contactUrl ? { whatsappUrl: contactUrl } : null };
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener('abort', abort);

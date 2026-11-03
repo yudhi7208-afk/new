@@ -1,6 +1,7 @@
 # POSI — fondasi terisolasi
 
-Tahap pertama, 3 November 2026. **POSI belum terpasang di website produksi.**
+Fondasi dan aktivasi AI staging, 3 November 2026.
+**Workers AI aktif hanya di staging; POSI belum terpasang di website produksi.**
 Worker transaksi `new`, seluruh `public/`, `src/`, migrasi dan konfigurasi root
 tetap identik dengan commit dasar `d8ed83858c602125d7ddd9189cc032ed191bff44`.
 Branch kerja: `feature/posi-ai-assistant`.
@@ -21,6 +22,7 @@ pelanggan yang disalin, dibaca, atau ditulis oleh POSI.
 | `posi/src/worker.mjs` | API config/chat, flag, CORS, limit, fallback dan aset staging |
 | `posi/src/knowledge.mjs` | FAQ/aturan, harga referensi, desain dan draft |
 | `posi/src/ai.mjs` | Adapter Workers AI opsional, timeout, validasi intent dan circuit breaker |
+| `posi/src/budget.mjs` | Counter harian global khusus AI, tanpa percakapan atau data pelanggan |
 | `posi/knowledge/catalog.json` | Snapshot publik repository, bukan harga operasional produksi |
 | `posi/widget/` | Loader, chat Shadow DOM, CSS, maskot SVG original dan unit test |
 | `posi/preview/` | Contoh formulir, adapter terbatas dan bootstrap lokal |
@@ -32,6 +34,8 @@ Tidak ada berkas existing produksi yang diubah. Alur:
 widget → API Worker POSI → aturan/knowledge → klasifikasi AI opsional →
 jawaban teks atau draft. Tidak ada tool pembayaran/order maupun binding
 `CUSTOMER_DB`, `CUSTOMER_FILES`, service binding, KV, atau database percakapan.
+Durable Object `POSI_AI_BUDGET` yang terpisah hanya menyimpan hari UTC dan
+jumlah reservasi AI; tidak dapat membaca atau menulis transaksi.
 
 ## Yang bekerja pada tahap ini
 
@@ -48,7 +52,7 @@ jawaban teks atau draft. Tidak ada tool pembayaran/order maupun binding
   Persetujuan isi dan overwrite terpisah; compare-and-set melindungi ketikan
   yang berubah. Tidak mencentang consent order atau menekan submit.
 - Flag frontend OFF berhenti sebelum fetch/import/DOM. Backend OFF menolak
-  chat. Config timeout 3,5 detik, chat 9 detik, inference 8 detik, tanpa retry
+  chat. Config timeout 3,5 detik, chat 10 detik, inference 8 detik, tanpa retry
   otomatis. Kegagalan chat memberi FAQ lokal dan tidak mengunci formulir.
 - Batas pesan 1.200 karakter/JSON 4KiB, CORS origin tepat, tanpa credential
   frontend, tanpa history persisten/log aplikasi, output memakai textContent.
@@ -56,6 +60,13 @@ jawaban teks atau draft. Tidak ada tool pembayaran/order maupun binding
 - Rate limit request dan inference terpisah. Circuit breaker inference
   terbuka setelah 3 kegagalan selama 60 detik. AI hanya mengembalikan intent
   dalam allowlist; tidak bisa mengeksekusi tool atau menghasilkan fakta harga.
+- Model nyata memahami maksud pertanyaan bebas yang belum cocok dengan FAQ
+  kata kunci. Jawaban bisnis tetap dipilih dari panduan terkontrol. Pertanyaan
+  bantuan tidak dijadikan draft lowongan; POSI meminta informasi pekerjaan
+  dahulu. Draft eksplisit tetap ditinjau dan disetujui pengguna.
+- Maksimal 100 reservasi AI per hari UTC (reset 07.00 WIB). Counter atomik
+  bersama seluruh lokasi; kegagalan juga memakan satu slot dan tidak diulang.
+  Jika counter tidak tersedia atau habis, FAQ dan formulir tetap berjalan.
 
 ## Konfigurasi Cloudflare
 
@@ -65,26 +76,38 @@ storage order. Aset dibuat ke `.preview-public/` yang diabaikan Git.
 | Nama | Default / penggunaan |
 | --- | --- |
 | `POSI_ENABLED` | `false`; override `true` hanya pada pratinjau staging saat ini |
-| `POSI_AI_ENABLED` | `false`; inference nyata belum diaktifkan |
+| `POSI_AI_ENABLED` | `false` dalam file; override `true` hanya staging yang diuji |
 | `POSI_ALLOWED_ORIGINS` | Loopback dan origin Worker staging tepat; origin produksi ditolak |
 | `POSI_GREETING` | Opsional, maksimal 300 karakter; fallback sapaan Indonesia |
-| `POSI_AI_MODEL` | `@cf/meta/llama-3.1-8b-instruct`, allowlist server |
+| `POSI_AI_MODEL` | `@cf/meta/llama-3.2-3b-instruct`, allowlist server |
 | `POSI_AI_MAX_TOKENS` | 96; server membatasi 32–192 token |
+| `POSI_AI_DAILY_LIMIT` | 100 percobaan/hari, batas keras maksimum100 |
 | `POSI_RATE_LIMITER` | Binding platform, 20 request/60 detik per hash IP |
 | `POSI_AI_RATE_LIMITER` | Binding platform, 10 inference/60 detik per lokasi Cloudflare |
-| `AI` | Binding Workers AI opsional; sengaja belum dipasang |
+| `AI` | Binding Workers AI terpasang hanya pada Worker POSI |
+| `POSI_AI_BUDGET` | Binding Durable Object SQLite `PosiAiBudget`, satu counter agregat |
 
 Tidak dibutuhkan API key frontend. Binding Workers AI memakai akun Cloudflare;
 jika kelak memakai provider eksternal, key hanya lewat Cloudflare Secrets.
 Lihat [binding Workers AI](https://developers.cloudflare.com/workers-ai/configuration/bindings/).
 Rate limit platform bersifat perkiraan per lokasi, **bukan batas biaya bulanan
 global**; lihat [batas rate limiting](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/).
+Counter terpisah membatasi jumlah pemanggilan AI secara global. Ini bukan
+batas tagihan seluruh akun, sebab layanan Cloudflare lain memiliki pemakaian
+sendiri. Tidak ada percakapan yang disimpan.
 
-Untuk tahap AI nyata berikutnya: tinjau model/biaya/kuota, pasang
-`"ai": { "binding": "AI" }` pada konfigurasi POSI staging saja, lalu set
-`POSI_AI_ENABLED=true` di staging dan jalankan uji inference nyata. Jangan
-menjalankan konfigurasi produksi atau memberi binding database transaksi.
-Saat ini jawaban demo menggunakan aturan; integrasi AI diuji dengan mock.
+Binding `"ai": { "binding": "AI" }` dan migrasi namespace counter khusus
+POSI telah dipasang. Model lama pada fondasi diganti dengan
+[Llama3.2 3B](https://developers.cloudflare.com/workers-ai/models/llama-3.2-3b-instruct/).
+Gunakan dua flag ON hanya melalui konfigurasi POSI staging. Jangan memberi
+binding database transaksi. Uji jarak jauh hanya memakai pertanyaan sintetis:
+
+```powershell
+node posi/scripts/test-ai-staging.mjs
+```
+
+Skrip ini dibatasi ke satu origin staging, maksimum3 inference nyata, dan
+memeriksa `source:ai`, makna jawaban, serta penolakan origin produksi.
 
 ## Perintah pengembangan dari root repository
 
@@ -111,6 +134,12 @@ npm run build --prefix posi
 npx wrangler deploy --config posi/wrangler.jsonc --var POSI_ENABLED:true
 ```
 
+Untuk mengaktifkan model pada staging yang sudah lulus pengujian:
+
+```powershell
+npx wrangler deploy --config posi/wrangler.jsonc --var POSI_ENABLED:true --var POSI_AI_ENABLED:true
+```
+
 Jangan menjalankan `npm run deploy` root untuk pekerjaan POSI. Jangan push
 `main`. Sebelum push branch fitur, periksa kebijakan eksternal Cloudflare
 Builds agar tidak memicu deployment Worker transaksi. Commit tidak menjadi
@@ -128,10 +157,13 @@ npx wrangler rollback <ID_VERSI_POSI_SEBELUMNYA> --config posi/wrangler.jsonc --
 
 Catat ID versi sehat dari hasil deploy dan uji ulang config, asset, FAQ serta
 form sandbox setelah rollback. Jangan memakai ID versi Worker `new`.
-POSI tidak mempunyai migrasi sehingga rollback tidak membatalkan data order.
+Migrasi `posi-ai-budget-v1` hanya membuat namespace counter POSI; tidak ada
+migrasi database order. Gunakan versi rollback yang sudah mengekspor class
+`PosiAiBudget` (versi OFF aman: `18ea9e1a-dfdc-49c6-ad2e-bdbbc9756c4d`),
+agar kompatibel dengan namespace counter. Counter tidak direset saat rollback.
 Produksi saat ini tidak perlu rollback karena tidak dimodifikasi.
 
-Belum selesai untuk rilis pelanggan: inference AI nyata, sinkronisasi katalog
+Belum selesai untuk rilis pelanggan: sinkronisasi katalog
 operasional baca-saja, hook form resmi, panel admin konfigurasi POSI/FAQ/model/
 limit, statistik bantuan agregat, anggaran biaya akun, pengujian Android/iPhone
 fisik dan persetujuan pemilik. Tidak ada pelacak pengunjung yang dipasang.
@@ -141,3 +173,4 @@ kelonggaran style inline pada sandbox tidak diterapkan ke produksi.
 Rilis produksi kelak harus mendapat persetujuan baru: integrasi dengan flag
 OFF → regresi order staging → aktivasi internal → peluncuran bertahap.
 Lihat `docs/posi-validation.md` untuk hasil dan batas bukti tahap pertama.
+Hasil aktivasi model nyata dicatat dalam `docs/posi-ai-staging.md`.

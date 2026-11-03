@@ -55,3 +55,10 @@ test('chat timeout aborts optional AI request and rejects independently', async 
   await assert.rejects(requestReply({ apiBase: 'https://preview.example', message: 'Bantu', context: {}, timeoutMs: 15, fetcher: async (url, { signal }) => new Promise((resolve, reject) => signal.addEventListener('abort', () => reject(new Error('timeout')), { once: true })) }), /timeout/);
   assert.ok(Date.now() - started < 1000);
 });
+
+test('AI requests for human help preserve only a validated contact suggestion', async () => {
+  for (const url of ['https://wa.me/6280000000000', 'https://attacker.example/', 'javascript:alert(1)']) {
+    const response = await requestReply({ apiBase: 'https://preview.example', message: 'Boleh bicara dengan petugas?', context: {}, fetcher: async () => Response.json({ reply: 'Silakan hubungi petugas.', source: 'ai', contact: { whatsappUrl: url } }) });
+    assert.equal(response.contact?.whatsappUrl || null, url.startsWith('https://wa.me/') ? url : null);
+  }
+});

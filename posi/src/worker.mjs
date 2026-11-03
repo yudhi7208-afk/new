@@ -1,6 +1,8 @@
 import snapshot from '../knowledge/catalog.json' with { type: 'json' };
 import { DEFAULT_GREETING, FALLBACK, QUICK_REPLIES, safeContact, detectIntent, prohibitedRequest, ruleReply } from './knowledge.mjs';
 import { createClassifier } from './ai.mjs';
+import { reserveAiBudget } from './budget.mjs';
+export { PosiAiBudget } from './budget.mjs';
 
 const MAX_BYTES = 4096;
 const MAX_MESSAGE = 1200;
@@ -103,9 +105,17 @@ export function createPosiWorker({ knowledge = snapshot, now = Date.now, timeout
         if (intent === 'unknown' && enabled(env.POSI_AI_ENABLED)) {
           let aiAllowed = false;
           try { aiAllowed = Boolean(env.POSI_AI_RATE_LIMITER?.limit && (await env.POSI_AI_RATE_LIMITER.limit({ key: 'posi-staging-ai-global' })).success); } catch { /* fail closed; FAQ remains available */ }
-          if (aiAllowed) { const interpreted = await classify(message, env); if (interpreted) { intent = interpreted; source = 'ai'; } else source = 'fallback'; }
+          if (aiAllowed && await reserveAiBudget(env)) { const interpreted = await classify(message, env); if (interpreted) { intent = interpreted; source = 'ai'; } else source = 'fallback'; }
           else source = 'fallback';
         }
+        // An inferred intent is not evidence that a support question contains
+        // actual vacancy material. Ask for details instead of copying that
+        // question into an applicable form draft. Explicit draft requests keep
+        // their existing rule-based preview and approval flow.
+        if (source === 'ai' && intent === 'draft') return response({
+          reply: 'Saya bisa membantu menyusun Teks Materi. Apa posisi pekerjaan dan lokasi kerjanya? Setelah itu kita lengkapi persyaratan serta cara melamar dari informasi Anda. Materi desain ditempatkan di Teks Materi, bukan Caption.',
+          source,
+        }, 200, permitted);
         const answer = ruleReply(intent, message, context, knowledge, now());
         return response({ ...answer, source, ...(source === 'fallback' && intent === 'unknown' ? { reply: FALLBACK + '\n' + answer.reply } : {}) }, 200, permitted);
       } catch (error) {

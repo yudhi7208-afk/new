@@ -46,6 +46,7 @@ export async function createFixture({ port = 8790, listen = false } = {}) {
       if (mode === 'slow') await new Promise(resolve => setTimeout(resolve, 1500));
       return posi.fetch(request, { POSI_ENABLED: mode === 'off' ? 'false' : 'true', POSI_AI_ENABLED: ['ai-error', 'slow'].includes(mode) ? 'true' : 'false', POSI_ALLOWED_ORIGINS: origin,
         POSI_AI_RATE_LIMITER: { limit: async () => ({ success: true }) },
+        POSI_AI_BUDGET: { idFromName: value => value, get: () => ({ fetch: async () => new Response(JSON.stringify({ allowed: true }), { headers: { 'Content-Type': 'application/json' } }) }) },
         AI: { run: async () => { throw Error('Synthetic AI outage'); } },
       });
     }

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPosiWorker } from '../src/worker.mjs';
-import { createClassifier } from '../src/ai.mjs';
+import { createClassifier, DEFAULT_AI_MODEL } from '../src/ai.mjs';
 
 const ORIGIN = 'http://127.0.0.1:8790';
 const epoch = Date.parse('2026-11-03T04:00:00Z');
@@ -12,7 +12,8 @@ const knowledge = {
     default: [{ id: 'gratis', name: 'Paket Contoh', price: 0, features: ['Kanal Contoh'] }],
   } }, contact: { url: 'https://wa.me/6280000000000' },
 };
-function env(extra = {}) { return { POSI_ENABLED: 'true', POSI_AI_ENABLED: 'false', POSI_ALLOWED_ORIGINS: ORIGIN, POSI_RATE_LIMITER: { limit: async () => ({ success: true }) }, ...extra }; }
+function budget(allowed = true) { return { idFromName: value => value, get: () => ({ fetch: async () => Response.json({ allowed }) }) }; }
+function env(extra = {}) { return { POSI_ENABLED: 'true', POSI_AI_ENABLED: 'false', POSI_ALLOWED_ORIGINS: ORIGIN, POSI_RATE_LIMITER: { limit: async () => ({ success: true }) }, POSI_AI_BUDGET: budget(), ...extra }; }
 function request(message, context = {}, options = {}) { return new Request('http://127.0.0.1:8790/api/posi/chat', { method: 'POST', headers: { Origin: ORIGIN, 'Content-Type': 'application/json', ...options.headers }, body: JSON.stringify({ message, context }) }); }
 function worker(options = {}) { return createPosiWorker({ knowledge, now: () => epoch, timeoutMs: 5, ...options }); }
 async function chat(instance, message, context = {}, bindings = env()) { const result = await instance.fetch(request(message, context), bindings); return { status: result.status, body: await result.json(), headers: result.headers }; }
@@ -104,6 +105,17 @@ test('platform rate limit and limiter failure degrade without AI calls', async (
     assert.equal(response.status, 429); assert.equal(response.headers.get('Retry-After'), '60'); assert.equal(response.body.source, 'fallback');
   }
 });
+test('daily AI budget absence, denial or outage prevents inference and preserves rule FAQ', async () => {
+  for (const POSI_AI_BUDGET of [undefined, budget(false), { idFromName: value => value, get: () => ({ fetch: async () => { throw new Error('private-budget-failure'); } }) }]) {
+    let calls = 0;
+    const bindings = env({ POSI_AI_ENABLED: 'true', POSI_AI_BUDGET, POSI_AI_RATE_LIMITER: { limit: async () => ({ success: true }) }, AI: { run: async () => { calls++; return { response: { intent: 'benefits' } }; } } });
+    const response = await chat(worker(), 'Kenapa saya perlu menggunakan layanan kalian?', {}, bindings);
+    assert.equal(response.status, 200); assert.equal(response.body.source, 'fallback');
+    assert.equal(calls, 0); assert.doesNotMatch(JSON.stringify(response.body), /private-budget-failure/);
+    const faq = await chat(worker(), 'Bagaimana desain gratis?', {}, bindings);
+    assert.equal(faq.body.source, 'rules'); assert.match(faq.body.reply, /Teks Materi/); assert.equal(calls, 0);
+  }
+});
 test('local in-memory fallback is bounded, deployed missing limiter is denied', async () => {
   const instance = worker(), bindings = env({ POSI_RATE_LIMITER: undefined });
   for (let n = 0; n < 20; n++) assert.equal((await chat(instance, 'harga', {}, bindings)).status, 200);
@@ -112,11 +124,56 @@ test('local in-memory fallback is bounded, deployed missing limiter is denied', 
   assert.equal((await worker().fetch(deployed, bindings)).status, 429);
 });
 test('AI returns only allowlisted intent; final answer from rules, no AI prose', async () => {
-  let input;
-  const bindings = env({ POSI_AI_ENABLED: 'true', POSI_AI_RATE_LIMITER: { limit: async () => ({ success: true }) }, AI: { run: async (model, value) => { input = value; return { response: '{"intent":"benefits"}' }; } } });
+  let input, selectedModel;
+  const bindings = env({ POSI_AI_ENABLED: 'true', POSI_AI_RATE_LIMITER: { limit: async () => ({ success: true }) }, AI: { run: async (model, value) => { selectedModel = model; input = value; return { response: '{"intent":"benefits"}' }; } } });
   const response = await chat(worker(), 'kenapa memakai jasa kalian', {}, bindings);
   assert.equal(response.body.source, 'ai'); assert.match(response.body.reply, /tidak dijamin/); assert.equal(input.max_tokens, 96); assert.equal(input.messages.length, 2); assert.equal(input.messages[1].role, 'user');
+  assert.equal(selectedModel, '@cf/meta/llama-3.2-3b-instruct');
+  assert.equal(input.stream, false); assert.equal(input.response_format.type, 'json_schema');
+  assert.deepEqual(input.response_format.json_schema.required, ['intent']);
+  assert.equal(input.response_format.json_schema.additionalProperties, false);
   assert.equal(response.body.tools, undefined);
+});
+test('JSON mode validates parsed objects and string responses with identical strict allowlists', async () => {
+  for (const response of [{ intent: 'form' }, '{"intent":"form"}']) {
+    const classify = createClassifier();
+    const result = await classify('Data apa saja yang harus saya siapkan?', { POSI_AI_ENABLED: 'true', AI: { run: async () => ({ response }) } });
+    assert.equal(result, 'form');
+  }
+  for (const response of [null, [], 1, true, {}, { intent: 'form', reply: 'Extra prose' }, { intent: 'delete_order' }, { intent: 1 }, '{"intent":"form","price":1}', '```json\n{"intent":"form"}\n```', { intent: 'unknown' }]) {
+    const classify = createClassifier();
+    assert.equal(await classify('Data apa saja yang harus saya siapkan?', { POSI_AI_ENABLED: 'true', AI: { run: async () => ({ response }) } }), null);
+  }
+});
+test('model output cannot introduce a tool call even with a valid intent', async () => {
+  for (const tool_calls of [[{ name: 'submit_order' }], {}, 'submit_order']) {
+    const classify = createClassifier();
+    assert.equal(await classify('bisa bantu saya?', { POSI_AI_ENABLED: 'true', AI: { run: async () => ({ response: { intent: 'form' }, tool_calls }) } }), null);
+  }
+  const classify = createClassifier();
+  assert.equal(await classify('bisa bantu saya?', { POSI_AI_ENABLED: 'true', AI: { run: async () => ({ response: { intent: 'form' }, tool_calls: [] }) } }), 'form');
+});
+test('unknown AI classification uses honest fallback and leaves order/form independent', async () => {
+  const bindings = env({ POSI_AI_ENABLED: 'true', POSI_AI_RATE_LIMITER: { limit: async () => ({ success: true }) }, AI: { run: async () => ({ response: { intent: 'unknown' } }) } });
+  const response = await chat(worker(), 'Apa cuaca besok?', {}, bindings);
+  assert.equal(response.status, 200); assert.equal(response.body.source, 'fallback');
+  assert.match(response.body.reply, /Formulir tetap dapat digunakan/); assert.equal(response.body.draft, undefined);
+});
+test('misclassified support questions never become vacancy drafts without an explicit drafting request', async () => {
+  const bindings = env({ POSI_AI_ENABLED: 'true', POSI_AI_RATE_LIMITER: { limit: async () => ({ success: true }) }, AI: { run: async () => ({ response: { intent: 'draft' } }) } });
+  for (const message of ['Saya cuma memiliki tulisan, gambarnya belum ada. Bisa dibantu?', 'Saya mencari guru Matematika kelas 8 SMP di Medan.']) {
+    const response = await chat(worker(), message, {}, bindings);
+    assert.equal(response.status, 200); assert.equal(response.body.draft, undefined);
+    assert.equal(response.body.actions, undefined);
+    assert.match(response.body.reply, /posisi|informasi lowongan|Teks Materi/i);
+  }
+});
+test('semantic requests for a human return only the configured official contact', async () => {
+  const bindings = env({ POSI_AI_ENABLED: 'true', POSI_AI_RATE_LIMITER: { limit: async () => ({ success: true }) }, AI: { run: async () => ({ response: { intent: 'admin' } }) } });
+  const response = await chat(worker(), 'Bisa saya berbicara dengan petugas kalian secara langsung?', {}, bindings);
+  assert.equal(response.body.source, 'ai');
+  assert.deepEqual(response.body.contact, { whatsappUrl: 'https://wa.me/6280000000000' });
+  assert.equal(response.body.actions, undefined); assert.equal(response.body.draft, undefined);
 });
 test('AI malformed output, quota denial, provider errors, hang and missing binding gracefully fall back', async () => {
   const modes = [
@@ -147,6 +204,6 @@ test('invalid model and token budget cannot be expanded by env or user message',
   const classify = createClassifier();
   const bindings = { POSI_AI_ENABLED: 'true', POSI_AI_MODEL: 'evil/model', POSI_AI_MAX_TOKENS: '1000000', AI: { run: async (_model, input) => { calls++; max = input.max_tokens; return { response: '{"intent":"form"}' }; } } };
   assert.equal(await classify('halo', bindings), null); assert.equal(calls, 0);
-  bindings.POSI_AI_MODEL = '@cf/meta/llama-3.1-8b-instruct';
+  bindings.POSI_AI_MODEL = DEFAULT_AI_MODEL;
   assert.equal(await classify('halo', bindings), 'form'); assert.equal(max, 192);
 });
