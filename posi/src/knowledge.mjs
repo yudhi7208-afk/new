@@ -1,7 +1,7 @@
 import snapshot from '../knowledge/catalog.json' with { type: 'json' };
 
-export const INTENTS = Object.freeze(['packages', 'design', 'form', 'steps', 'benefits', 'admin', 'draft', 'unknown']);
-export const QUICK_REPLIES = Object.freeze(['Pasang Lowongan', 'Cara Mengisi Formulir', 'Keuntungan PosLoker', 'Harga dan Paket', 'Bantuan Desain Gratis', 'Hubungi Admin']);
+export const INTENTS = Object.freeze(['packages', 'design', 'form', 'steps', 'benefits', 'admin', 'draft', 'payment', 'check-order', 'unknown']);
+export const QUICK_REPLIES = Object.freeze(['Cara Memasang', 'Cek Order', 'Konfirmasi Pembayaran', 'Cara Mengisi Formulir', 'Harga dan Paket', 'Bantuan Desain Gratis', 'Hubungi Admin']);
 export const DEFAULT_GREETING = 'Halo! 👋 Saya POSI, asisten PosLoker. Bingung memasang lowongan? Saya bantu satu langkah setiap kali, ya.';
 export const FALLBACK = 'Bantuan AI sedang tidak tersedia. Formulir tetap dapat digunakan. Pilih bantuan di bawah atau hubungi admin; jangan kirim kata sandi atau bukti transfer melalui chat ini.';
 
@@ -26,6 +26,9 @@ export function catalogView(knowledge = snapshot, context = {}, message = '', no
 }
 export function detectIntent(message) {
   const text = normal(message);
+  if (/\b(cek|check|lacak|status|lihat|periksa)\b.{0,25}\b(order|pesanan)\b|\b(order|pesanan)\b.{0,25}\b(saya|status|cek|lacak)\b/.test(text)) return 'check-order';
+  if (/\b(transfer|bayar|pembayaran|konfirmasi|rekening|kode unik)\b/.test(text)) return 'payment';
+  if (/\b(cara|panduan)\b.{0,25}\b(memasang|pasang|memesan|pesan)\b/.test(text)) return 'steps';
   if (/\b(admin|whatsapp|cs|manusia|pengelola)\b/.test(text)) return 'admin';
   if (/\b(draft|draf|susun|susunkan|rapikan|rapihkan)\b/.test(text)) return 'draft';
   if (/\b(desain|poster|belum punya|teks materi)\b/.test(text)) return 'design';
@@ -41,7 +44,12 @@ export function prohibitedRequest(message) {
     /\b(hapus|delete|ubah|ganti|change|confirm|konfirmasi|lunas|bayarkan|send|kirim)\b.{0,30}\b(otomatis|automatically|status pembayaran|payment status|harga|price|database|semua order|order pelanggan|data pelanggan|kata sandi|password|api key|token)\b/.test(text) ||
     /\b(data pelanggan lain|bocorkan|system prompt|developer message|sql injection)\b/.test(text);
 }
-export function ruleReply(intent, message, context = {}, knowledge = snapshot, now = Date.now()) {
+function baseRuleReply(intent, message, context = {}, knowledge = snapshot, now = Date.now()) {
+  if (intent === 'check-order') return { reply: 'Untuk cek order, buka tautan ringkasan pribadi yang muncul setelah pesanan berhasil dikirim. Jika sedang berada pada ringkasan itu, gunakan “Cek order saya” di bawah. Jika tautannya tidak tersimpan, buka panduan Cek order atau hubungi admin dengan nomor pesanan. Saya tidak dapat mencari data pelanggan dari chat ini; jangan membuat pesanan atau membayar ulang.' };
+  if (intent === 'payment') {
+    if (context.step === 3 || context.page === 'receipt') return { reply: 'Jika sudah muncul Pesanan berhasil dikirim, konfirmasi dan materi telah diterima untuk diperiksa tim. Anda dapat mengecek ringkasan pribadi dan memberi kabar melalui tombol WhatsApp pada ringkasan. Jangan transfer atau membuat pesanan ulang; hubungi admin bila ada kendala.' };
+    return { reply: 'Jangan lupa konfirmasi pembayaran setelah transfer. Untuk paket berbayar, transfer tepat sesuai total dan kode unik pada ringkasan. Kemudian lengkapi data, unggah bukti transfer dan materi, periksa kembali, lalu tekan “Kirim konfirmasi & materi” sendiri sampai halaman berhasil muncul. Jika sudah transfer, jangan membayar ulang. Paket gratis tidak memerlukan transfer. Gunakan tautan panduan di bawah.' };
+  }
   if (intent === 'design') return { reply: 'Belum punya poster? Untuk bantuan desain gratis, tuliskan informasi lowongan di kolom Teks Materi (Materi dalam bentuk teks), bukan Caption. Cantumkan posisi, persyaratan, lokasi, dan cara melamar sesuai informasi Anda. Materi tidak saya kirim otomatis.' };
   if (intent === 'form') return { reply: 'Isi Nama lengkap dan Nomor WhatsApp terlebih dahulu. Untuk desain poster, gunakan Teks Materi, bukan Caption. Ikuti tanda wajib pada formulir; bukti transfer dibutuhkan untuk paket berbayar. Periksa ringkasan, lalu Anda sendiri yang menekan Kirim konfirmasi & materi.' };
   if (intent === 'benefits') return { reply: 'PosLoker membantu menyebarkan lowongan melalui kanal yang tersedia sesuai kota dan paket. Anda dapat menyiapkan materi teks untuk bantuan desain. Jumlah pelamar, tayangan, dan hasil rekrutmen tidak dijamin; ketentuan publikasi mengikuti paket dan pemeriksaan tim.' };
@@ -67,4 +75,12 @@ export function ruleReply(intent, message, context = {}, knowledge = snapshot, n
     return { reply: 'Berikut draft berdasarkan teks Anda saja. Periksa dan lengkapi informasi yang belum ada, lalu setujui sebelum dimasukkan ke Teks Materi. Caption, harga, paket, dan pengiriman pesanan tidak saya ubah.', draft: { adText: raw.slice(0, 1200) } };
   }
   return { reply: 'Saya dapat membantu paket, cara mengisi formulir, desain gratis, dan tahapan pemesanan PosLoker. Pilih satu bantuan di bawah, ya.', suggestions: [...QUICK_REPLIES] };
+}
+
+export function ruleReply(intent, message, context = {}, knowledge = snapshot, now = Date.now()) {
+  const answer = baseRuleReply(intent, message, context, knowledge, now);
+  const ids = intent === 'check-order' ? ['check-order', 'confirm-payment']
+    : intent === 'payment' ? ['confirm-payment', 'check-order']
+    : ['steps', 'form', 'design', 'packages'].includes(intent) ? ['how-to-order', 'confirm-payment'] : ['how-to-order', 'check-order'];
+  return { ...answer, links: ids.map(id => ({ id })) };
 }

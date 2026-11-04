@@ -1,5 +1,6 @@
+import { safeHelpIds } from './navigation.mjs';
 export const QUICK_OPTIONS = Object.freeze([
-  'Pasang Lowongan', 'Cara Mengisi Formulir', 'Keuntungan PosLoker',
+  'Cara Memasang', 'Cek Order', 'Konfirmasi Pembayaran', 'Cara Mengisi Formulir',
   'Harga dan Paket', 'Bantuan Desain Gratis', 'Hubungi Admin',
 ]);
 
@@ -26,6 +27,8 @@ export function validDraft(value) {
 
 export function localAnswer(message) {
   const text = message.toLowerCase();
+  if (/cek.*order|cek.*pesanan|lacak|status.*pesanan/.test(text)) return 'Buka tautan ringkasan pribadi yang didapat setelah pesanan berhasil. Jika tidak tersimpan, gunakan panduan Cek order atau hubungi admin dengan nomor pesanan. Jangan memesan atau membayar ulang.';
+  if (/bayar|transfer|konfirmasi|kode unik/.test(text)) return 'Jangan lupa konfirmasi pembayaran setelah transfer. Ikuti total dan kode unik, lengkapi formulir serta bukti, lalu tekan Kirim konfirmasi & materi sendiri sampai halaman berhasil muncul. Jangan membayar ulang jika sudah transfer.';
   if (/desain|poster|teks materi/.test(text)) return 'Belum punya poster? Tuliskan informasi lowongan di kolom Teks Materi, bukan Caption. Cantumkan posisi, lokasi, persyaratan, dan cara melamar sesuai informasi Anda. Jangan menambahkan data yang belum pasti.';
   if (/harga|paket|biaya|kota|instagram|facebook/.test(text)) return 'Harga dan kanal mengikuti pilihan kota serta paket resmi di website. Periksa daftar paket dan ringkasan order yang tampil. Saya tidak dapat memastikan harga saat layanan bantuan sedang tidak terhubung.';
   if (/manfaat|keuntungan/.test(text)) return 'PosLoker membantu penyebaran lowongan melalui kanal yang tersedia sesuai paket. Anda dapat memilih kota, menyiapkan materi, dan mengirim pemesanan. Jumlah pelamar atau hasil rekrutmen tidak dijamin.';
@@ -51,7 +54,7 @@ export async function requestReply({ apiBase, message, context, fetcher = fetch,
     const value = await response.json();
     if (typeof value?.reply !== 'string' || value.reply.length > 4000 || !value.reply.trim()) throw new Error('Respons tidak valid.');
     const contactUrl = safeContactUrl(value.contact?.whatsappUrl);
-    return { reply: value.reply, source: value.source, draft: validDraft(value.draft), contact: contactUrl ? { whatsappUrl: contactUrl } : null };
+    return { reply: value.reply, source: value.source, draft: validDraft(value.draft), contact: contactUrl ? { whatsappUrl: contactUrl } : null, links: safeHelpIds(value.links) };
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener('abort', abort);

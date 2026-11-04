@@ -1,4 +1,7 @@
 import { QUICK_OPTIONS, safeContext, safeContactUrl, validDraft, localAnswer, requestReply } from './helpers.mjs';
+import { createAttentionPolicy } from './attention.mjs';
+import { createPosiSound } from './sound.mjs';
+import { helpLink } from './navigation.mjs';
 
 const DEFAULT_GREETING = 'Halo! 👋 Saya POSI, asisten PosLoker. Mau pasang lowongan tetapi masih bingung? Saya bantu satu langkah setiap kali, ya!';
 const GUIDE = [
@@ -22,25 +25,30 @@ export function mountPosi(options = {}) {
   root.append(stylesheet);
   const shell = document.createElement('div');
   // Static, author-owned shell only. All messages, configuration and drafts use textContent/value.
-  shell.innerHTML = `<aside class="bubble" hidden aria-label="Sapaan POSI"><button type="button" aria-label="Tutup sapaan POSI">×</button><p>Halo, saya POSI! Perlu bantuan mengisi pesanan?</p></aside>
-    <button class="launcher" type="button" aria-label="Buka bantuan POSI" aria-expanded="false" aria-controls="posi-panel"><img alt="" width="63" height="67"><span class="launcher-label">POSI<small>Siap membantu Anda</small></span></button>
+  shell.innerHTML = `<aside class="bubble" hidden aria-label="Tawaran bantuan POSI" role="status"><button class="dismiss-offer" type="button" aria-label="Tutup tawaran bantuan POSI">×</button><img class="offer-mascot" alt="POSI" width="48" height="52"><p><strong>Halo, ada yang bisa saya bantu?</strong></p><p class="offer-detail">Saya bisa memandu satu langkah berikutnya.</p><div class="offer-actions"><button class="accept-offer primary" type="button">Ya, bantu saya</button><button class="decline-offer" type="button">Nanti saja</button></div><button class="listen-greeting" type="button">Dengarkan sapaan</button></aside>
+    <button class="launcher" type="button" hidden aria-label="Buka bantuan POSI" aria-expanded="false" aria-controls="posi-panel"><img alt="" width="63" height="67"><span class="launcher-label">POSI<small>Siap membantu Anda</small></span></button>
     <button class="restore" type="button" hidden aria-label="Tampilkan kembali bantuan POSI">Bantuan POSI</button>
     <section class="panel" id="posi-panel" aria-label="Bantuan POSI" hidden>
       <header class="heading"><img class="avatar" alt="Robot POSI" width="48" height="52"><div class="heading-copy"><h2>POSI</h2><small>Asisten ramah PosLoker</small></div><button class="icon-button minimize" type="button" aria-label="Minimalkan POSI">−</button><button class="icon-button close" type="button" aria-label="Tutup panel POSI">×</button></header>
       <div class="conversation" role="log" aria-label="Percakapan bantuan" aria-live="polite" aria-relevant="additions text"></div>
       <p class="status" role="status"></p>
       <form class="composer"><label class="sr-only" for="posi-message">Pertanyaan untuk POSI</label><div class="composer-row"><textarea id="posi-message" rows="2" maxlength="1200" placeholder="Tulis pertanyaan Anda…" required></textarea><button class="send" type="submit" aria-label="Kirim pertanyaan ke POSI">Kirim</button></div><p class="privacy">Chat ini tidak mengirim pesanan. Jangan tulis kata sandi, bukti transfer, atau data pribadi. Percakapan tidak disimpan oleh POSI.</p></form>
-      <div class="utility"><button class="guide-start" type="button">Panduan formulir</button><button class="hide-button" type="button">Sembunyikan robot</button></div>
+      <div class="utility"><button class="guide-start" type="button">Panduan formulir</button><button class="sound-toggle" type="button" aria-pressed="true">Suara aktif</button><button class="hide-button" type="button">Sembunyikan</button></div>
     </section>`;
   root.append(shell);
   const $ = selector => root.querySelector(selector);
   const launcher = $('.launcher'), panel = $('.panel'), restore = $('.restore'), bubble = $('.bubble');
   const conversation = $('.conversation'), composer = $('.composer'), input = $('textarea'), status = $('.status'), send = $('.send');
   for (const image of root.querySelectorAll('img')) image.src = new URL('./mascot.svg', import.meta.url).href;
-  let destroyed = false, pending = false, hidden = false, fieldFocused = false, requestController = null, guideIndex = 0, guideCard = null;
+  let destroyed = false, pending = false, hidden = false, fieldFocused = Boolean(document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]')), requestController = null, guideIndex = 0, guideCard = null, returnFocus = null;
   const timers = new Set();
   const schedule = (fn, delay) => { const id = setTimeout(() => { timers.delete(id); if (!destroyed) fn(); }, delay); timers.add(id); return id; };
   const adapter = options.adapter || {};
+  let storage;
+  try { storage = sessionStorage; } catch { /* Storage may be blocked. */ }
+  const attention = createAttentionPolicy({ storage });
+  const sound = createPosiSound();
+  try { if (storage?.getItem('posi-sound-v1') === 'off') sound.setEnabled(false); } catch { /* Optional preference. */ }
   if (options.config.aiEnabled === true) $('.heading-copy small').textContent = 'Asisten AI PosLoker';
   function snapshot() { try { return adapter.snapshot?.() || {}; } catch { return {}; } }
   function state(value) { host.dataset.state = value; }
@@ -58,22 +66,27 @@ export function mountPosi(options = {}) {
     const dialogOpen = Boolean(document.querySelector('dialog[open]'));
     let yieldToPage = false;
     try { yieldToPage = adapter.shouldYield?.() === true; } catch { /* Optional page adapter cannot block checkout. */ }
-    launcher.hidden = hidden || !panel.hidden || fieldFocused || dialogOpen || yieldToPage;
-    restore.hidden = !hidden || !panel.hidden || fieldFocused || dialogOpen || yieldToPage;
+    // Dormant by default. No permanent floating chatbot/restore button.
+    launcher.hidden = true;
+    restore.hidden = true;
     if (dialogOpen || fieldFocused || hidden || !panel.hidden || yieldToPage) bubble.hidden = true;
+    if (dialogOpen || fieldFocused || hidden || yieldToPage) sound.stop();
     if (dialogOpen && !panel.hidden) close(false);
   }
   function open() {
     if (destroyed || document.querySelector('dialog[open]')) return;
+    returnFocus = document.activeElement;
+    attention.markOffered(); sound.stop();
     hidden = false; fieldFocused = false; bubble.hidden = true; panel.hidden = false;
     launcher.setAttribute('aria-expanded', 'true'); syncVisibility(); input.focus({ preventScroll: true });
     state('greeting'); schedule(restState, 1800);
   }
   function close(focus = true) {
-    panel.hidden = true; launcher.setAttribute('aria-expanded', 'false'); syncVisibility();
-    if (focus && !launcher.hidden) launcher.focus({ preventScroll: true });
+    panel.hidden = true; bubble.hidden = true; launcher.setAttribute('aria-expanded', 'false'); sound.stop(); syncVisibility();
+    const target = returnFocus?.isConnected && returnFocus !== host ? returnFocus : document.querySelector('[data-posi-open]');
+    if (focus) target?.focus?.({ preventScroll: true });
   }
-  function hide() { hidden = true; close(false); syncVisibility(); if (!restore.hidden) restore.focus({ preventScroll: true }); }
+  function hide() { hidden = true; attention.markOffered(); close(); syncVisibility(); }
   function makeButton(label, handler, className = '') {
     const button = document.createElement('button'); button.type = 'button'; button.className = className; button.textContent = label;
     button.addEventListener('click', handler); return button;
@@ -84,6 +97,18 @@ export function mountPosi(options = {}) {
     const link = document.createElement('a'); link.className = 'contact';
     link.textContent = 'Buka WhatsApp admin ↗'; link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer';
     conversation.append(link); conversation.scrollTop = conversation.scrollHeight;
+  }
+  function offerLinks(ids = ['how-to-order', 'check-order', 'confirm-payment']) {
+    const links = document.createElement('nav'); links.className = 'help-links'; links.setAttribute('aria-label', 'Tautan bantuan pemesanan');
+    let receiptUrl;
+    try { receiptUrl = adapter.receiptLink?.(); } catch { /* Never send this capability to AI. */ }
+    for (const id of ids) {
+      const item = helpLink(id, { origin: location.origin, receiptUrl }); if (!item) continue;
+      const link = document.createElement('a'); link.textContent = item.label + ' ↗'; link.href = item.href;
+      link.target = '_blank'; link.rel = 'noopener noreferrer'; link.referrerPolicy = 'no-referrer';
+      links.append(link);
+    }
+    if (links.childElementCount) conversation.append(links);
   }
   function offerNavigation() {
     if (typeof adapter.guide !== 'function') return;
@@ -148,12 +173,15 @@ export function mountPosi(options = {}) {
       const answer = await requestReply({ apiBase: options.apiBase, message: text, context: safeContext(snapshot()), fetcher: options.fetcher, timeoutMs: options.timeoutMs, signal: requestController.signal });
       if (destroyed) return;
       line(answer.reply); state('talking');
+      if (answer.links?.length) offerLinks(answer.links);
+      if (!panel.hidden) sound.notify();
       if (answer.draft) offerDraft(answer.draft);
       if (answer.contact?.whatsappUrl || /admin|kontak|hubungi/i.test(text)) offerContact();
       if (/pasang lowongan|harga dan paket/i.test(text)) offerNavigation();
     } catch {
       if (destroyed) return;
       line(`Layanan AI belum terhubung. ${localAnswer(text)}`, 'fallback'); state('error');
+      offerLinks();
       if (/admin|kontak|hubungi/i.test(text)) offerContact();
       if (/pasang lowongan|harga dan paket/i.test(text)) offerNavigation();
     } finally {
@@ -189,25 +217,36 @@ export function mountPosi(options = {}) {
     guideCard.append(title, text, actions); conversation.append(guideCard); conversation.scrollTop = conversation.scrollHeight;
   }
   line(typeof options.config.greeting === 'string' ? options.config.greeting.slice(0, 800) : DEFAULT_GREETING);
+  offerLinks();
   const quick = document.createElement('div'); quick.className = 'quick-options'; quick.setAttribute('aria-label', 'Pilihan bantuan cepat');
   for (const option of QUICK_OPTIONS) quick.append(makeButton(option, () => ask(option)));
   conversation.append(quick);
   launcher.addEventListener('click', open); restore.addEventListener('click', open);
   $('.minimize').addEventListener('click', () => close()); $('.close').addEventListener('click', () => close());
   $('.hide-button').addEventListener('click', hide); $('.guide-start').addEventListener('click', () => showGuide());
-  bubble.querySelector('button').addEventListener('click', () => { bubble.hidden = true; });
+  $('.accept-offer').addEventListener('click', open);
+  for (const selector of ['.dismiss-offer', '.decline-offer']) $(selector).addEventListener('click', hide);
+  $('.listen-greeting').addEventListener('click', () => { sound.setEnabled(true); sound.prime(); sound.greet(); updateSound(); });
+  function updateSound() { $('.sound-toggle').textContent = sound.enabled ? 'Suara aktif' : 'Suara mati'; $('.sound-toggle').setAttribute('aria-pressed', String(sound.enabled)); }
+  $('.sound-toggle').addEventListener('click', () => {
+    sound.setEnabled(!sound.enabled); if (sound.enabled) { sound.prime(); sound.greet(); }
+    try { storage?.setItem('posi-sound-v1', sound.enabled ? 'on' : 'off'); } catch { /* Optional preference. */ }
+    updateSound();
+  });
+  updateSound();
   composer.addEventListener('submit', event => { event.preventDefault(); event.stopPropagation(); ask(input.value); });
   panel.addEventListener('keydown', event => { if (event.key === 'Escape') { event.stopPropagation(); close(); } });
   function pageFocus(event) {
     const target = event.target;
     if (target === host || !target?.matches?.('input,textarea,select,[contenteditable="true"]')) return;
-    fieldFocused = true; if (!panel.hidden) close(false); syncVisibility();
+    fieldFocused = true; sound.stop(); if (!panel.hidden) close(false); syncVisibility();
   }
   function pageBlur() { schedule(() => { fieldFocused = document.activeElement !== host && Boolean(document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]')); syncVisibility(); }, 0); }
   function pageScroll(event) {
     // Scrolling the existing page clears the optional panel out of the way.
     // A shadow-internal conversation scroll is retargeted to host and stays open.
     if (!panel.hidden && event.target !== host && !root.contains(event.target)) close(false);
+    if (event.target !== host && !root.contains(event.target)) attention.progress();
     syncVisibility();
   }
   function viewport() {
@@ -220,23 +259,39 @@ export function mountPosi(options = {}) {
   }
   document.addEventListener('focusin', pageFocus); document.addEventListener('focusout', pageBlur);
   document.addEventListener('scroll', pageScroll, true);
+  function pageProgress(event) {
+    if (event.isTrusted && ['pointerdown', 'keydown'].includes(event.type)) sound.prime();
+    if (event.target !== host) attention.progress();
+  }
+  for (const type of ['pointerdown', 'keydown', 'input', 'change']) document.addEventListener(type, pageProgress, { passive: true });
+  function visibility() { attention.visibility(!document.hidden); if (document.hidden) { bubble.hidden = true; sound.stop(); } }
+  document.addEventListener('visibilitychange', visibility); visibility();
   globalThis.visualViewport?.addEventListener('resize', viewport); globalThis.addEventListener('resize', viewport);
   const observer = new MutationObserver(records => { if (records.some(record => record.target?.tagName === 'DIALOG')) syncVisibility(); });
   observer.observe(document.body, { attributes: true, attributeFilter: ['open'], subtree: true });
   const resizeObserver = globalThis.ResizeObserver ? new ResizeObserver(viewport) : null;
   resizeObserver?.observe(document.documentElement);
   viewport(); document.body.append(host); syncVisibility(); restState();
-  let greeted = false;
-  try { greeted = sessionStorage.getItem('posi-greeted-v1') === '1'; } catch { /* Storage can be blocked. */ }
-  if (!greeted) schedule(() => {
-    try { sessionStorage.setItem('posi-greeted-v1', '1'); } catch { /* No storage requirement. */ }
-    if (!hidden && panel.hidden && !fieldFocused && !document.querySelector('dialog[open]')) { bubble.hidden = false; syncVisibility(); state('greeting'); schedule(() => { bubble.hidden = true; restState(); }, 8500); }
-  }, Math.max(2000, options.greetingDelayMs || 4500));
+  let stage = snapshot().step;
+  const attentionTimer = setInterval(() => {
+    const current = snapshot();
+    if (current.step !== stage) { stage = current.step; attention.progress(); }
+    let yielding = false;
+    try { yielding = adapter.shouldYield?.() === true; } catch { yielding = true; }
+    const blocked = hidden || !panel.hidden || fieldFocused || yielding || Boolean(document.querySelector('dialog[open]'));
+    if (!attention.eligible({ visible: !document.hidden, blocked, completed: current.step === 3 || current.page === 'receipt' })) return;
+    attention.markOffered(); bubble.hidden = false; state('greeting'); sound.greet();
+    $('.offer-detail').textContent = current.page === 'checkout' && current.step === 2
+      ? 'Jika sudah transfer, jangan lupa kirim konfirmasi pembayaran. Saya bisa memandu.' : 'Perlu panduan memasang lowongan atau cek order?';
+    schedule(() => { bubble.hidden = true; sound.stop(); restState(); }, 20000);
+  }, 1000);
   return { enabled: true, aiEnabled: options.config.aiEnabled === true, open, close, hide, show() { hidden = false; syncVisibility(); }, destroy() {
     if (destroyed) return;
-    destroyed = true; requestController?.abort(); for (const timer of timers) clearTimeout(timer); timers.clear(); observer.disconnect(); resizeObserver?.disconnect();
+    destroyed = true; requestController?.abort(); clearInterval(attentionTimer); sound.destroy(); for (const timer of timers) clearTimeout(timer); timers.clear(); observer.disconnect(); resizeObserver?.disconnect();
     document.removeEventListener('focusin', pageFocus); document.removeEventListener('focusout', pageBlur);
     document.removeEventListener('scroll', pageScroll, true);
+    document.removeEventListener('visibilitychange', visibility);
+    for (const type of ['pointerdown', 'keydown', 'input', 'change']) document.removeEventListener(type, pageProgress);
     globalThis.visualViewport?.removeEventListener('resize', viewport); globalThis.removeEventListener('resize', viewport); host.remove();
   } };
 }

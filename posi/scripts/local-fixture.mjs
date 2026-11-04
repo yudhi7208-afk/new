@@ -41,6 +41,8 @@ export async function createFixture({ port = 8790, listen = false } = {}) {
   const posi = createPosiWorker({ knowledge, timeoutMs: 150 });
   async function dispatch(request) {
     const url = new URL(request.url);
+    if (url.pathname === '/panduan/') return new Response(await readFile(new URL('posi/preview/guide.html', root)), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    if (url.pathname === '/demo.css') return new Response(await readFile(new URL('posi/preview/demo.css', root)), { headers: { 'Content-Type': 'text/css' } });
     if (url.pathname.startsWith('/api/posi/')) {
       if (mode === 'config-error') return new Response('Synthetic unavailable', { status: 503 });
       if (mode === 'slow') await new Promise(resolve => setTimeout(resolve, 1500));
@@ -66,7 +68,7 @@ export async function createFixture({ port = 8790, listen = false } = {}) {
       const html = await response.text();
       headers.delete('content-length'); headers.delete('etag');
       headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'");
-      return new Response(html.replace('</body>', '<script type="module" src="/preview/checkout-bootstrap.mjs"></script></body>'), { status: response.status, headers });
+      return new Response(html.replace('</body>', '<p style="padding:24px"><button type="button" data-posi-open>Buka bantuan POSI (uji lokal)</button></p><script type="module" src="/preview/checkout-bootstrap.mjs"></script></body>'), { status: response.status, headers });
     }
     return new Response(response.body, { status: response.status, headers });
   }

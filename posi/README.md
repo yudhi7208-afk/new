@@ -41,10 +41,22 @@ jumlah reservasi AI; tidak dapat membaca atau menulis transaksi.
 
 - Robot SVG orisinal putih/biru/kuning, animasi ringan/reduced-motion.
   Ini placeholder 2D yang mudah diganti aset 3D, bukan render WebGL.
-- Sapaan kecil sekali per sesi; panel dibuka pengguna, dapat ditutup,
-  diminimalkan/disembunyikan, Escape, keyboard dan ARIA.
+- POSI bersembunyi pada awal kunjungan. Setelah60 detik pada tab aktif dan
+  25 detik tanpa aktivitas/kemajuan, satu tawaran kecil muncul per sesi.
+  Tidak menyela isian aktif, dialog pembayaran, kontrol order, atau receipt
+  selesai. Panel bantuan baru terbuka jika pengguna menerima atau meminta
+  bantuan manual; tutup/penolakan mengembalikan POSI ke keadaan tersembunyi.
+- Sapaan “Halo, ada yang bisa saya bantu?” memakai suara Indonesia lokal
+  atau tiga nada lembut original bila browser mengizinkan setelah interaksi.
+  Mute tersedia, tanpa mikrofon atau izin notifikasi. Tidak ada suara/request
+  AI saat halaman dimuat atau selama menunggu.
 - FAQ Indonesia, bantuan desain gratis, manfaat tanpa janji hasil,
   panduan bertahap/highlight, kontak WhatsApp melalui klik pengguna.
+- Tautan cara memasang, cek order dan konfirmasi tersedia dalam respons serta
+  panduan `/panduan/`. Cek order pribadi hanya memakai capability halaman
+  receipt sendiri melalui adapter browser; capability tidak dikirim ke AI.
+  Pengingat pembayaran bersyarat dan tidak meminta transfer/submit ulang
+  setelah receipt berhasil. POSI tidak melakukan pencarian data pelanggan.
 - Referensi kota/paket dari snapshot repository; diberi label staging.
   Sesudah 24 jam nominal ditahan sampai snapshot diperbarui. Total server
   checkout selalu menjadi acuan; tidak ada harga yang dibuat model.
@@ -174,3 +186,5 @@ Rilis produksi kelak harus mendapat persetujuan baru: integrasi dengan flag
 OFF → regresi order staging → aktivasi internal → peluncuran bertahap.
 Lihat `docs/posi-validation.md` untuk hasil dan batas bukti tahap pertama.
 Hasil aktivasi model nyata dicatat dalam `docs/posi-ai-staging.md`.
+Perubahan bantuan proaktif dan tautan 5 November dicatat pada
+`docs/posi-proactive-assistance.md`.

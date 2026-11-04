@@ -207,3 +207,21 @@ test('invalid model and token budget cannot be expanded by env or user message',
   bindings.POSI_AI_MODEL = DEFAULT_AI_MODEL;
   assert.equal(await classify('halo', bindings), 'form'); assert.equal(max, 192);
 });
+
+test('order help and payment reminders expose only fixed help identifiers without customer lookup or model URLs', async () => {
+  const instance = worker();
+  const order = await chat(instance, 'Cek order saya https://attacker.example/admin/?order=secret');
+  assert.equal(order.body.source, 'rules'); assert.match(order.body.reply, /tautan ringkasan pribadi/);
+  assert.deepEqual(order.body.links, [{ id: 'check-order' }, { id: 'confirm-payment' }]);
+  assert.doesNotMatch(JSON.stringify(order.body), /attacker|secret|\/admin/);
+  const payment = await chat(instance, 'Saya sudah transfer, bagaimana konfirmasi pembayaran?', { page: 'form', step: 2 });
+  assert.match(payment.body.reply, /Jangan lupa konfirmasi pembayaran/);
+  assert.match(payment.body.reply, /kode unik/); assert.match(payment.body.reply, /Kirim konfirmasi & materi/);
+  assert.match(payment.body.reply, /jangan membayar ulang/);
+  assert.deepEqual(payment.body.links, [{ id: 'confirm-payment' }, { id: 'check-order' }]);
+  const done = await chat(instance, 'Konfirmasi pembayaran', { page: 'receipt', step: 3 });
+  assert.match(done.body.reply, /telah diterima untuk diperiksa/);
+  assert.doesNotMatch(done.body.reply, /Jangan lupa konfirmasi|lunas|sudah diverifikasi/);
+  const how = await chat(instance, 'Cara memasang lowongan'); assert.match(how.body.reply, /Pilih Kota/);
+  assert.ok(how.body.links.some(item => item.id === 'how-to-order'));
+});

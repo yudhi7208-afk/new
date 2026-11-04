@@ -1,5 +1,6 @@
 // Preview-only bridge, audited against the current vanilla checkout HTML.
 // This module is NOT imported by production checkout. No request or submission API.
+import { ownReceiptLink } from '../widget/navigation.mjs';
 export const FIELD_MAP = Object.freeze({
   customerName: { id: 'customerName', label: 'Nama pemesan' },
   whatsapp: { id: 'customerWhatsapp', label: 'Nomor WhatsApp' },
@@ -57,7 +58,7 @@ export function createCheckoutAdapter(doc = document, location = globalThis.loca
     if (!width || !height) return false;
     // A conservative reserved rectangle includes the mascot, label and restore
     // button. Hide optional UI when an actual order control enters that space.
-    const area = { left: width - 235, right: width, top: height - 180, bottom: height - 35 };
+    const area = { left: width - 340, right: width, top: height - 380, bottom: height - 35 };
     return ['continueButton', 'submitButton', 'retrySubmitButton', 'renewSessionButton', 'refreshQuoteButton', 'whatsappButton', 'consent'].some(id => {
       const el = doc.getElementById(id);
       if (!visible(el) || !el.getBoundingClientRect) return false;
@@ -65,5 +66,9 @@ export function createCheckoutAdapter(doc = document, location = globalThis.loca
       return rect.width > 0 && rect.height > 0 && rect.left < area.right && rect.right > area.left && rect.top < area.bottom && rect.bottom > area.top;
     });
   }
-  return Object.freeze({ snapshot, highlight, applyDraft, guide, shouldYield, destroy: clear });
+  function receiptLink() {
+    if (!visible(doc.getElementById('receiptStep')) || !location.href || !location.origin) return '';
+    return ownReceiptLink(location.href, location.origin);
+  }
+  return Object.freeze({ snapshot, highlight, applyDraft, guide, shouldYield, receiptLink, destroy: clear });
 }

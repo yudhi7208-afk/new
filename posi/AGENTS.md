@@ -24,3 +24,10 @@ database produksi, DNS, nameserver, autentikasi atau desain utama.
   perangkat fisik, rollback teruji dan persetujuan pemilik diperlukan.
 
 Konfigurasi staging ini tidak memberikan izin aktivasi POSI bagi pelanggan.
+
+Arahan pemilik 5 November 2026: POSI bersembunyi pada awal kunjungan dan
+baru menawarkan bantuan kecil saat pengunjung berlama-lama tanpa kemajuan.
+Jangan memasang launcher/chat yang terus muncul. Sapaan “Halo, ada yang bisa
+saya bantu?” memakai suara yang diizinkan browser atau bunyi lembut; sediakan
+mute/tutup dan jangan menghalangi formulir. Sertakan panduan memasang, cek
+order pribadi dan pengingat konfirmasi tanpa membaca data pelanggan lain.

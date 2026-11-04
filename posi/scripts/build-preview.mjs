@@ -7,6 +7,8 @@ await cp(new URL('widget/', base), new URL('widget/', dest), { recursive: true, 
 await copyFile(new URL('preview/demo.html', base), new URL('index.html', dest));
 for (const file of ['demo.css', 'demo.mjs']) await copyFile(new URL('preview/' + file, base), new URL(file, dest));
 await copyFile(new URL('preview/checkout-adapter.mjs', base), new URL('preview/checkout-adapter.mjs', dest));
+await mkdir(new URL('panduan/', dest), { recursive: true });
+await copyFile(new URL('preview/guide.html', base), new URL('panduan/index.html', dest));
 await writeFile(new URL('_headers', dest), "/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: no-referrer\n  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'\n");
 const loader = await readFile(new URL('widget/loader.mjs', dest), 'utf8');
 if (!loader.includes('bootPosi')) throw Error('Widget loader missing.');

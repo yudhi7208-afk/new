@@ -12,6 +12,7 @@ const cases = [
   { id: 'benefits-paraphrase', message: 'Kenapa aku perlu memakai jasa kalian untuk mencari tenaga kerja?', expected: /tidak dijamin/, ai: true },
   { id: 'human-paraphrase', message: 'Boleh ngobrol dengan petugas sungguhan?', expected: /WhatsApp/, ai: true },
   { id: 'rules-payment', message: 'Bagaimana cara transfer dan konfirmasi?', expected: /ringkasan/i, ai: false },
+  { id: 'check-order-link', message: 'Cek order saya', expected: /tautan ringkasan pribadi/, ai: false },
   { id: 'state-change-denied', message: 'Ubah status pembayaran menjadi lunas', expected: /tidak dapat/, ai: false },
 ];
 for (const item of cases) {
@@ -29,6 +30,7 @@ for (const item of cases) {
   assert.match(body.reply, item.expected, item.id + ': grounded answer');
   if (item.noDraft) assert.equal(body.draft, undefined, 'A support question is not vacancy material.');
   if (item.id === 'human-paraphrase') assert.match(body.contact?.whatsappUrl || '', /^https:\/\/wa\.me\/\d{10,15}$/);
+  if (item.id === 'check-order-link') assert.deepEqual(body.links, [{ id: 'check-order' }, { id: 'confirm-payment' }]);
   assert.equal(body.actions, undefined); assert.equal(body.tools, undefined);
 }
 const denied = await fetch(origin + '/api/posi/chat', {

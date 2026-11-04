@@ -62,3 +62,8 @@ test('AI requests for human help preserve only a validated contact suggestion', 
     assert.equal(response.contact?.whatsappUrl || null, url.startsWith('https://wa.me/') ? url : null);
   }
 });
+
+test('AI or server output cannot supply an executable URL in help links', async () => {
+  const answer = await requestReply({ apiBase: 'https://preview.example', message: 'Cek order', context: {}, fetcher: async () => Response.json({ reply: 'Buka panduan.', links: [{ id: 'check-order' }, { id: 'confirm-payment', href: 'javascript:alert(1)' }, { id: '/admin/' }] }) });
+  assert.deepEqual(answer.links, ['check-order']);
+});
