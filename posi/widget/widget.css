@@ -9,8 +9,8 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .bubble{bottom:0;width:340px;max-width:calc(var(--posi-vw,100vw) - 24px);display:grid;grid-template-columns:54px minmax(0,1fr);align-items:end;gap:12px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 .bubble .offer-mascot{width:54px;height:66px;margin:0 0 4px;filter:drop-shadow(0 5px 7px #153b6020)}
-.offer-chat{position:relative;min-width:0;padding:16px;border:1px solid #a7c8eb;border-radius:20px 20px 20px 5px;background:#fff;box-shadow:0 8px 28px #153b6024}
-.offer-chat::before{content:"";position:absolute;left:-7px;bottom:24px;width:13px;height:13px;background:#fff;border-left:1px solid #a7c8eb;border-bottom:1px solid #a7c8eb;transform:rotate(45deg)}
+.offer-chat{position:relative;min-width:0;padding:16px;border:1px solid #d6ad30;border-radius:20px 20px 20px 5px;background:#ffeb99;box-shadow:0 8px 28px #153b6024}
+.offer-chat::before{content:"";position:absolute;left:-7px;bottom:24px;width:13px;height:13px;background:#ffeb99;border-left:1px solid #d6ad30;border-bottom:1px solid #d6ad30;transform:rotate(45deg)}
 .offer-speaker{display:block;margin:0 32px 7px 0;color:#135ec3;font-size:11px;font-weight:800;letter-spacing:.08em}
 .bubble .offer-greeting{padding-right:10px;font-size:15px;line-height:1.5;color:#10243d}
 .bubble .offer-detail{font-size:13px;line-height:1.5;margin:7px 0 13px;color:#294b70}

@@ -23,7 +23,7 @@ berhasil sudah terlihat. Saat layak, satu kartu kecil menampilkan robot dan
 tutup dan Dengarkan sapaan. Tidak ada backdrop, modal, perubahan fokus atau
 scroll-lock. Panel bantuan dibuka setelah pengunjung menyetujuinya.
 
-Sapaan ditampilkan sebagai bubble chat putih dengan ekor mengarah ke maskot
+Sapaan ditampilkan sebagai bubble chat kuning dengan ekor mengarah ke maskot
 POSI di luar bubble. Animasi masuk singkat mengikuti prefers-reduced-motion;
 pada layar sempit tombol disusun vertikal. Pemicu waktu dan alur persetujuan
 tidak berubah oleh penyesuaian tampilan ini.
