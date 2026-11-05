@@ -3,7 +3,7 @@
 Fondasi dan aktivasi AI staging, 3 November 2026.
 **Workers AI dan chat tetap hanya di staging.** Pada 5 November 2026 pemilik
 menyetujui pemberitahuan jadwal posting POSI sementara pada produksi, tanpa AI.
-Dasar produksi yang disetujui kini `e3df67b2a8587b07593b646476df03ad38ba39ea`;
+Dasar produksi yang disetujui kini `450fbb5b028cb73152da4b13a3a6636044b3aa21`;
 lihat [catatan pemberitahuan](../docs/posi-posting-notice-20261105.md).
 Branch kerja: `feature/posi-ai-assistant`.
 

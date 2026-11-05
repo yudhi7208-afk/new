@@ -53,3 +53,9 @@ pada domain asli lulus 51/51 halaman dan aturan harga/SEO/akses. Beranda,
 halaman kota dan pembayaran memuat pemberitahuan; admin tidak. Ketiga aset
 pemberitahuan identik dengan lokal. Browser pada domain asli menampilkan
 informasi, waktu WIB, maskot dan tombol tanpa error console.
+
+Pembaruan pop-up produksi: commit main `450fbb5`, versi
+`7de46c8b-a687-44e8-9661-dfc332099a16`. Pemeriksaan domain asli lulus 51/51;
+browser menunjukkan pop-up fixed di dalam layar, tanpa error console.
+Rollback khusus pop-up dapat kembali ke versi banner
+`f5d8db7d-c493-4472-a5ea-9f25f3b4b387`.
