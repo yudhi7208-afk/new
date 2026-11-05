@@ -4,7 +4,7 @@
   "main": "src/worker.mjs",
   "compatibility_date": "2026-10-30",
   "workers_dev": true,
-  "vars": { "POSI_NOTICE_ENABLED": "true" },
+  "vars": { "POSI_NOTICE_ENABLED": "false" },
   "routes": [
     { "pattern": "posloker.my.id", "custom_domain": true },
     { "pattern": "www.posloker.my.id", "custom_domain": true }
