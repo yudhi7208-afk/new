@@ -1,5 +1,12 @@
 # Informasi jadwal posting POSI — 5 November 2026
 
+**Status: selesai dan dihapus pada 5 November 2026, atas permintaan pemilik
+karena meeting sudah selesai.** Flag `POSI_NOTICE_ENABLED=false`; penyisipan
+HTML, modul pop-up, CSS, maskot khusus meeting dan tes khusus pemberitahuan
+telah dihapus dari produksi. Halaman publik dan handler Worker kembali persis
+ke dasar produksi sebelum pemberitahuan. Catatan di bawah adalah riwayat rilis,
+bukan instruksi untuk mengaktifkan kembali pemberitahuan.
+
 Pemilik menyetujui pemasangan produksi pada 5 November 2026 untuk informasi
 meeting: order masuk mulai diposting pukul 12.00 WIB / 13.00 WITA / 14.00 WIT.
 Ini hanya pengumuman sementara, bukan aktivasi chatbot AI pada produksi.
