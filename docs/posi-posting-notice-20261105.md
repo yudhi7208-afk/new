@@ -1,0 +1,39 @@
+# Informasi jadwal posting POSI — 5 November 2026
+
+Pemilik menyetujui pemasangan produksi pada 5 November 2026 untuk informasi
+meeting: order masuk mulai diposting pukul 12.00 WIB / 13.00 WITA / 14.00 WIT.
+Ini hanya pengumuman sementara, bukan aktivasi chatbot AI pada produksi.
+
+`POSI_NOTICE_ENABLED` dianggap OFF bila tidak disediakan. Konfigurasi produksi
+menetapkan `true` untuk aktivasi yang disetujui ini; aktivasi berlaku hanya
+pada 5 November 2026, sebelum 12.00 WIB. Worker berhenti menyisipkan informasi
+pada saat itu; halaman terbuka menghapusnya berdasarkan sisa waktu dari server.
+Tidak ada injeksi ke admin, API, CSS, JavaScript, respons error atau mutasi.
+
+Bubble kuning berada dalam aliran halaman, tanpa backdrop, scroll-lock atau
+perubahan fokus. Maskot putih menunduk dan merapatkan tangan, dengan dukungan
+prefers-reduced-motion. Tombol tutup berlaku untuk sesi. Bunyi tiga nada lembut
+hanya setelah interaksi yang diizinkan browser atau tombol Dengarkan notifikasi;
+interaksi formulir/tombol/link tidak memicu bunyi otomatis. Tidak ada izin
+notifikasi sistem, mikrofon, AI, database atau request pihak ketiga.
+
+Tidak ada perubahan harga, katalog, endpoint/order, validasi, unggahan, D1,
+R2, autentikasi, DNS atau nameserver. HTML pemberitahuan tetap terbaca jika
+modul gagal; checkout tidak menunggu modul. Flag OFF mengembalikan respons asli.
+
+Rollback produksi sebelum pemasangan: `0968fc7c-0108-407c-8ef0-844346b0e144`.
+Rollback kode dapat mengembalikan versi tersebut; flag juga dapat dimatikan
+dengan deployment `--var POSI_NOTICE_ENABLED:false --keep-vars`. Tidak ada
+migrasi atau perubahan data yang perlu dibatalkan.
+
+Pengujian: `node scripts/test-posi-notice.mjs`, `npm run test:production`,
+`npm run test:checkout`, dan regresi POSI checkout sintetis. Pengujian browser
+memakai fixture memori lokal di port 8792; jangan mengirim order dummy produksi.
+
+Hasil sebelum rilis: 23 pemeriksaan jadwal/flag/isolasi respons lulus, 51
+halaman publik lulus, checkout server lulus, dan delapan regresi checkout POSI
+lulus. Browser lokal pada desktop dan lebar CSS 375px menampilkan informasi
+tanpa overflow. Tutup dan pemutaran notifikasi diuji tanpa error console.
+Satu order sintetis pada fixture lokal berhasil mencapai receipt dan tautan
+WhatsApp; tautan tersebut tidak dikirim. Tidak diklaim sebagai uji perangkat
+Android fisik atau bukti suara terdengar pada semua perangkat.

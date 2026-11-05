@@ -4,6 +4,7 @@ import { handleCheckout } from './checkout.mjs';
 import { handleBusiness } from './admin-business.mjs';
 import { handlePublicSite } from './public-site.mjs';
 import { handleLegacyReceipt } from './legacy-receipt.mjs';
+import { withPosiNotice } from './posi-notice.mjs';
 import { PRIMARY_ORIGIN, WWW_HOST, handleSiteMetadata } from './site-policy.mjs';
 
 export function protect(response) {
@@ -60,7 +61,7 @@ export default {
         if (key.length >= 16 && key.length <= 256 && !/[^\x21-\x7e]/.test(key)) target.hash = new URLSearchParams({ key }).toString();
         return protect(Response.redirect(target.href, 302));
       }
-      return protect(await env.ASSETS.fetch(request));
+      return protect(withPosiNotice(await env.ASSETS.fetch(request), request, env));
     }
     if (url.pathname.startsWith('/api/legacy/')) {
       try { return protect(await handleLegacyReceipt(request, env, url) || json({ error: 'Halaman tidak ditemukan.' }, 404)); }
@@ -68,7 +69,7 @@ export default {
     }
     if (url.pathname.startsWith('/pembayaran/') || url.pathname.startsWith('/checkout/')) {
       if (!['GET', 'HEAD'].includes(request.method)) return protect(json({ error: 'Metode tidak diizinkan.' }, 405));
-      return protect(await env.ASSETS.fetch(request));
+      return protect(withPosiNotice(await env.ASSETS.fetch(request), request, env));
     }
     if (url.pathname.startsWith('/api/checkout/')) {
       try {
@@ -93,6 +94,6 @@ export default {
         return protect(json({ error: error instanceof HttpError ? error.message : 'Layanan admin belum siap. Coba lagi nanti.' }, error instanceof HttpError ? error.status : 503));
       }
     }
-    return await handlePublicSite(request, env, url) || env.ASSETS.fetch(request);
+    return withPosiNotice(await handlePublicSite(request, env, url) || await env.ASSETS.fetch(request), request, env);
   },
 };
