@@ -1,9 +1,10 @@
 # POSI — fondasi terisolasi
 
 Fondasi dan aktivasi AI staging, 3 November 2026.
-**Workers AI aktif hanya di staging; POSI belum terpasang di website produksi.**
-Worker transaksi `new`, seluruh `public/`, `src/`, migrasi dan konfigurasi root
-tetap identik dengan commit dasar `d8ed83858c602125d7ddd9189cc032ed191bff44`.
+**Workers AI dan chat tetap hanya di staging.** Pada 5 November 2026 pemilik
+menyetujui pemberitahuan jadwal posting POSI sementara pada produksi, tanpa AI.
+Dasar produksi yang disetujui kini `e3df67b2a8587b07593b646476df03ad38ba39ea`;
+lihat [catatan pemberitahuan](../docs/posi-posting-notice-20261105.md).
 Branch kerja: `feature/posi-ai-assistant`.
 
 Pratinjau: https://new-posi-staging.yudhi7208.workers.dev/
@@ -30,7 +31,7 @@ pelanggan yang disalin, dibaca, atau ditulis oleh POSI.
 | `posi/test/` | Uji keamanan, adapter, isolasi serta integrasi order dummy |
 | `posi/wrangler.jsonc`, `posi/package.json`, `posi/.gitignore` | Konfigurasi dan perintah terpisah |
 
-Tidak ada berkas existing produksi yang diubah. Alur:
+AI tetap terisolasi dari pengumuman sementara yang disetujui tersebut. Alur AI:
 widget → API Worker POSI → aturan/knowledge → klasifikasi AI opsional →
 jawaban teks atau draft. Tidak ada tool pembayaran/order maupun binding
 `CUSTOMER_DB`, `CUSTOMER_FILES`, service binding, KV, atau database percakapan.

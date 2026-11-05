@@ -6,7 +6,8 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const BASELINE = 'd8ed83858c602125d7ddd9189cc032ed191bff44';
+// Owner-approved temporary notice release; the AI assistant remains isolated.
+const BASELINE = 'e3df67b2a8587b07593b646476df03ad38ba39ea';
 const protectedPaths = ['public', 'src', 'migrations', 'migration', 'wrangler.jsonc', 'package.json', 'package-lock.json', 'AGENTS.md'];
 const git = (args, options = {}) => execFileSync('git', args, { cwd: root, maxBuffer: 32 * 1024 * 1024, ...options });
 const nulList = bytes => bytes.toString('utf8').split('\0').filter(Boolean);

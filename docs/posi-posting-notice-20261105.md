@@ -37,3 +37,10 @@ tanpa overflow. Tutup dan pemutaran notifikasi diuji tanpa error console.
 Satu order sintetis pada fixture lokal berhasil mencapai receipt dan tautan
 WhatsApp; tautan tersebut tidak dikirim. Tidak diklaim sebagai uji perangkat
 Android fisik atau bukti suara terdengar pada semua perangkat.
+
+Rilis produksi: commit main `e3df67b`, Worker versi
+`f5d8db7d-c493-4472-a5ea-9f25f3b4b387`. Sesudah rilis, pemeriksaan baca-anonim
+pada domain asli lulus 51/51 halaman dan aturan harga/SEO/akses. Beranda,
+halaman kota dan pembayaran memuat pemberitahuan; admin tidak. Ketiga aset
+pemberitahuan identik dengan lokal. Browser pada domain asli menampilkan
+informasi, waktu WIB, maskot dan tombol tanpa error console.
