@@ -23,6 +23,17 @@ berhasil sudah terlihat. Saat layak, satu kartu kecil menampilkan robot dan
 tutup dan Dengarkan sapaan. Tidak ada backdrop, modal, perubahan fokus atau
 scroll-lock. Panel bantuan dibuka setelah pengunjung menyetujuinya.
 
+Sapaan ditampilkan sebagai bubble chat putih dengan ekor mengarah ke maskot
+POSI di luar bubble. Animasi masuk singkat mengikuti prefers-reduced-motion;
+pada layar sempit tombol disusun vertikal. Pemicu waktu dan alur persetujuan
+tidak berubah oleh penyesuaian tampilan ini.
+
+Penyesuaian bubble chat diverifikasi secara visual pada desktop dan dua
+ukuran layar kecil: bubble, maskot, dan tombol tutup berada di dalam layar,
+tanpa overflow horizontal. Parser CSS memberi0 peringatan, pemeriksaan
+sintaks JavaScript lulus, dan3 pemeriksaan isolasi produksi lulus. Tidak ada
+perubahan backend, data, suara, waktu tunggu atau aturan pemesanan.
+
 Tawaran berhenti sesudah20 detik. Penolakan/tutup menyembunyikan POSI.
 Tidak ada pengulangan otomatis pada sesi yang sama; sessionStorage hanya
 menyimpan tanda1. Bantuan tetap dapat dibuka manual lewat tombol biasa pada
