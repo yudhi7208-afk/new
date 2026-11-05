@@ -16,11 +16,11 @@ export const syntheticCatalog = {
     { id: 'komplit-plus', name: 'Komplit PLUS Contoh', price: 20000, features: ['Data sintetis'] },
   ] },
 };
-export async function createFixture({ port = 8790, listen = false } = {}) {
+export async function createFixture({ port = 8790, listen = false, notice = false, bridge = true } = {}) {
   const bundled = await build({ absWorkingDir: fileURLToPath(root), entryPoints: ['src/worker.mjs'], bundle: true, write: false, format: 'esm', platform: 'browser', logLevel: 'silent' });
   const mf = new Miniflare(convertV4MiniflareOptions({ modules: true, script: bundled.outputFiles[0].text,
     compatibilityDate: '2026-10-30', host: '127.0.0.1', port: 0,
-    d1Databases: ['CUSTOMER_DB'], r2Buckets: ['CUSTOMER_FILES'],
+    d1Databases: ['CUSTOMER_DB'], r2Buckets: ['CUSTOMER_FILES'], bindings: { POSI_NOTICE_ENABLED: notice ? 'true' : 'false' },
     assets: { directory: fileURLToPath(new URL('public/', root)), binding: 'ASSETS', run_worker_first: true, routerConfig: { has_user_worker: true } },
   }));
   const db = await mf.getD1Database('CUSTOMER_DB');
@@ -64,7 +64,7 @@ export async function createFixture({ port = 8790, listen = false } = {}) {
     const response = await mf.dispatchFetch(request.url, { method: request.method, headers: request.headers, ...(request.body ? { body: request.body, duplex: 'half' } : {}) });
     const headers = new Headers(response.headers);
     // Mirror copies only: assistant is appended to the synthetic local response.
-    if (request.method === 'GET' && headers.get('content-type')?.includes('text/html') && !url.pathname.startsWith('/admin/')) {
+    if (bridge && request.method === 'GET' && headers.get('content-type')?.includes('text/html') && !url.pathname.startsWith('/admin/')) {
       const html = await response.text();
       headers.delete('content-length'); headers.delete('etag');
       headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'");
