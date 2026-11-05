@@ -10,16 +10,25 @@ pada 5 November 2026, sebelum 12.00 WIB. Worker berhenti menyisipkan informasi
 pada saat itu; halaman terbuka menghapusnya berdasarkan sisa waktu dari server.
 Tidak ada injeksi ke admin, API, CSS, JavaScript, respons error atau mutasi.
 
-Bubble kuning berada dalam aliran halaman, tanpa backdrop, scroll-lock atau
-perubahan fokus. Maskot putih menunduk dan merapatkan tangan, dengan dukungan
+Atas permintaan lanjutan pemilik, informasi tampil sebagai pop-up kuning
+nonmodal, tanpa backdrop, scroll-lock atau perubahan fokus. Pop-up mencari
+pojok layar yang tidak menutupi kontrol formulir/tombol kirim; bila tidak ada
+ruang, ia menunggu. Pop-up bersembunyi saat dialog pembayaran atau isian aktif.
+Tombol Saya mengerti, tutup, Escape, atau klik di luar menutup pop-up tanpa
+mencegah aksi asli halaman. Maskot putih menunduk dan merapatkan tangan, dengan dukungan
 prefers-reduced-motion. Tombol tutup berlaku untuk sesi. Bunyi tiga nada lembut
 hanya setelah interaksi yang diizinkan browser atau tombol Dengarkan notifikasi;
 interaksi formulir/tombol/link tidak memicu bunyi otomatis. Tidak ada izin
 notifikasi sistem, mikrofon, AI, database atau request pihak ketiga.
 
 Tidak ada perubahan harga, katalog, endpoint/order, validasi, unggahan, D1,
-R2, autentikasi, DNS atau nameserver. HTML pemberitahuan tetap terbaca jika
-modul gagal; checkout tidak menunggu modul. Flag OFF mengembalikan respons asli.
+R2, autentikasi, DNS atau nameserver. Jika modul gagal, pop-up tidak dibuka;
+checkout tidak menunggu modul. Flag OFF mengembalikan respons asli.
+
+Perubahan pop-up lulus enam uji penempatan untuk menghindari tombol kirim,
+23 pemeriksaan jadwal/flag, dan browser lokal desktop/lebar CSS 375px. Pop-up
+muat di dalam layar, tombol Saya mengerti/tutup berfungsi, dialog existing
+tidak ditumpuk, dan satu order dummy tetap mencapai receipt tanpa membuka WA.
 
 Rollback produksi sebelum pemasangan: `0968fc7c-0108-407c-8ef0-844346b0e144`.
 Rollback kode dapat mengembalikan versi tersebut; flag juga dapat dimatikan
