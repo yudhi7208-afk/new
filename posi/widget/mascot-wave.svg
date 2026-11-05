@@ -5,24 +5,24 @@
     @media(prefers-reduced-motion:reduce){.waving-arm{animation:none}}
   </style>
   <defs>
-    <linearGradient id="shell" x1="30" y1="12" x2="93" y2="103" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="#dbeeff"/></linearGradient>
-    <linearGradient id="face" x1="33" y1="39" x2="87" y2="75" gradientUnits="userSpaceOnUse"><stop stop-color="#1767d6"/><stop offset="1" stop-color="#093a88"/></linearGradient>
+    <linearGradient id="shell" x1="30" y1="12" x2="93" y2="103" gradientUnits="userSpaceOnUse"><stop stop-color="#284b7b"/><stop offset="1" stop-color="#102640"/></linearGradient>
+    <linearGradient id="face" x1="33" y1="39" x2="87" y2="75" gradientUnits="userSpaceOnUse"><stop stop-color="#102a4d"/><stop offset="1" stop-color="#06172b"/></linearGradient>
   </defs>
-  <ellipse cx="60" cy="121" rx="30" ry="5" fill="#1264c7" opacity=".14"/>
-  <path d="M60 22v-9" stroke="#2682e5" stroke-width="4" stroke-linecap="round"/><circle cx="60" cy="10" r="6" fill="#ffe083"/>
-  <path d="M28 81c-9 3-13 11-10 18 3 5 8 3 10-2l8-10" fill="url(#shell)" stroke="#8ec3ef" stroke-width="2"/>
-  <path d="M38 82h44l6 20c1 10-10 16-28 16s-29-6-28-16z" fill="url(#shell)" stroke="#8ec3ef" stroke-width="2"/>
-  <rect x="46" y="90" width="28" height="15" rx="7.5" fill="#2682e5"/><path d="M55 97.5h10" stroke="#ffe083" stroke-width="3" stroke-linecap="round"/>
-  <rect x="17" y="27" width="86" height="62" rx="27" fill="url(#shell)" stroke="#8ec3ef" stroke-width="2"/>
-  <path d="M17 47h-5v19h5M103 47h5v19h-5" fill="#2682e5"/>
+  <ellipse cx="60" cy="121" rx="30" ry="5" fill="#0b1f3a" opacity=".14"/>
+  <path d="M60 22v-9" stroke="#3c6599" stroke-width="4" stroke-linecap="round"/><circle cx="60" cy="10" r="6" fill="#ffe083"/>
+  <path d="M28 81c-9 3-13 11-10 18 3 5 8 3 10-2l8-10" fill="url(#shell)" stroke="#5376a2" stroke-width="2"/>
+  <path d="M38 82h44l6 20c1 10-10 16-28 16s-29-6-28-16z" fill="url(#shell)" stroke="#5376a2" stroke-width="2"/>
+  <rect x="46" y="90" width="28" height="15" rx="7.5" fill="#3c6599"/><path d="M55 97.5h10" stroke="#ffe083" stroke-width="3" stroke-linecap="round"/>
+  <rect x="17" y="27" width="86" height="62" rx="27" fill="url(#shell)" stroke="#5376a2" stroke-width="2"/>
+  <path d="M17 47h-5v19h5M103 47h5v19h-5" fill="#3c6599"/>
   <rect x="27" y="38" width="66" height="40" rx="18" fill="url(#face)"/>
   <ellipse cx="45" cy="54" rx="6" ry="8" fill="#fff"/><ellipse cx="75" cy="54" rx="6" ry="8" fill="#fff"/>
   <path d="M51 67q9 7 18 0" stroke="#ffe083" stroke-width="3" stroke-linecap="round"/>
-  <path d="M31 34q16-13 34-7" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+  <path d="M31 34q16-13 34-7" stroke="#96b8e0" stroke-width="4" stroke-linecap="round" opacity=".65"/>
   <g class="waving-arm">
-    <path d="M91 85c6 0 10-5 11-14l1-9 9 1-1 12c-1 12-7 20-16 20" fill="url(#shell)" stroke="#8ec3ef" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M102 70l10 1" stroke="#2682e5" stroke-width="4" stroke-linecap="round"/>
-    <path d="M102 64c-2-3-4-5-3-7 1-2 3-1 5 1v-7c0-3 3-3 3 0v6l2-6c1-3 4-2 3 1l-1 7 2-3c2-3 4-1 2 2l-3 7c-2 4-10 4-13-1z" fill="url(#shell)" stroke="#8ec3ef" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M91 85c6 0 10-5 11-14l1-9 9 1-1 12c-1 12-7 20-16 20" fill="url(#shell)" stroke="#5376a2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M102 70l10 1" stroke="#3c6599" stroke-width="4" stroke-linecap="round"/>
+    <path d="M102 64c-2-3-4-5-3-7 1-2 3-1 5 1v-7c0-3 3-3 3 0v6l2-6c1-3 4-2 3 1l-1 7 2-3c2-3 4-1 2 2l-3 7c-2 4-10 4-13-1z" fill="url(#shell)" stroke="#5376a2" stroke-width="1.6" stroke-linejoin="round"/>
     <path d="M106 62h6" stroke="#ffe083" stroke-width="2.5" stroke-linecap="round"/>
   </g>
 </svg>

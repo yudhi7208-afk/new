@@ -39,7 +39,7 @@ jumlah reservasi AI; tidak dapat membaca atau menulis transaksi.
 
 ## Yang bekerja pada tahap ini
 
-- Robot SVG orisinal putih/biru/kuning, animasi ringan/reduced-motion.
+- Robot SVG orisinal biru navy dengan aksen kuning, animasi ringan/reduced-motion.
   Ini placeholder 2D yang mudah diganti aset 3D, bukan render WebGL.
 - POSI bersembunyi pada awal kunjungan. Setelah60 detik pada tab aktif dan
   25 detik tanpa aktivitas/kemajuan, satu tawaran kecil muncul per sesi.
