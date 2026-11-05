@@ -1,19 +1,54 @@
 // Optional UI only: never reads forms, waits for AI, or changes order state.
+export function popupPlacement(width, height, viewportWidth, viewportHeight, protectedRects = []) {
+  const candidates = [
+    ['top-right', viewportWidth - width - 12, 108], ['top-left', 12, 108],
+    ['bottom-right', viewportWidth - width - 12, viewportHeight - height - 88], ['bottom-left', 12, viewportHeight - height - 88],
+  ];
+  for (const [name, x, y] of candidates) {
+    if (x < 0 || y < 100 || x + width > viewportWidth || y + height > viewportHeight - 12) continue;
+    if (protectedRects.some(r => x < r.right + 8 && x + width > r.left - 8 && y < r.bottom + 8 && y + height > r.top - 8)) continue;
+    return name;
+  }
+  return null;
+}
 try {
   const notice = document.getElementById('posi-service-notice');
   if (notice) {
     const remaining = Number(notice.dataset.remainingMs);
     const deadline = performance.now() + remaining;
-    const key = 'posi-posting-notice-2026-11-05';
-    let closed = false, context, played = false, expiryTimer, lastPlayed = -Infinity;
-    const active = () => !closed && !document.hidden && performance.now() < deadline;
+    const key = 'posi-posting-notice-popup-2026-11-05';
+    let closed = false, context, played = false, expiryTimer, popupTimer, lastPlayed = -Infinity;
+    const active = () => !closed && !notice.hidden && !document.hidden && performance.now() < deadline;
+    function dismiss() { try { sessionStorage.setItem(key, 'dismissed'); } catch { /* Optional. */ } remove(); }
+    function escape(event) { if (event.key === 'Escape' && active()) dismiss(); }
+    function outside(event) { if (active() && !notice.contains(event.target)) dismiss(); }
+    function position() {
+      if (closed) return;
+      if (performance.now() >= deadline) { remove(); return; }
+      const focused = document.activeElement;
+      const dialog = [...document.querySelectorAll('dialog[open],[role="dialog"][aria-modal="true"],[data-payment-modal]')].some(el => el !== notice && !el.hidden && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0);
+      if (document.hidden || dialog || (!notice.contains(focused) && focused?.matches?.('input,textarea,select,[contenteditable="true"]'))) { notice.hidden = true; return; }
+      notice.hidden = false;
+      const size = notice.getBoundingClientRect();
+      const targets = [...document.querySelectorAll('input,textarea,select,button[type="submit"],#continueButton,#whatsappButton,a[href*="/pembayaran/"]')]
+        .filter(el => !notice.contains(el)).map(el => el.getBoundingClientRect()).filter(r => r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight);
+      const placement = popupPlacement(size.width, size.height, document.documentElement.clientWidth, innerHeight, targets);
+      if (placement) notice.dataset.placement = placement;
+      else { notice.hidden = true; delete notice.dataset.placement; }
+    }
     function remove() {
       closed = true; notice.remove();
       clearTimeout(expiryTimer);
+      clearInterval(popupTimer);
       document.removeEventListener('pointerdown', firstGesture);
       document.removeEventListener('keydown', firstGesture);
       document.removeEventListener('visibilitychange', checkExpiry);
       window.removeEventListener('pageshow', checkExpiry);
+      document.removeEventListener('keydown', escape);
+      document.removeEventListener('pointerdown', outside, true);
+      document.removeEventListener('focusin', position);
+      window.removeEventListener('resize', position);
+      window.removeEventListener('scroll', position);
       try { context?.close()?.catch(() => {}); } catch { /* Optional sound. */ }
     }
     function checkExpiry() { if (performance.now() >= deadline) remove(); }
@@ -51,7 +86,8 @@ try {
     else {
       const close = notice.querySelector('[data-posi-notice-close]');
       close.hidden = false;
-      close.addEventListener('click', () => { try { sessionStorage.setItem(key, 'dismissed'); } catch { /* Optional. */ } remove(); });
+      close.addEventListener('click', dismiss);
+      notice.querySelector('[data-posi-notice-ack]').addEventListener('click', dismiss);
       const sound = notice.querySelector('[data-posi-notice-sound]');
       if (window.AudioContext || window.webkitAudioContext) {
         sound.hidden = false;
@@ -68,6 +104,13 @@ try {
       expiryTimer = setTimeout(remove, remaining);
       document.addEventListener('visibilitychange', checkExpiry);
       window.addEventListener('pageshow', checkExpiry);
+      document.addEventListener('keydown', escape);
+      document.addEventListener('pointerdown', outside, { capture: true, passive: true });
+      document.addEventListener('focusin', position);
+      window.addEventListener('resize', position, { passive: true });
+      window.addEventListener('scroll', position, { passive: true });
+      popupTimer = setInterval(position, 600);
+      position();
     }
   }
 } catch { /* Notification failures never become checkout failures. */ }
