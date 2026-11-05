@@ -1,9 +1,9 @@
 # POSI — fondasi terisolasi
 
 Fondasi dan aktivasi AI staging, 3 November 2026.
-**Workers AI dan chat tetap hanya di staging.** Pada 5 November 2026 pemilik
-menyetujui pemberitahuan jadwal posting POSI sementara pada produksi, tanpa AI.
-Dasar produksi yang disetujui kini `450fbb5b028cb73152da4b13a3a6636044b3aa21`;
+**Workers AI dan chat tetap hanya di staging.** Pemberitahuan meeting sementara
+sudah dinonaktifkan dan dihapus pada 5 November 2026 karena meeting selesai.
+Dasar produksi yang disetujui kini `545b5593737c090c5f4c11aa30fe844e41cb6cd6`;
 lihat [catatan pemberitahuan](../docs/posi-posting-notice-20261105.md).
 Branch kerja: `feature/posi-ai-assistant`.
 

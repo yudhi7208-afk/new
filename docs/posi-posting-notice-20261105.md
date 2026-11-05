@@ -66,3 +66,8 @@ Pembaruan pop-up produksi: commit main `450fbb5`, versi
 browser menunjukkan pop-up fixed di dalam layar, tanpa error console.
 Rollback khusus pop-up dapat kembali ke versi banner
 `f5d8db7d-c493-4472-a5ea-9f25f3b4b387`.
+
+Penutupan produksi: commit main `545b559`, versi
+`18423650-92cc-40bb-b9c1-4fd0666ee471`. Pemeriksaan domain asli lulus 51/51;
+tidak ada lagi HTML/modul pemberitahuan pada halaman publik/pembayaran.
+Ketiga URL aset meeting mengembalikan 404. Uji checkout sintetis lulus.

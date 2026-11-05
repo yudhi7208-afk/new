@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { createFixture } from '../scripts/local-fixture.mjs';
 
 test('original checkout remains independent for all isolated POSI failure scenarios', { timeout: 60000 }, async t => {
-  const app = await createFixture({ notice: true });
+  const app = await createFixture();
   t.after(() => app.close());
   let completed = 0;
   for (const mode of ['off', 'on', 'ai-error', 'slow', 'config-error', 'missing-widget']) {
