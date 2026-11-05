@@ -28,6 +28,19 @@ POSI di luar bubble. Animasi masuk singkat mengikuti prefers-reduced-motion;
 pada layar sempit tombol disusun vertikal. Pemicu waktu dan alur persetujuan
 tidak berubah oleh penyesuaian tampilan ini.
 
+Maskot mempunyai pose sapaan terpisah (`mascot-wave.svg`): lengan kanan
+terangkat dan tangan melambai dari bahu. Aset animasi dipakai hanya pada state
+greeting; pose diam dipulihkan pada state lain. Gerakan di dalam SVG berhenti
+untuk prefers-reduced-motion. Jika aset pose gagal dimuat, gambar diam tetap
+menjadi fallback. Animasi tidak memerlukan library atau request AI.
+
+Pemeriksaan gerakan tangan: browser menampilkan tiga transformasi lengan
+berbeda pada empat sampel, dan panel memakai aset melambai saat greeting
+serta kembali ke aset diam saat idle. XML SVG, CSS animasi dan sintaks
+JavaScript valid; tiga tes isolasi tetap lulus. Aset staging identik dengan
+berkas lokal. Pembaruan ini diterbitkan hanya ke `new-posi-staging`, versi
+`3c2a7bab-dcc8-41e9-b2ba-0448d1734ca4`.
+
 Penyesuaian bubble chat diverifikasi secara visual pada desktop dan dua
 ukuran layar kecil: bubble, maskot, dan tombol tutup berada di dalam layar,
 tanpa overflow horizontal. Parser CSS memberi0 peringatan, pemeriksaan

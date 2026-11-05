@@ -39,7 +39,12 @@ export function mountPosi(options = {}) {
   const $ = selector => root.querySelector(selector);
   const launcher = $('.launcher'), panel = $('.panel'), restore = $('.restore'), bubble = $('.bubble');
   const conversation = $('.conversation'), composer = $('.composer'), input = $('textarea'), status = $('.status'), send = $('.send');
-  for (const image of root.querySelectorAll('img')) image.src = new URL('./mascot.svg', import.meta.url).href;
+  const mascotStill = new URL('./mascot.svg', import.meta.url).href;
+  const mascotWave = new URL('./mascot-wave.svg', import.meta.url).href;
+  for (const image of root.querySelectorAll('img')) {
+    image.src = mascotStill;
+    image.addEventListener('error', () => { if (image.src !== mascotStill) image.src = mascotStill; });
+  }
   let destroyed = false, pending = false, hidden = false, fieldFocused = Boolean(document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]')), requestController = null, guideIndex = 0, guideCard = null, returnFocus = null;
   const timers = new Set();
   const schedule = (fn, delay) => { const id = setTimeout(() => { timers.delete(id); if (!destroyed) fn(); }, delay); timers.add(id); return id; };
@@ -51,7 +56,11 @@ export function mountPosi(options = {}) {
   try { if (storage?.getItem('posi-sound-v1') === 'off') sound.setEnabled(false); } catch { /* Optional preference. */ }
   if (options.config.aiEnabled === true) $('.heading-copy small').textContent = 'Asisten AI PosLoker';
   function snapshot() { try { return adapter.snapshot?.() || {}; } catch { return {}; } }
-  function state(value) { host.dataset.state = value; }
+  function state(value) {
+    host.dataset.state = value;
+    const src = value === 'greeting' ? mascotWave : mascotStill;
+    for (const image of root.querySelectorAll('.offer-mascot,.avatar')) if (image.src !== src) image.src = src;
+  }
   function restState() { const current = snapshot(); state(current.step === 3 || current.page === 'receipt' ? 'success' : 'idle'); }
   function line(text, kind = '') {
     const node = document.createElement('p'); node.className = `message ${kind}`.trim();
