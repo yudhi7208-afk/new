@@ -56,6 +56,7 @@ try {
     assert.ok(html.includes('<link rel="canonical" href="' + primary + page.path + '"'));
     if (html.includes('property="og:url"')) assert.ok(html.includes('property="og:url" content="' + primary + page.path + '"'));
     assert.ok(!html.includes('<aside class="migration-preview"') && !html.includes('Checkout Cloudflare hanya simulasi.'));
+    assert.ok(!html.includes("item.id !== 'komplit-plus'"), 'The package popup must not hide an offered Plus package.');
     assert.ok(!html.includes(payout.bankAccount) && !html.includes(payout.bankHolder), 'Private bank data does not enter the public page.');
   }
   const robots = await fetch(primary, '/robots.txt');

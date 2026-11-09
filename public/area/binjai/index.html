@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
   wizard.querySelector('.pl-w-close').onclick = function(){wizard.close();};
  }
  function packages(option) {
-  var items = (poslokerData.pricing[option.dataset.rule] || poslokerData.pricing.default || []).filter(function(item){return item.id !== 'komplit-plus';});
+  var items = poslokerData.pricing[option.dataset.rule] || poslokerData.pricing.default || [];
   shell('Pilih paket untuk '+option.value);
   var back = document.createElement('button'); back.type='button'; back.className='pl-w-back'; back.textContent='← Ganti kota'; back.onclick=search; wizard.appendChild(back);
   if (!items.length) { var empty=document.createElement('p');empty.textContent='Paket belum tersedia. Silakan pilih kota lain.';wizard.appendChild(empty);return; }

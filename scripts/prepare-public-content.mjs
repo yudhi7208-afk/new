@@ -17,6 +17,11 @@ export async function preparePublicContent() {
   for (const pathname of manifest.pages) {
     const filename = path.join(ROOT, 'public', pathname, 'index.html');
     let html = await readFile(filename, 'utf8');
+    // The legacy popup hid Plus even when the live city catalogue offered it.
+    html = html.replaceAll(
+      "(poslokerData.pricing[option.dataset.rule] || poslokerData.pricing.default || []).filter(function(item){return item.id !== 'komplit-plus';})",
+      'poslokerData.pricing[option.dataset.rule] || poslokerData.pricing.default || []'
+    );
     const title = plain(html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || '');
     const description = decode(html.match(/<meta name="description" content="([^"]*)"/i)?.[1] || '');
     const kind = pathname === '/' ? 'home' : pathname === '/area/' ? 'directory' : 'city';
