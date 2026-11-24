@@ -85,6 +85,15 @@ try {
     const session = await sessionResponse.json();
     assert.equal(session.preview, false); assert.equal(session.canSubmit, true);
     assert.match(session.csrfToken, /^[a-f0-9]{64}$/); assert.ok(sessionResponse.headers.has('Set-Cookie'));
+    assert.ok(!['bankName', 'bankAccount', 'bankHolder'].some(key => Object.hasOwn(session.payment, key)));
+    const checkoutHtml = await (await fetch(origin, '/pembayaran/?city=Medan&package=contoh')).text();
+    assert.match(checkoutHtml, /Bayar dengan QRIS/);
+    assert.doesNotMatch(checkoutHtml, /copyBankButton|bankAccount|Nomor rekening/);
+    const qrisPath = '/checkout/qris-nusa-digital-20261124.jpg';
+    const qrResponse = await fetch(origin, qrisPath);
+    assert.equal(qrResponse.status, 200); checkNoIndex(qrResponse);
+    assert.match(qrResponse.headers.get('Content-Type') || '', /^image\/jpeg\b/);
+    assert.deepEqual(Buffer.from(await qrResponse.arrayBuffer()), await readFile(new URL('../public' + qrisPath, import.meta.url)));
     for (const path of ['/admin/', '/pembayaran/?order=cf_' + 'a'.repeat(32), '/konfirmasi-pembayaran/?order=999', '/checkout/checkout.js']) checkNoIndex(await fetch(origin, path));
     const anonymous = await fetch(origin, '/api/admin/orders'); assert.equal(anonymous.status, 401); checkNoIndex(anonymous);
     const receipt = await fetch(origin, '/api/checkout/receipt', { method: 'POST', headers: { Origin: origin, 'Sec-Fetch-Site': 'same-origin', 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: 'cf_' + 'a'.repeat(32), key: 'b'.repeat(64) }) });

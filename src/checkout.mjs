@@ -154,7 +154,6 @@ async function sessionOf(request, db) {
 async function getSession(request, env, db, settings) {
   const canSubmit = !settings.preview || Boolean(await requireAdmin(request, env));
   const view = csrfToken => ({ csrfToken, catalog: settings.catalog, payment: {
-    bankName: settings.payout.bankName, bankAccount: settings.payout.bankAccount, bankHolder: settings.payout.bankHolder,
     whatsapp: settings.payout.whatsapp, limits: settings.limits,
   }, preview: settings.preview, canSubmit });
   // Viewing a preview catalog must not allocate persistent sessions or counters.
@@ -252,7 +251,7 @@ async function validateFiles(form, quote, limits) {
   const materials = form.getAll('materials').filter(file => !(isFile(file) && file.size === 0 && !file.name));
   if (materials.some(file => !isFile(file)) || materials.length + (video ? 1 : 0) > 10 ||
     materials.reduce((sum, file) => sum + file.size, 0) + (video?.size || 0) > MATERIAL_BYTES) throw new HttpError(400, 'Materi dan video maksimal 10 berkas dengan total 10 MB.');
-  if (quote.base_amount > 0 && !proof) throw new HttpError(400, 'Bukti transfer wajib dipilih.');
+  if (quote.base_amount > 0 && !proof) throw new HttpError(400, 'Bukti pembayaran wajib dipilih.');
   if (video && quote.package_id !== 'komplit-plus') throw new HttpError(400, 'Video MP4 hanya untuk paket Komplit PLUS.');
   const checked = [];
   if (proof) checked.push(await checkedFile(proof, 'proof', 0, limits.proofMaxBytes));

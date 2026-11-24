@@ -24,18 +24,22 @@ email domain tetap memerlukan penerimaan pemilik.
    `/pembayaran/?city=…&package=…` dimulai dengan **Cek order**: ringkasan dan
    informasi pembayaran, tanpa memilih ulang. Pilihan URL divalidasi terhadap
    katalog; tautan yang tidak lengkap/tidak valid meminta pengguna kembali ke
-   `/#pilih-paket` dan tidak membuat penawaran. Peringatan transfer dan instruksi
-   konfirmasi hanya ada dalam popup tahap ini. Katalog saat disiapkan berisi
+   `/#pilih-paket` dan tidak membuat penawaran. Popup tahap ini mengingatkan
+   pelanggan untuk memasukkan total yang tepat. Katalog saat disiapkan berisi
    49 kota dan 16 kelompok harga. Harga pada tampilan publik adalah salinan
    katalog; server D1 menjadi acuan penawaran saat checkout.
 2. Pelanggan menerima penawaran dari server; pada `preview` pemilik harus
    masuk terlebih dahulu. Harga dasar, paket,
    fitur, dan pengaturan pembayaran disimpan pada penawaran. Paket berbayar
    mendapat kode 1–99 dan total harga dasar ditambah kode tersebut. Paket
-   gratis tetap memiliki harga dasar, kode, dan total nol.
+   gratis tetap memiliki harga dasar, kode, dan total nol. Penawaran berbayar
+   yang masih berlaku menampilkan QRIS statis NUSA DIGITAL pada mode live.
+   Pelanggan memindai atau mengunduh gambar asli, mengecek nama penerima,
+   lalu memasukkan total persis termasuk kode unik. Simulasi dan paket gratis
+   tidak menampilkan kode QR.
 3. Isi nama/kontak, teks lowongan, caption, catatan, persetujuan, serta berkas
-   yang sesuai. Paket berbayar memerlukan bukti transfer; pada pengujian
-   terisolasi gunakan berkas contoh dan jangan melakukan transfer. Server
+   yang sesuai. Paket berbayar memerlukan bukti pembayaran; pada pengujian
+   terisolasi gunakan berkas contoh dan jangan melakukan pembayaran. Server
    memvalidasi isian, jenis/isi berkas, ukuran, dan sesi; nilai harga atau
    kode dari formulir tidak dipercaya.
 4. Pengiriman menyimpan pesanan, referensi berkas, dan kejadian pembuatan.
@@ -58,8 +62,8 @@ email domain tetap memerlukan penerimaan pemilik.
 Sesi checkout berlaku paling lama satu jam. Penawaran berakhir paling lambat
 bersamaan dengan sesi. Total berbayar direservasi dalam mode yang sama;
 reservasi pesanan yang tersimpan diperpanjang sampai 24 jam setelah
-penyimpanan. Reservasi preview dan live dipisahkan. Ini bukan verifikasi
-bank otomatis: status pembayaran tetap diperiksa oleh pemilik.
+penyimpanan. Reservasi preview dan live dipisahkan. Ini bukan integrasi
+verifikasi QRIS otomatis: status pembayaran tetap diperiksa oleh pemilik.
 
 Kunci ringkasan diturunkan dari rahasia sesi asal dan ID pesanan; database
 menyimpan hanya hash kunci. Pengiriman ulang idempoten menghasilkan kunci
@@ -108,6 +112,12 @@ awal `preview`; `0006` menambahkan pengaturan/konten/audit, `0007` arsip
 reversibel, dan `0008` hash kunci ringkasan.
 Katalog, pengaturan pembayaran, serta batas bukti diisi melalui konfigurasi
 D1; nilai rekening/kontak aktual tidak ditulis pada HTML, Git, atau panduan.
+Kolom bank lama tetap disimpan untuk kompatibilitas penawaran dan pengaturan,
+tetapi tidak lagi dikirim ke sesi checkout atau ditampilkan kepada pelanggan.
+Gambar QRIS merchant yang disetujui pemilik adalah aset publik
+`public/checkout/qris-nusa-digital-20261124.jpg`; jangan mengubah ulang
+kompresi atau isi kode. Saat mengganti QRIS, verifikasi ulang nama merchant,
+bahwa nominalnya tidak dikunci oleh kode, dan perbarui URL aset serta label checkout.
 
 Contoh berikut menyiapkan artefak lokal dari backup privat, tanpa
 mengeksekusi PHP atau mengubah hosting asal. Sesuaikan lokasi backup:

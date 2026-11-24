@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow, noarchive"><meta name="referrer" content="no-referrer"><meta name="color-scheme" content="light">
   <title>Pemesanan — PosLoker</title>
-  <link rel="stylesheet" href="/assets/fonts/manrope.css"><link rel="stylesheet" href="/checkout/checkout.css?v=20261102-summary-frame1"><script src="/checkout/checkout.js?v=20261102-blue-form1" defer></script>
+  <link rel="stylesheet" href="/assets/fonts/manrope.css"><link rel="stylesheet" href="/checkout/checkout.css?v=20261124-qris1"><script src="/checkout/checkout.js?v=20261124-qris1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Lewati ke isi</a>
@@ -24,13 +24,23 @@
           <div id="quoteLoading" class="inline-status" role="status" hidden>Memeriksa harga dari server…</div>
           <p id="quoteError" class="message message-error" role="alert" hidden></p>
           <button id="refreshQuoteButton" class="button button-secondary" type="button" hidden>Perbarui penawaran</button>
-          <section id="bankSection" class="bank-section" aria-labelledby="bankTitle" hidden>
-            <div class="section-heading"><div><h3 id="bankTitle">Informasi transfer</h3><p id="bankDescription" class="checkout-info-note">Referensi alur pembayaran pada website utama.</p></div></div>
-            <div class="message message-warning" id="bankWarning"><strong>Jangan melakukan transfer pada simulasi ini.</strong><p>Nominal dan rekening di bawah hanya untuk meninjau alur migrasi. Gunakan berkas contoh saat pengujian.</p></div>
-            <div class="bank-card"><div class="bank-topline"><span id="bankName">—</span><span class="bank-label" id="bankReferenceLabel">REFERENSI REKENING</span></div><span class="bank-caption">Nomor rekening</span><strong id="bankAccount" class="bank-account">—</strong><button id="copyBankButton" class="text-button copy-button" type="button" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"></path></svg><span>Salin nomor rekening</span></button><div class="bank-holder"><span>Atas nama</span><strong id="bankHolder">—</strong></div></div>
+          <section id="qrisSection" class="qris-section" aria-labelledby="qrisTitle" hidden>
+            <div class="section-heading"><div><h3 id="qrisTitle">Bayar dengan QRIS</h3></div></div>
+            <div class="message message-warning" id="qrisWarning" hidden><strong>Jangan melakukan pembayaran pada simulasi ini.</strong><p>Gunakan berkas contoh saat pengujian.</p></div>
+            <div class="qris-card" id="qrisCard" hidden>
+              <div class="qris-amount"><span>Total pembayaran · termasuk kode unik</span><strong id="qrisAmount">—</strong><button id="copyQrisAmountButton" class="text-button copy-button" type="button">Salin total pembayaran</button></div>
+              <img id="qrisImage" data-src="/checkout/qris-nusa-digital-20261124.jpg" alt="Kode QRIS GoPay Merchant NUSA DIGITAL" width="1129" height="1600">
+              <p class="field-hint" id="qrisImageError" role="status" hidden>Gambar belum termuat. Coba tombol Unduh QRIS di bawah.</p>
+              <a id="downloadQris" class="button button-secondary" download="QRIS-PosLoker-Nusa-Digital.jpg">Unduh QRIS</a>
+              <ol class="qris-steps">
+                <li>Pindai QRIS dari aplikasi pembayaran. Jika memakai HP yang sama, unduh gambarnya lalu pilih dari galeri jika aplikasi mendukung.</li>
+                <li>Pastikan nama penerima <strong>NUSA DIGITAL</strong>, lalu masukkan total persis seperti yang tertera, termasuk kode unik.</li>
+                <li>Setelah berhasil bayar, simpan bukti dan klik <strong>Lanjut isi konfirmasi</strong>.</li>
+              </ol>
+            </div>
             <button id="showPaymentInstructionsButton" class="text-button payment-instructions-button" type="button" aria-haspopup="dialog" aria-controls="paymentDialog" hidden>Lihat instruksi pembayaran</button>
           </section>
-          <div id="freeSection" class="message message-info" hidden><strong>Paket ini tidak memerlukan transfer.</strong><p id="freeDescription">Materi tetap akan diperiksa oleh pengelola. Di halaman ini, semua pesanan merupakan simulasi.</p></div>
+          <div id="freeSection" class="message message-info" hidden><strong>Paket ini tidak memerlukan pembayaran.</strong><p id="freeDescription">Materi tetap akan diperiksa oleh pengelola. Di halaman ini, semua pesanan merupakan simulasi.</p></div>
           <button id="continueButton" class="button button-primary button-block" type="button" hidden disabled>Lanjut isi konfirmasi <span aria-hidden="true">→</span></button>
           <p class="privacy-note">Belum ada pesanan yang dibuat pada tahap ini.</p>
         </section>
@@ -48,7 +58,7 @@
               <h3 class="form-section-title">Data pemesan</h3>
               <div class="fields-two"><div class="field"><label for="customerName">Nama lengkap <span aria-hidden="true">*</span></label><input id="customerName" name="customerName" type="text" maxlength="100" required autocomplete="name" placeholder="Nama untuk simulasi"></div><div class="field"><label for="customerWhatsapp">Nomor WhatsApp <span aria-hidden="true">*</span></label><input id="customerWhatsapp" name="whatsapp" type="tel" maxlength="20" required autocomplete="tel" placeholder="08xxxxxxxxxx"></div></div>
               <div class="field"><label for="customerEmail">Email <small>Opsional</small></label><input id="customerEmail" name="email" type="email" maxlength="150" autocomplete="email" placeholder="nama@email.com"></div>
-              <section id="proofSection" class="form-section" aria-labelledby="proofTitle"><h3 id="proofTitle">Contoh bukti transfer *</h3><p id="proofHint" class="field-hint">JPG, PNG, WebP, atau PDF.</p><label class="upload-box" for="proofInput"><span class="upload-icon" aria-hidden="true">↑</span><strong id="proofChoiceLabel">Pilih contoh bukti transfer</strong><span id="proofChoiceHint">Gunakan berkas contoh tanpa data pribadi sebenarnya.</span><input id="proofInput" name="proof" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf" aria-describedby="proofHint"></label><div id="proofFiles" class="chosen-files"></div><button id="clearProofButton" type="button" class="text-button clear-file" hidden>Hapus pilihan bukti</button></section>
+              <section id="proofSection" class="form-section" aria-labelledby="proofTitle"><h3 id="proofTitle">Bukti pembayaran *</h3><p id="proofHint" class="field-hint">JPG, PNG, WebP, atau PDF.</p><label class="upload-box" for="proofInput"><span class="upload-icon" aria-hidden="true">↑</span><strong id="proofChoiceLabel">Pilih bukti pembayaran</strong><span id="proofChoiceHint">Pastikan nominal, tanggal, dan nama penerima terbaca.</span><input id="proofInput" name="proof" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf" aria-describedby="proofHint"></label><div id="proofFiles" class="chosen-files"></div><button id="clearProofButton" type="button" class="text-button clear-file" hidden>Hapus pilihan bukti</button></section>
               <section class="form-section" aria-labelledby="materialsTitle"><h3 id="materialsTitle">Materi (gambar/PDF) <small>Opsional</small></h3><p id="materialsHint" class="field-hint">Pilih poster atau materi yang sudah tersedia.</p><label class="upload-box" for="materialsInput"><span class="upload-icon" aria-hidden="true">▧</span><strong>Pilih materi lowongan (gambar/PDF)</strong><span>JPG, PNG, WebP, atau PDF. Anda juga dapat menulis materi di bawah.</span><input id="materialsInput" name="materials" type="file" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf" aria-describedby="materialsHint"></label><div id="materialFiles" class="chosen-files"></div><button id="clearMaterialsButton" type="button" class="text-button clear-file" hidden>Hapus pilihan materi</button></section>
               <section id="videoSection" class="form-section" aria-labelledby="videoTitle" hidden><h3 id="videoTitle">Video Reel <small>Khusus Komplit PLUS · opsional</small></h3><p id="videoHint" class="field-hint">Satu video MP4; termasuk dalam batas jumlah dan ukuran materi.</p><label class="upload-box" for="videoInput"><span class="upload-icon" aria-hidden="true">▷</span><strong>Pilih video Reel MP4</strong><span>Jika video sudah tersedia untuk paket Komplit PLUS.</span><input id="videoInput" name="video" type="file" accept=".mp4,video/mp4" disabled aria-describedby="videoHint"></label><div id="videoFiles" class="chosen-files"></div><button id="clearVideoButton" type="button" class="text-button clear-file" hidden>Hapus pilihan video</button></section>
               <section class="form-section"><h3 id="adTextTitle">Materi dalam bentuk teks <small>Opsional</small></h3><p class="field-hint">Belum punya poster? Tuliskan rincian lowongan yang ingin dibuatkan desainnya.</p><div class="field"><label for="adText" class="sr-only">Teks materi lowongan</label><textarea id="adText" name="adText" rows="6" maxlength="2000" aria-describedby="adTextLimit" placeholder="Posisi, lokasi kerja, persyaratan, cara melamar, dan batas lamaran…"></textarea><small id="adTextLimit">Maksimal 2.000 karakter.</small></div><div class="field"><label for="caption">Caption <small>Opsional</small></label><textarea id="caption" name="caption" rows="4" maxlength="500" aria-describedby="captionCount" placeholder="Caption untuk posting lowongan…"></textarea><small id="captionCount">0 / 500 karakter</small></div><div class="field"><label for="notes">Catatan tambahan <small>Opsional</small></label><textarea id="notes" name="notes" rows="3" maxlength="500" placeholder="Informasi tambahan untuk tim PosLoker…"></textarea></div></section>
@@ -72,14 +82,14 @@
     <div class="payment-dialog-header"><h2 id="paymentDialogTitle" tabindex="-1">Perhatikan sebelum membayar</h2><button id="closePaymentDialogButton" class="payment-dialog-close" type="button" aria-label="Tutup instruksi pembayaran">×</button></div>
     <section id="paymentReminder" class="payment-reminder" role="note" aria-labelledby="paymentReminderTitle" hidden>
       <div class="payment-required">
-        <h2 id="paymentReminderTitle">Wajib transfer sesuai total pembayaran, termasuk kode unik.</h2>
-        <p>Transfer tepat sebesar <strong id="paymentReminderAmount" class="payment-reminder-amount">—</strong> ke rekening tujuan yang tertera.</p>
+        <h2 id="paymentReminderTitle">Wajib bayar sesuai total, termasuk kode unik.</h2>
+        <p>Bayar <strong id="paymentReminderAmount" class="payment-reminder-amount">—</strong> via QRIS. Pastikan nama penerima <strong>NUSA DIGITAL</strong>.</p>
         <p>Nominal harus tepat agar pesanan tidak terlambat atau gagal diproses, karena kami melayani banyak order seluruh Indonesia, agar mudah dilacak.</p>
       </div>
       <div class="payment-confirmation-reminder">
-        <h3>Setelah transfer, kirim konfirmasi pembayaran.</h3>
-        <ol><li>Lengkapi data pemesan, lalu unggah bukti transfer yang jelas dan materi lowongan.</li><li>Tekan <strong>Kirim konfirmasi &amp; materi</strong> hingga ringkasan pesanan berhasil muncul.</li></ol>
-        <p>Jika sudah transfer, jangan membayar ulang. Pembayaran diperiksa secara manual oleh tim PosLoker.</p>
+        <h3>Setelah bayar, kirim konfirmasi pembayaran.</h3>
+        <ol><li>Lengkapi data pemesan, lalu unggah bukti pembayaran yang jelas dan materi lowongan.</li><li>Tekan <strong>Kirim konfirmasi &amp; materi</strong> hingga ringkasan pesanan berhasil muncul.</li></ol>
+        <p>Jika sudah membayar, jangan bayar ulang. Tim PosLoker akan memeriksa pembayaran secara manual.</p>
       </div>
     </section>
     <div class="payment-dialog-actions"><button id="acknowledgePaymentButton" class="button button-primary button-block" type="button">Saya mengerti, lanjutkan</button></div>

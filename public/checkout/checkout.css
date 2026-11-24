@@ -44,3 +44,13 @@ body.order-form-stage .button-primary:disabled{border:2px dashed #fff;box-shadow
 .summary-safety.checkout-info-note{margin-top:18px;padding:12px 14px;border:1px solid #e5bf60;color:#000;font-size:14px;gap:10px}
 .summary-safety.checkout-info-note>span{flex-shrink:0;color:#000}
 #orderSummary{border:4px solid #facc15}
+
+.qris-section{margin-bottom:20px}
+.qris-section .section-heading{margin-bottom:12px}
+.qris-card{display:grid;justify-items:center;gap:12px;padding:clamp(12px,4vw,22px);margin-bottom:12px;border:1px solid #c8ddf4;border-radius:14px;background:#f3f8ff}
+.qris-card img{display:block;width:min(100%,360px);height:auto;background:#fff}
+.qris-amount{text-align:center;color:var(--ink)}
+.qris-amount strong{display:block;color:var(--blue);font-size:clamp(25px,5.5vw,34px);line-height:1.35}
+.qris-amount .copy-button{min-height:44px;padding:5px 12px}
+.qris-steps{justify-self:stretch;max-width:100%;margin:0;padding-left:22px;color:var(--ink);line-height:1.65}
+.qris-steps li+li{margin-top:7px}

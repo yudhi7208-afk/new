@@ -81,7 +81,19 @@
     const quote = state.quote;
     const current = Boolean(quote && !state.quoteExpired && expiry(quote.expiresAt) > Date.now());
     const paid = Boolean(current && quote.baseAmount > 0);
-    const showReminder = !state.preview && state.canSubmit && paid && state.step === 1 && !state.submitting && !state.uncertain && !$('checkoutLayout').hidden;
+    const showSection = state.canSubmit && paid && state.step === 1 && !state.submitting && !state.uncertain && !$('checkoutLayout').hidden;
+    const showReminder = !state.preview && showSection;
+    $('qrisSection').hidden = !showSection;
+    $('qrisWarning').hidden = !state.preview;
+    $('qrisCard').hidden = !showReminder;
+    const qr = $('qrisImage'), download = $('downloadQris');
+    text('qrisAmount', showReminder ? money(quote.amount) : '—');
+    if (showReminder) {
+      if (!qr.hasAttribute('src')) qr.src = qr.dataset.src;
+      if (!download.hasAttribute('href')) download.href = qr.dataset.src;
+    } else if (download.hasAttribute('href')) {
+      download.removeAttribute('href');
+    }
     $('paymentReminder').hidden = !showReminder;
     text('paymentReminderAmount', showReminder ? money(quote.amount) : '—');
     const dialogEligible = showReminder && $('quoteLoading').hidden && $('bootStatus').hidden && $('pageError').hidden && $('quoteError').hidden;
@@ -89,30 +101,26 @@
     if (!dialogEligible) closePaymentDialog({ restoreFocus: false });
     else if (!paymentDialogShown) openPaymentDialog();
     $('copyAmountButton').hidden = state.preview || !paid || state.step === 3 || state.submitting || state.uncertain;
-    $('copyBankButton').hidden = state.preview || !paid || state.step === 3 || state.submitting || state.uncertain;
-    if (state.preview) text('summaryAmountHint', 'Jangan melakukan transfer pada halaman simulasi.');
-    else if (!quote) text('summaryAmountHint', 'Periksa penawaran terbaru sebelum melakukan transfer.');
-    else if (!current) text('summaryAmountHint', 'Penawaran berakhir. Jangan transfer berdasarkan nominal lama. Jika sudah transfer, jangan membayar ulang; hubungi pengelola.');
-    else if (quote.baseAmount === 0) text('summaryAmountHint', 'Paket gratis: tidak perlu transfer atau kode unik.');
+    if (state.preview) text('summaryAmountHint', 'Jangan melakukan pembayaran pada halaman simulasi.');
+    else if (!quote) text('summaryAmountHint', 'Periksa penawaran terbaru sebelum membayar.');
+    else if (!current) text('summaryAmountHint', 'Penawaran berakhir. Jangan bayar dengan nominal lama. Jika sudah membayar, jangan bayar ulang; hubungi pengelola.');
+    else if (quote.baseAmount === 0) text('summaryAmountHint', 'Paket gratis: tidak perlu pembayaran atau kode unik.');
     else text('summaryAmountHint', 'Nominal harus sama, termasuk kode unik untuk verifikasi.');
-    if (!state.preview) text('modeNotice', quote?.baseAmount === 0 ? 'Paket gratis tidak memerlukan transfer. Periksa kembali data dan materi sebelum dikirim.' : 'Periksa kembali data dan materi sebelum dikirim. Konfirmasi pembayaran akan diperiksa secara manual.');
+    if (!state.preview) text('modeNotice', quote?.baseAmount === 0 ? 'Paket gratis tidak memerlukan pembayaran. Periksa kembali data dan materi sebelum dikirim.' : 'Periksa kembali data dan materi sebelum dikirim. Konfirmasi pembayaran akan diperiksa secara manual.');
   }
   function renderMode() {
     $('summaryTestBadge').hidden = !state.preview; $('receiptTestBadge').hidden = !state.preview;
-    $('bankWarning').hidden = !state.preview; $('receiptWarning').hidden = !state.preview; $('accessNotice').hidden = !state.preview || state.canSubmit;
-    $('copyBankButton').hidden = state.preview; $('copyAmountButton').hidden = state.preview;
+    $('receiptWarning').hidden = !state.preview; $('accessNotice').hidden = !state.preview || state.canSubmit;
     document.title = state.preview ? 'Simulasi Pemesanan — PosLoker' : 'Pemesanan — PosLoker';
-    text('bankDescription', state.preview ? 'Referensi alur pembayaran pada website utama.' : 'Transfer tepat sesuai nominal dan kode unik yang tertera.');
-    text('bankReferenceLabel', state.preview ? 'REFERENSI REKENING' : 'REKENING TUJUAN');
     text('freeDescription', state.preview ? 'Materi tetap akan diperiksa oleh pengelola. Di halaman ini, semua pesanan merupakan simulasi.' : 'Materi akan diperiksa oleh tim PosLoker sebelum dipublikasikan.');
     text('confirmationDescription', state.preview ? 'Gunakan data dan berkas contoh untuk simulasi.' : 'Lengkapi data pemesan dan unggah materi lowongan Anda.');
     text('modeNotice', state.preview ? 'Pesanan dari halaman ini diberi label Simulasi dan hanya tersimpan di Cloudflare. Tidak ada publikasi atau pesan WhatsApp otomatis.' : 'Periksa kembali data dan materi sebelum dikirim. Konfirmasi pembayaran akan diperiksa secara manual.');
-    text('proofTitle', state.preview ? 'Contoh bukti transfer *' : 'Bukti transfer *');
-    text('proofChoiceLabel', state.preview ? 'Pilih contoh bukti transfer' : 'Pilih bukti transfer');
-    text('proofChoiceHint', state.preview ? 'Gunakan berkas contoh tanpa data pribadi sebenarnya.' : 'Pastikan nominal, tanggal, dan tujuan transfer terbaca.');
-    text('consentText', state.preview ? 'Saya sudah memeriksa data dan memahami bahwa ini hanya simulasi migrasi, tanpa melakukan transfer.' : 'Saya memastikan data dan materi yang dikirim sudah benar.');
+    text('proofTitle', state.preview ? 'Contoh bukti pembayaran *' : 'Bukti pembayaran *');
+    text('proofChoiceLabel', state.preview ? 'Pilih contoh bukti pembayaran' : 'Pilih bukti pembayaran');
+    text('proofChoiceHint', state.preview ? 'Gunakan berkas contoh tanpa data pribadi sebenarnya.' : 'Pastikan nominal, tanggal, dan nama penerima terbaca.');
+    text('consentText', state.preview ? 'Saya sudah memeriksa data dan memahami bahwa ini hanya simulasi, tanpa melakukan pembayaran.' : 'Saya memastikan data dan materi yang dikirim sudah benar.');
     text('summaryAmountLabel', state.preview ? 'Nominal referensi' : 'Total pembayaran');
-    text('summaryAmountHint', state.preview ? 'Jangan melakukan transfer pada halaman simulasi.' : 'Nominal harus sama, termasuk kode unik untuk verifikasi.');
+    text('summaryAmountHint', state.preview ? 'Jangan melakukan pembayaran pada halaman simulasi.' : 'Nominal harus sama, termasuk kode unik untuk verifikasi.');
     text('receiptAmountLabel', state.preview ? 'Nominal referensi' : 'Total pembayaran');
     text('receiptTitle', state.preview ? 'Simulasi pesanan berhasil.' : 'Pesanan berhasil dikirim.');
     text('receiptDescription', state.preview ? 'Data telah diterima di Cloudflare dan dapat diperiksa melalui panel pengelola.' : 'Materi dan konfirmasi Anda akan diperiksa oleh tim PosLoker.');
@@ -168,7 +176,7 @@
     const quote = state.quote;
     for (const [id, key] of [['summaryCity', 'city'], ['summaryPackage', 'packageName']]) text(id, quote[key]);
     text('summaryBase', money(quote.baseAmount)); text('summaryCode', quote.baseAmount === 0 ? 'Tidak ada · gratis' : String(quote.uniqueCode).padStart(2, '0')); text('summaryAmount', money(quote.amount));
-    const free = quote.baseAmount === 0; $('bankSection').hidden = free; $('freeSection').hidden = !free;
+    $('freeSection').hidden = quote.baseAmount !== 0;
     configureUploads(); updateExpiry(); clearInterval(quoteTimer); quoteTimer = setInterval(updateExpiry, 1000);
   }
   async function requestQuote({ resetAttempt = true } = {}) {
@@ -178,7 +186,7 @@
     if (!state.canSubmit) { state.quote = null; text('summaryCity', city.name); text('summaryPackage', item.name); for (const id of ['summaryBase', 'summaryCode', 'summaryAmount']) text(id, '—'); updateButtons(); return; }
     const ticket = ++state.quoteTicket;
     state.quote = null; state.quoteExpired = false; clearInterval(quoteTimer); if (resetAttempt) clearAttempt();
-    message('quoteError', ''); message('submissionError', ''); $('quoteLoading').hidden = false; $('bankSection').hidden = true; $('freeSection').hidden = true; $('refreshQuoteButton').hidden = true;
+    message('quoteError', ''); message('submissionError', ''); $('quoteLoading').hidden = false; $('freeSection').hidden = true; $('refreshQuoteButton').hidden = true;
     for (const id of ['summaryBase', 'summaryCode', 'summaryAmount']) text(id, '—'); text('summaryCity', city.name); text('summaryPackage', item.name); text('quoteExpiry', '', ''); updateButtons();
     try {
       const result = await api('/api/checkout/quote', { method: 'POST', body: { city: city.name, packageId: item.id } });
@@ -195,11 +203,11 @@
 
   async function loadSession() {
     // A session/catalog refresh must not leave an earlier amount inviting a
-    // transfer while its replacement request is pending or has failed.
+    // payment while its replacement request is pending or has failed.
     ++state.quoteTicket; state.quote = null; state.quoteExpired = false; state.selection = null; clearInterval(quoteTimer);
     $('orderSelectionNotice').hidden = true; text('summaryCity', '—'); text('summaryPackage', '—');
     for (const id of ['summaryBase', 'summaryCode', 'summaryAmount']) text(id, '—');
-    text('quoteExpiry', '', ''); $('quoteLoading').hidden = true; $('bankSection').hidden = true; $('freeSection').hidden = true; updateButtons();
+    text('quoteExpiry', '', ''); $('quoteLoading').hidden = true; $('freeSection').hidden = true; updateButtons();
     const result = await api('/api/checkout/session');
     if (typeof result.preview !== 'boolean' || typeof result.canSubmit !== 'boolean') throw new Error('Status akses pemesanan belum tersedia. Silakan coba kembali.');
     if ((result.canSubmit && (typeof result.csrfToken !== 'string' || !/^[a-f0-9]{64}$/.test(result.csrfToken))) || !Array.isArray(result.catalog?.cities) || !result.catalog.cities.length || !result.catalog.pricing || !result.payment) throw new Error('Daftar kota dan paket belum tersedia. Silakan coba kembali.');
@@ -208,7 +216,6 @@
     // Revalidate the original Checkout selection after every catalog/session
     // refresh; never substitute another city or package when it is unavailable.
     state.selection = resolveSelection(); renderSelection();
-    text('bankName', state.payment.bankName, 'Referensi bank'); text('bankAccount', state.payment.bankAccount, 'Belum diatur'); text('bankHolder', state.payment.bankHolder, 'Belum diatur');
     renderMode();
   }
   async function boot() {
@@ -246,8 +253,8 @@
   }
   function validateFiles() {
     const limits = state.payment.limits, plus = state.quote?.packageId === 'komplit-plus', proof = $('proofInput').files?.[0], images = Array.from($('materialsInput').files || []), video = plus ? $('videoInput').files?.[0] : null;
-    if (state.quote.baseAmount > 0 && !proof) throw new Error('Pilih contoh bukti transfer untuk paket berbayar.');
-    if (proof && !$('proofInput').disabled) validFile(proof, ['jpg', 'jpeg', 'png', 'webp', 'pdf'], ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'], limits.proofMaxBytes, 'Bukti transfer');
+    if (state.quote.baseAmount > 0 && !proof) throw new Error(state.preview ? 'Pilih contoh bukti pembayaran untuk simulasi.' : 'Pilih bukti pembayaran untuk paket berbayar.');
+    if (proof && !$('proofInput').disabled) validFile(proof, ['jpg', 'jpeg', 'png', 'webp', 'pdf'], ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'], limits.proofMaxBytes, 'Bukti pembayaran');
     if (images.length + (video ? 1 : 0) > limits.materialsMaxFiles) throw new Error('Jumlah materi dan video maksimal ' + limits.materialsMaxFiles + ' berkas.');
     for (const file of images) validFile(file, ['jpg', 'jpeg', 'png', 'webp', 'pdf'], ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'], limits.materialsMaxBytes, 'Materi gambar/PDF');
     if (video) validFile(video, ['mp4'], ['video/mp4'], limits.videoMaxBytes, 'Video Reel');
@@ -339,8 +346,16 @@
   }
   $('refreshReceiptButton').addEventListener('click', async () => { if (!state.receiptId) return; $('refreshReceiptButton').disabled = true; try { await loadReceipt(state.receiptId); notice('Status pesanan diperbarui.'); } catch (error) { message('pageError', error.message); } finally { $('refreshReceiptButton').disabled = false; } });
   $('newOrderButton').addEventListener('click', () => { location.assign('/#pilih-paket'); });
-  $('copyBankButton').addEventListener('click', async () => { if (state.preview || !state.payment?.bankAccount) return; try { await navigator.clipboard.writeText(String(state.payment.bankAccount)); notice('Nomor rekening disalin.'); } catch { notice('Pilih nomor rekening lalu salin secara manual.'); } });
-  $('copyAmountButton').addEventListener('click', async () => { if (state.preview || !state.quote) return; try { await navigator.clipboard.writeText(String(state.quote.amount)); notice('Total pembayaran disalin.'); } catch { notice('Pilih total pembayaran lalu salin secara manual.'); } });
+  $('qrisImage').addEventListener('error', () => { $('qrisImageError').hidden = false; });
+  $('qrisImage').addEventListener('load', () => { $('qrisImageError').hidden = true; });
+  async function copyAmount() {
+    const quote = state.quote;
+    if (state.preview || !quote || quote.baseAmount <= 0 || expiry(quote.expiresAt) <= Date.now() || state.submitting || state.uncertain || state.step === 3) return;
+    try { await navigator.clipboard.writeText(String(quote.amount)); notice('Total pembayaran disalin.'); }
+    catch { notice('Pilih total pembayaran lalu salin secara manual.'); }
+  }
+  $('copyAmountButton').addEventListener('click', copyAmount);
+  $('copyQrisAmountButton').addEventListener('click', copyAmount);
   addEventListener('pagehide', () => { clearInterval(quoteTimer); state.attempt = null; state.csrfToken = ''; state.receiptKey = ''; $('orderForm').reset(); });
   addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
   boot();
