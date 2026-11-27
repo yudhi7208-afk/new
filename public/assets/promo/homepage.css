@@ -68,6 +68,12 @@
   cursor: pointer;
 }
 #pl-homepage-promo .pl-promo-nav button:hover { background: #dceaf8 }
+#pl-homepage-promo .pl-promo-nav .pl-promo-toggle {
+  width: auto;
+  min-width: 62px;
+  padding: 0 12px;
+  font: 800 13px/1 system-ui, sans-serif;
+}
 #pl-homepage-promo .pl-promo-status {
   font-size: 13px;
   font-weight: 800;

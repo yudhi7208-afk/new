@@ -553,8 +553,8 @@ var poslokerData = {"whatsapp":"6285785600586","paymentUrl":"https://posloker.my
 <script id="posloker-main-js" src="/wp-content/themes/posloker-premium/assets/js/main.js"></script>
 
 
-<!-- posloker-homepage-promo-v2 -->
-<link rel="stylesheet" href="/assets/promo/homepage.css">
+<!-- posloker-homepage-promo-v3 -->
+<link rel="stylesheet" href="/assets/promo/homepage.css?v=3">
 <dialog id="pl-homepage-promo" aria-labelledby="pl-homepage-promo-title">
  <div class="pl-promo-head">
   <h2 id="pl-homepage-promo-title">Promo PosLoker</h2>
@@ -566,12 +566,13 @@ var poslokerData = {"whatsapp":"6285785600586","paymentUrl":"https://posloker.my
  </a>
  <div class="pl-promo-nav" role="group" aria-label="Navigasi slide promosi">
   <button type="button" class="pl-promo-prev" aria-label="Slide sebelumnya">‹</button>
-  <span class="pl-promo-status" role="status">1 / 2</span>
+  <span class="pl-promo-status" aria-live="polite" aria-atomic="true">1 / 2</span>
   <button type="button" class="pl-promo-next" aria-label="Slide berikutnya">›</button>
+  <button type="button" class="pl-promo-toggle" aria-label="Jeda slide otomatis">Jeda</button>
  </div>
  <a href="/#pilih-paket" class="pl-promo-cta">Lihat Paket Kota →</a>
 </dialog>
-<script src="/assets/promo/homepage.js" defer></script>
-<!-- /posloker-homepage-promo-v2 -->
+<script src="/assets/promo/homepage.js?v=3" defer></script>
+<!-- /posloker-homepage-promo-v3 -->
 </body>
 </html>
