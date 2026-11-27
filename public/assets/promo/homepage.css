@@ -1,0 +1,89 @@
+#pl-homepage-promo {
+  --pl-promo-accent: #0860bd;
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  width: min(480px, calc(100% - 24px));
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: clamp(10px, 2.6vw, 18px);
+  border: 0;
+  border-radius: 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: #fff;
+  color: #0a2345;
+  box-shadow: 0 24px 80px #03183266;
+}
+#pl-homepage-promo:not([open]) { display: none }
+#pl-homepage-promo::backdrop { background: #061a38bf }
+#pl-homepage-promo .pl-promo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+#pl-homepage-promo h2 { margin: 0; font-size: clamp(15px, 3.7vw, 19px); line-height: 1.25 }
+#pl-homepage-promo .pl-promo-close {
+  flex: 0 0 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #0a2345;
+  background: #edf4fb;
+  font: 26px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+#pl-homepage-promo .pl-promo-stage {
+  display: block;
+  width: min(100%, 48.8dvh);
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #091424;
+  color: #fff;
+  touch-action: pan-y pinch-zoom;
+}
+#pl-homepage-promo img { display: block; width: 100%; height: auto; user-select: none }
+#pl-homepage-promo img[hidden] { display: none }
+#pl-homepage-promo .pl-promo-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 6px 0;
+}
+#pl-homepage-promo .pl-promo-nav button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #bcd3eb;
+  border-radius: 50%;
+  color: #0a2345;
+  background: #edf4fb;
+  font: 25px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+#pl-homepage-promo .pl-promo-nav button:hover { background: #dceaf8 }
+#pl-homepage-promo .pl-promo-status {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+#pl-homepage-promo .pl-promo-cta {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  color: #fff;
+  background: var(--pl-promo-accent);
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+}
+#pl-homepage-promo .pl-promo-cta:hover { background: #064b96 }
+#pl-homepage-promo :focus-visible { outline: 3px solid #f5a623; outline-offset: 2px }

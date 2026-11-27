@@ -495,9 +495,9 @@ document.addEventListener('DOMContentLoaded', function () {
   wizard.scrollTop=0;input.focus({preventScroll:true});
  }
  function open(){if(wizard.open)return;search();wizard.showModal();wizard.querySelector('input').focus({preventScroll:true});try{sessionStorage.setItem('pl-order-wizard-seen-v1','1');}catch(e){}}
- document.addEventListener('click',function(event){var link=event.target.closest('a');if(!link)return;var url=new URL(link.href,location.href);if(url.origin===location.origin && url.hash==='#pilih-paket'){event.preventDefault();open();}});
+ document.addEventListener('click',function(event){if(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;var link=event.target.closest('a');if(!link)return;var url=new URL(link.href,location.href);if(url.origin===location.origin && url.hash==='#pilih-paket'){event.preventDefault();open();}});
  var seen=false;try{seen=sessionStorage.getItem('pl-order-wizard-seen-v1')==='1';}catch(e){}
- function beginHomeDialogs(){var fallback=function(){if(!seen)open();};if(typeof window.poslokerShowEducationPromo!=='function'||!window.poslokerShowEducationPromo(fallback))fallback();}
+ function beginHomeDialogs(){var fallback=function(){if(!seen)open();};if(typeof window.poslokerShowHomepagePromo!=='function'||!window.poslokerShowHomepagePromo(fallback))fallback();}
  var hours=document.getElementById('pl-posting-hours');if(hours && hours.open){hours.addEventListener('close',beginHomeDialogs,{once:true});}else{beginHomeDialogs();}
 });
 </script>
@@ -553,18 +553,25 @@ var poslokerData = {"whatsapp":"6285785600586","paymentUrl":"https://posloker.my
 <script id="posloker-main-js" src="/wp-content/themes/posloker-premium/assets/js/main.js"></script>
 
 
-<!-- posloker-education-promo-v1 -->
-<link rel="stylesheet" href="/assets/promo/education.css">
-<dialog id="pl-education-promo" aria-labelledby="pl-education-promo-title" aria-describedby="pl-education-promo-note">
+<!-- posloker-homepage-promo-v2 -->
+<link rel="stylesheet" href="/assets/promo/homepage.css">
+<dialog id="pl-homepage-promo" aria-labelledby="pl-homepage-promo-title">
  <div class="pl-promo-head">
-  <h2 id="pl-education-promo-title">Promo posting lowongan pendidikan</h2>
+  <h2 id="pl-homepage-promo-title">Promo PosLoker</h2>
   <button class="pl-promo-close" type="button" aria-label="Tutup promosi" autofocus>×</button>
  </div>
- <img data-src="/assets/promo/posloker-pendidikan.png" width="1086" height="1448" alt="Pasang lowongan untuk sekolah, bimbel, kursus, dan lembaga pendidikan. Mulai dari Rp5.000 di kota tertentu.">
- <p id="pl-education-promo-note">Harga mengikuti kota dan paket. QRIS pembayaran tersedia saat checkout.</p>
+ <a href="/#pilih-paket" class="pl-promo-stage" tabindex="-1">
+  <img data-src="/assets/promo/posloker-promo-5k-1122x1402.png" width="1122" height="1402" alt="Pasang lowongan di Instagram dan Facebook mulai Rp5.000, sesuai kota dan paket." draggable="false">
+  <img data-src="/assets/promo/posloker-promo-qris-1122x1402.png" width="1122" height="1402" alt="Bayar dengan QRIS lewat mobile banking atau e-wallet, tanpa biaya transfer antarbank." draggable="false" hidden>
+ </a>
+ <div class="pl-promo-nav" role="group" aria-label="Navigasi slide promosi">
+  <button type="button" class="pl-promo-prev" aria-label="Slide sebelumnya">‹</button>
+  <span class="pl-promo-status" role="status">1 / 2</span>
+  <button type="button" class="pl-promo-next" aria-label="Slide berikutnya">›</button>
+ </div>
  <a href="/#pilih-paket" class="pl-promo-cta">Lihat Paket Kota →</a>
 </dialog>
-<script src="/assets/promo/education.js" defer></script>
-<!-- /posloker-education-promo-v1 -->
+<script src="/assets/promo/homepage.js" defer></script>
+<!-- /posloker-homepage-promo-v2 -->
 </body>
 </html>
