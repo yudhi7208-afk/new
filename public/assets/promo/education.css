@@ -1,0 +1,68 @@
+#pl-education-promo {
+  --pl-promo-accent: #0860bd;
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  width: min(480px, calc(100% - 24px));
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: clamp(10px, 2.6vw, 18px);
+  border: 0;
+  border-radius: 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: #fff;
+  color: #0a2345;
+  box-shadow: 0 24px 80px #03183266;
+}
+#pl-education-promo:not([open]) { display: none }
+#pl-education-promo::backdrop { background: #061a38bf }
+#pl-education-promo .pl-promo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+#pl-education-promo h2 { margin: 0; font-size: clamp(15px, 3.7vw, 19px); line-height: 1.25 }
+#pl-education-promo .pl-promo-close {
+  flex: 0 0 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #0a2345;
+  background: #edf4fb;
+  font: 26px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+#pl-education-promo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 61dvh;
+  object-fit: contain;
+  border-radius: 12px;
+}
+#pl-education-promo p {
+  margin: 9px 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #364f6d;
+}
+#pl-education-promo .pl-promo-cta {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  color: #fff;
+  background: var(--pl-promo-accent);
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+}
+#pl-education-promo .pl-promo-cta:hover { background: #064b96 }
+#pl-education-promo :focus-visible { outline: 3px solid #f5a623; outline-offset: 2px }
